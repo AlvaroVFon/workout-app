@@ -1,5 +1,5 @@
 {
-  "name": "smart-home-backend",
+  "name": "workout-api",
   "version": "1.0.0",
   "engines": {
     "node": "22.14.0"
@@ -17,7 +17,7 @@
     "prepare": "husky install"
   },
   "keywords": [],
-  "author": "",
+  "author": "Álvaro Villamarín",
   "license": "ISC",
   "packageManager": "yarn@1.22.22",
   "devDependencies": {

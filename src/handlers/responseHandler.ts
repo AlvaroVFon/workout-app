@@ -9,8 +9,8 @@ function responseHandler(
   data?: [] | object | string,
 ): Response<ApiResponse> {
   const requestInfo = {
-    url: res.req.url,
-    method: res.req.method,
+    url: res.req?.url,
+    method: res.req?.method,
   }
 
   logger.info(`[${new Date().toISOString()}] - ${statusCode} - ${JSON.stringify(requestInfo)} - ${message}`)

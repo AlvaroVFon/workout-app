@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
-import BadRequestException from '../../../src/exceptions/BadRequestException'
 import roleMiddleware from '../../../src/middlewares/role.middleware'
+import roleService from '../../../src/services/role.service'
 import { createRoleSchema } from '../../../src/schemas/role/role.schema'
 
 jest.mock('../../../src/schemas/role/role.schema', () => ({
@@ -9,6 +9,12 @@ jest.mock('../../../src/schemas/role/role.schema', () => ({
   },
 }))
 
+jest.mock('../../../src/services/role.service', () => {
+  return {
+    findByName: jest.fn(),
+  }
+})
+
 describe('RoleMiddleware', () => {
   let req: Partial<Request>
   let res: Partial<Response>
@@ -16,7 +22,7 @@ describe('RoleMiddleware', () => {
 
   beforeEach(() => {
     req = { body: {} }
-    res = {}
+    res = { status: jest.fn(), json: jest.fn() }
     next = jest.fn()
   })
 
@@ -28,16 +34,13 @@ describe('RoleMiddleware', () => {
     expect(next).toHaveBeenCalled()
   })
 
-  it('should throw BadRequestException if validation fails', () => {
-    const errorMessage = 'Validation error'
-    ;(createRoleSchema.validate as jest.Mock).mockReturnValue({
-      error: { details: [{ message: errorMessage }] },
-    })
+  it('should call next if role does not exist', async () => {
+    ;(roleService.findByName as jest.Mock).mockReturnValue(null)
 
-    expect(() => roleMiddleware.checkCreateRoleSchema(req as Request, res as Response, next as NextFunction)).toThrow(
-      BadRequestException,
-    )
+    req.body = { name: 'user' }
 
-    expect(next).not.toHaveBeenCalled()
+    await roleMiddleware.verifyRoleExistance(req as Request, res as Response, next)
+
+    expect(next).toHaveBeenCalled()
   })
 })

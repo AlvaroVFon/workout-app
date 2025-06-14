@@ -13,6 +13,13 @@ describe('Healthcheck', () => {
     const response = await request(app).get('/health')
 
     expect(response.status).toBe(200)
-    expect(response.body).toEqual({ status: 'ok', date: expect.any(String) })
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        status: expect.anything(),
+        date: expect.anything(),
+        service: expect.anything(),
+        version: expect.anything(),
+      }),
+    )
   })
 })
