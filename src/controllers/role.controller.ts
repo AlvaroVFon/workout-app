@@ -17,7 +17,7 @@ class RoleController {
   }
 
   async findById(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.query
+    const { id } = req.params
 
     try {
       const role = await roleService.findById(String(id))
@@ -29,8 +29,17 @@ class RoleController {
     }
   }
 
+  async findAll(req: Request, res: Response, next: NextFunction) {
+    try {
+      const roles = await roleService.findAll()
+      return responseHandler(res, StatusCode.OK, StatusMessage.OK, roles)
+    } catch (error) {
+      next(error)
+    }
+  }
+
   async update(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.query
+    const { id } = req.params
     const data = req.body
 
     try {
@@ -44,7 +53,7 @@ class RoleController {
   }
 
   async delete(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.query
+    const { id } = req.params
 
     try {
       const deletedRole = await roleService.delete(String(id))

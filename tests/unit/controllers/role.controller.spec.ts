@@ -14,14 +14,13 @@ describe('RoleController', () => {
   let next: NextFunction
 
   beforeEach(() => {
-    req = { body: { name: 'Admin' }, query: { id: '1' } }
+    req = { body: { name: 'Admin' }, params: { id: '1' } }
     res = { status: jest.fn().mockReturnThis(), json: jest.fn() }
     next = jest.fn()
   })
 
   it('should create a new role and return success response', async () => {
     const mockRole = { id: 1, name: 'Admin' }
-
     ;(roleService.create as jest.Mock).mockResolvedValue(mockRole)
 
     await roleController.create(req as Request, res as Response, next)
@@ -68,7 +67,7 @@ describe('RoleController', () => {
   })
 
   it('should update a role and return success response', async () => {
-    req = { query: { id: '1' }, body: { name: 'Updated Role' } }
+    req = { params: { id: '1' }, body: { name: 'Updated Role' } }
     const mockUpdatedRole = { id: 1, name: 'Updated Role' }
     ;(roleService.update as jest.Mock).mockResolvedValue(mockUpdatedRole)
 
@@ -81,7 +80,7 @@ describe('RoleController', () => {
   })
 
   it('should throw NotFoundException if role is not found', async () => {
-    req = { query: { id: '1' }, body: { name: 'Updated Role' } }
+    req = { params: { id: '1' }, body: { name: 'Updated Role' } }
     ;(roleService.update as jest.Mock).mockResolvedValue(null)
 
     await roleController.update(req as Request, res as Response, next)

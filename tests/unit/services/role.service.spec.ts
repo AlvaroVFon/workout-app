@@ -12,6 +12,10 @@ describe('roleService', () => {
     db = getDb()
   })
 
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
   it('Create --> should create a new role', async () => {
     const role = await roleService.create(RolesEnum.SUPERADMIN)
 

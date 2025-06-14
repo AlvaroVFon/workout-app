@@ -20,7 +20,7 @@ class RoleRepository {
   }
 
   update(id: string, data: Partial<RoleDTO>) {
-    return Role.findOneAndUpdate({ _id: id }, data)
+    return Role.findOneAndUpdate({ _id: id }, data, { new: true })
   }
 
   delete(id: string) {

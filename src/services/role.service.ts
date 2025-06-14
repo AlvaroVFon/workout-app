@@ -19,6 +19,10 @@ class RoleService {
     return roleRepository.findOne({ name })
   }
 
+  findAll() {
+    return roleRepository.findAll()
+  }
+
   update(id: string, data: Partial<RoleDTO>) {
     return roleRepository.update(id, data)
   }
