@@ -54,7 +54,6 @@ class RoleController {
 
   async delete(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params
-    console.log(id)
 
     try {
       const deletedRole = await roleService.delete(String(id))
