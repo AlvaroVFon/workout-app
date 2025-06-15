@@ -5,19 +5,23 @@ import { CreateExerciseDTO } from '../DTOs/exercise/create.dto'
 
 class ExerciseRepository {
   create(data: CreateExerciseDTO) {
-    return Exercise.create(data)
+    try {
+      return Exercise.create(data)
+    } catch (error) {
+      console.log(error)
+    }
   }
 
-  findById(id: string, projection: ProjectionType<ExerciseDTO> = {}) {
+  findById(id: string, projection?: ProjectionType<ExerciseDTO>) {
     return Exercise.findById(id, projection)
   }
 
-  findOne(filter: RootFilterQuery<ExerciseDTO>, projection: ProjectionType<ExerciseDTO> = {}) {
+  findOne(filter: RootFilterQuery<ExerciseDTO>, projection?: ProjectionType<ExerciseDTO>) {
     return Exercise.findOne(filter, projection)
   }
 
-  findAll() {
-    return Exercise.find()
+  findAll(query: RootFilterQuery<ExerciseDTO>, projection?: ProjectionType<ExerciseDTO>) {
+    return Exercise.find(query, projection).populate('muscles', { name: 1 })
   }
 
   update(id: string, data: Partial<ExerciseDTO>) {
