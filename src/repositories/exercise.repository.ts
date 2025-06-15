@@ -5,11 +5,7 @@ import { CreateExerciseDTO } from '../DTOs/exercise/create.dto'
 
 class ExerciseRepository {
   create(data: CreateExerciseDTO) {
-    try {
-      return Exercise.create(data)
-    } catch (error) {
-      console.log(error)
-    }
+    return Exercise.create(data)
   }
 
   findById(id: string, projection?: ProjectionType<ExerciseDTO>) {
