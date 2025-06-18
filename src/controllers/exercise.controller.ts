@@ -32,6 +32,8 @@ class ExerciseController {
     try {
       const exercise = await exerciseService.findById(String(id))
       if (!exercise) throw new NotFoundException(`Exercise with id: ${id} not found`)
+
+      return responseHandler(res, StatusCode.OK, StatusMessage.OK, exercise)
     } catch (error) {
       next(error)
     }
