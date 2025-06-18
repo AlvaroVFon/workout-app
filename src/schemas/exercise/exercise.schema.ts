@@ -13,4 +13,15 @@ const createExerciseSchema = Joi.object({
     .required(),
 })
 
-export { createExerciseSchema }
+const updateExerciseSchema = Joi.object({
+  name: Joi.string().optional(),
+  description: Joi.string().optional(),
+  muscles: Joi.array()
+    .items(Joi.string().valid(...Object.values(MusclesEnum)))
+    .optional(),
+  difficulty: Joi.string()
+    .valid(...Object.values(DifficultyEnum))
+    .optional(),
+})
+
+export { createExerciseSchema, updateExerciseSchema }

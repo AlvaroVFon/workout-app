@@ -3,11 +3,11 @@ import exerciseController from '../../../src/controllers/exercise.controller'
 import exerciseService from '../../../src/services/exercise.service'
 import { StatusCode, StatusMessage } from '../../../src/utils/enums/httpResponses.enum'
 import { responseHandler } from '../../../src/handlers/responseHandler'
-import ConflictException from '../../../src/exceptions/ConflictException'
 import NotFoundException from '../../../src/exceptions/NotFoundException'
 
 jest.mock('../../../src/services/exercise.service')
 jest.mock('../../../src/handlers/responseHandler')
+jest.mock('../../../src/middlewares/exercise.middleware')
 
 describe('exerciseController', () => {
   let req: Partial<Request>
@@ -31,24 +31,12 @@ describe('exerciseController', () => {
         muscles: ['chest', 'triceps'],
         difficulty: 'easy',
       }
-      ;(exerciseService.findOne as jest.Mock).mockResolvedValue(null)
       ;(exerciseService.create as jest.Mock).mockResolvedValue(req.body)
 
       await exerciseController.create(req as Request, res as Response, next)
 
-      expect(exerciseService.findOne).toHaveBeenCalledWith({ name: 'Push Up' })
       expect(exerciseService.create).toHaveBeenCalledWith(req.body)
       expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.CREATED, StatusMessage.CREATED, req.body)
-    })
-
-    it('should throw ConflictException if the exercise already exists', async () => {
-      req.body = { name: 'Push Up' }
-      ;(exerciseService.findOne as jest.Mock).mockResolvedValue(req.body)
-
-      await exerciseController.create(req as Request, res as Response, next)
-
-      expect(exerciseService.findOne).toHaveBeenCalledWith({ name: 'Push Up' })
-      expect(next).toHaveBeenCalledWith(new ConflictException('The exercise already exists'))
     })
   })
 
@@ -99,5 +87,36 @@ describe('exerciseController', () => {
       expect(exerciseService.findAll).toHaveBeenCalled()
       expect(next).toHaveBeenCalledWith(error)
     })
+  })
+
+  describe('findByName', () => {
+    it('Should return the exercise if it exists', async () => {
+      req.body = { name: 'Muscle up' }
+      const mockExercise = {
+        _id: '1',
+        name: 'Muscle up',
+        description: 'Best calistenics move',
+        difficulty: 'medium',
+      }
+
+      ;(exerciseService.findByName as jest.Mock).mockResolvedValue(mockExercise)
+      await exerciseController.findByName(req as Request, res as Response, next)
+
+      expect(exerciseService.findByName).toHaveBeenCalledWith('Muscle up')
+      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, mockExercise)
+    })
+
+    it('Should throw NotFoundException if exercise does not exists', async () => {
+      req.body = { name: 'Handstand' }
+      ;(exerciseService.findByName as jest.Mock).mockResolvedValue(null)
+
+      await exerciseController.findByName(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(new NotFoundException('Exercise not found'))
+    })
+  })
+
+  describe('updateOne', () => {
+    it('Should update he exercise if exists', async () => {})
   })
 })

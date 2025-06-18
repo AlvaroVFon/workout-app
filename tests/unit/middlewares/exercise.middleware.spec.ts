@@ -1,11 +1,16 @@
 import { Request, Response, NextFunction } from 'express'
 import exerciseMiddleware from '../../../src/middlewares/exercise.middleware'
-import { createExerciseSchema } from '../../../src/schemas/exercise/exercise.schema'
+import { createExerciseSchema, updateExerciseSchema } from '../../../src/schemas/exercise/exercise.schema'
 import { responseHandler } from '../../../src/handlers/responseHandler'
-import { StatusCode } from '../../../src/utils/enums/httpResponses.enum'
+import exerciseService from '../../../src/services/exercise.service'
+import { mock } from 'node:test'
+import ConflictException from '../../../src/exceptions/ConflictException'
 
 jest.mock('../../../src/schemas/exercise/exercise.schema', () => ({
   createExerciseSchema: {
+    validate: jest.fn(),
+  },
+  updateExerciseSchema: {
     validate: jest.fn(),
   },
 }))
@@ -13,6 +18,8 @@ jest.mock('../../../src/schemas/exercise/exercise.schema', () => ({
 jest.mock('../../../src/handlers/responseHandler', () => ({
   responseHandler: jest.fn(),
 }))
+
+jest.mock('../../../src/services/exercise.service')
 
 describe('ExerciseMiddleware', () => {
   let req: Partial<Request>
@@ -26,26 +33,74 @@ describe('ExerciseMiddleware', () => {
     jest.clearAllMocks()
   })
 
-  it('should call next if validation passes', () => {
-    ;(createExerciseSchema.validate as jest.Mock).mockReturnValue({
-      error: null,
+  describe('checkCreateExerciseSchema', () => {
+    it('should call next if validation passes', () => {
+      ;(createExerciseSchema.validate as jest.Mock).mockReturnValue({
+        error: null,
+      })
+
+      exerciseMiddleware.checkCreateExerciseSchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalled()
+      expect(responseHandler).not.toHaveBeenCalled()
     })
 
-    exerciseMiddleware.checkCreateExerciseSchema(req as Request, res as Response, next)
+    it('should call responseHandler if validation fails', () => {
+      const validationError = { details: [{ message: 'Invalid data' }] }
+      ;(createExerciseSchema.validate as jest.Mock).mockReturnValue({
+        error: validationError,
+      })
 
-    expect(next).toHaveBeenCalled()
-    expect(responseHandler).not.toHaveBeenCalled()
+      exerciseMiddleware.checkCreateExerciseSchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(validationError.details[0].message)
+    })
   })
 
-  it('should call responseHandler if validation fails', () => {
-    const validationError = { details: [{ message: 'Invalid data' }] }
-    ;(createExerciseSchema.validate as jest.Mock).mockReturnValue({
-      error: validationError,
+  describe('checkUpdateExerciseSchema', () => {
+    it('should call next if validation passes', () => {
+      ;(updateExerciseSchema.validate as jest.Mock).mockReturnValue({
+        error: null,
+      })
+
+      exerciseMiddleware.checkUpdateExerciseSchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalled()
+      expect(responseHandler).not.toHaveBeenCalled()
     })
 
-    exerciseMiddleware.checkCreateExerciseSchema(req as Request, res as Response, next)
+    it('should call responseHandler if validation fails', () => {
+      const validationError = { details: [{ message: 'Invalid data' }] }
+      ;(updateExerciseSchema.validate as jest.Mock).mockReturnValue({
+        error: validationError,
+      })
 
-    expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.BAD_REQUEST, validationError.details[0].message)
-    expect(next).not.toHaveBeenCalled()
+      exerciseMiddleware.checkUpdateExerciseSchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(validationError.details[0].message)
+    })
+  })
+
+  describe('verifyExerciseExistance', () => {
+    it('should call next if exercise does not exists', async () => {
+      ;(exerciseService.findByName as jest.Mock).mockReturnValue(null)
+
+      await exerciseMiddleware.verifyExerciseExistance(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith()
+    })
+
+    it('should call next with ConflictException is exercise already exists', async () => {
+      const mockExercise = {
+        name: 'Front lever',
+        description: 'cool movement',
+      }
+
+      ;(exerciseService.findByName as jest.Mock).mockReturnValue(mockExercise)
+
+      await exerciseMiddleware.verifyExerciseExistance(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(new ConflictException('Exercise already exists'))
+    })
   })
 })

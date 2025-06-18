@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express'
 import muscleMiddleware from '../../../src/middlewares/muscle.middleware'
 import { createMuscleSchema } from '../../../src/schemas/muscle/muscle.schema'
 import BadRequestException from '../../../src/exceptions/BadRequestException'
-import { errorHandler } from '../../../src/handlers/errorHandler'
 
 jest.mock('../../../src/schemas/muscle/muscle.schema', () => ({
   createMuscleSchema: {
@@ -32,10 +31,9 @@ describe('MuscleMiddleware', () => {
     muscleMiddleware.checkCreateMuscleSchema(req as Request, res as Response, next)
 
     expect(next).toHaveBeenCalled()
-    expect(errorHandler).not.toHaveBeenCalled()
   })
 
-  it('should call errorHandler if validation fails', () => {
+  it('should call next with BadRequestException if validation fails', () => {
     const validationError = { details: [{ message: 'Invalid data' }] }
     ;(createMuscleSchema.validate as jest.Mock).mockReturnValue({
       error: validationError,
@@ -43,12 +41,6 @@ describe('MuscleMiddleware', () => {
 
     muscleMiddleware.checkCreateMuscleSchema(req as Request, res as Response, next)
 
-    expect(errorHandler).toHaveBeenCalledWith(
-      new BadRequestException(validationError.details[0].message),
-      req,
-      res,
-      next,
-    )
-    expect(next).not.toHaveBeenCalled()
+    expect(next).toHaveBeenCalledWith(new BadRequestException(validationError.details[0].message))
   })
 })

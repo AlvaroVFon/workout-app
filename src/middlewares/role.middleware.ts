@@ -3,15 +3,12 @@ import roleService from '../services/role.service'
 import { createRoleSchema } from '../schemas/role/role.schema'
 import BadRequestException from '../exceptions/BadRequestException'
 import ConflictException from '../exceptions/ConflictException'
-import { errorHandler } from '../handlers/errorHandler'
 
 class RoleMiddleware {
   checkCreateRoleSchema(req: Request, res: Response, next: NextFunction) {
     const { error } = createRoleSchema.validate(req.body)
 
-    if (error) {
-      return errorHandler(new BadRequestException(error.details[0].message), req, res, next)
-    }
+    if (error) next(new BadRequestException(error.details[0].message))
 
     next()
   }
@@ -21,7 +18,7 @@ class RoleMiddleware {
     const role = await roleService.findByName(name)
 
     if (role !== null) {
-      return errorHandler(new ConflictException('Role already exists'), req, res, next)
+      next(new ConflictException('Role already exists'))
     }
 
     next()

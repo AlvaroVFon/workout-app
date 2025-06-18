@@ -8,6 +8,20 @@ const router = Router()
 router
   .get('/', exerciseController.findAll)
   .get('/:id', [globalValidatorMiddleware.validateObjectId], exerciseController.findById)
-  .post('/', [exerciseMiddleware.checkCreateExerciseSchema], exerciseController.create)
+  .post(
+    '/',
+    [exerciseMiddleware.checkCreateExerciseSchema, exerciseMiddleware.verifyExerciseExistance],
+    exerciseController.create,
+  )
+  .patch(
+    '/:id',
+    [
+      globalValidatorMiddleware.validateObjectId,
+      exerciseMiddleware.checkUpdateExerciseSchema,
+      exerciseMiddleware.verifyExerciseExistance,
+    ],
+    exerciseController.update,
+  )
+  .delete('/:id', [globalValidatorMiddleware.validateObjectId], exerciseController.delete)
 
 export { router as exerciseRouter }
