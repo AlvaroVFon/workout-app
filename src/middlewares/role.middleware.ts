@@ -8,7 +8,7 @@ class RoleMiddleware {
   checkCreateRoleSchema(req: Request, res: Response, next: NextFunction) {
     const { error } = createRoleSchema.validate(req.body)
 
-    if (error) next(new BadRequestException(error.details[0].message))
+    if (error) return next(new BadRequestException(error.details[0].message))
 
     next()
   }
@@ -18,7 +18,7 @@ class RoleMiddleware {
     const role = await roleService.findByName(name)
 
     if (role !== null) {
-      next(new ConflictException('Role already exists'))
+      return next(new ConflictException('Role already exists'))
     }
 
     next()

@@ -27,7 +27,7 @@ class UserMiddleware {
       const data = req.body
       const { error } = createUserSchema.validate(data)
 
-      if (error) next(new BadRequestException(error.details[0].message))
+      if (error) return next(new BadRequestException(error.details[0].message))
 
       next()
     } catch (error) {
@@ -41,7 +41,7 @@ class UserMiddleware {
     try {
       const { error } = updateUserSchema.validate(data)
 
-      if (error) next(new BadRequestException(error.details[0].message))
+      if (error) return next(new BadRequestException(error.details[0].message))
 
       next()
     } catch (error) {

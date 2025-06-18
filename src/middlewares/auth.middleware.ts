@@ -12,7 +12,7 @@ class AuthMiddleware {
       const { error } = loginSchema.validate(data)
 
       if (error) {
-        next(new BadRequestException(error.details[0].message))
+        return next(new BadRequestException(error.details[0].message))
       }
     } catch (error) {
       next(error)

@@ -5,6 +5,7 @@ import { responseHandler } from '../../../src/handlers/responseHandler'
 import exerciseService from '../../../src/services/exercise.service'
 import { mock } from 'node:test'
 import ConflictException from '../../../src/exceptions/ConflictException'
+import BadRequestException from '../../../src/exceptions/BadRequestException'
 
 jest.mock('../../../src/schemas/exercise/exercise.schema', () => ({
   createExerciseSchema: {
@@ -53,7 +54,7 @@ describe('ExerciseMiddleware', () => {
 
       exerciseMiddleware.checkCreateExerciseSchema(req as Request, res as Response, next)
 
-      expect(next).toHaveBeenCalledWith(validationError.details[0].message)
+      expect(next).toHaveBeenCalledWith(new BadRequestException(validationError.details[0].message))
     })
   })
 
@@ -77,7 +78,7 @@ describe('ExerciseMiddleware', () => {
 
       exerciseMiddleware.checkUpdateExerciseSchema(req as Request, res as Response, next)
 
-      expect(next).toHaveBeenCalledWith(validationError.details[0].message)
+      expect(next).toHaveBeenCalledWith(new BadRequestException(validationError.details[0].message))
     })
   })
 
@@ -95,7 +96,6 @@ describe('ExerciseMiddleware', () => {
         name: 'Front lever',
         description: 'cool movement',
       }
-
       ;(exerciseService.findByName as jest.Mock).mockReturnValue(mockExercise)
 
       await exerciseMiddleware.verifyExerciseExistance(req as Request, res as Response, next)
