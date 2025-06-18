@@ -12,9 +12,11 @@ class UserMiddleware {
 
       if (user) {
         next(new ConflictException())
+        return
       }
     } catch (error) {
       next(error)
+      return
     }
 
     next()
