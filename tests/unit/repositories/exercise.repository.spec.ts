@@ -33,7 +33,9 @@ describe('ExerciseRepository', () => {
   })
 
   it('should find an exercise by ID', async () => {
-    ;(Exercise.findById as jest.Mock).mockResolvedValue(mockExercise)
+    ;(Exercise.findById as jest.Mock).mockReturnValue({
+      populate: jest.fn().mockResolvedValue(mockExercise),
+    })
 
     const result = await exerciseRepository.findById('123')
 
@@ -43,7 +45,9 @@ describe('ExerciseRepository', () => {
 
   it('should find one exercise by filter', async () => {
     const filter = { name: 'Push Up' }
-    ;(Exercise.findOne as jest.Mock).mockResolvedValue(mockExercise)
+    ;(Exercise.findOne as jest.Mock).mockReturnValue({
+      populate: jest.fn().mockResolvedValue(mockExercise),
+    })
 
     const result = await exerciseRepository.findOne(filter)
 
@@ -65,11 +69,13 @@ describe('ExerciseRepository', () => {
 
   it('should update an exercise', async () => {
     const updateData: Partial<ExerciseDTO> = { name: 'Updated Push Up' }
-    ;(Exercise.findOneAndUpdate as jest.Mock).mockResolvedValue(mockExercise)
+    ;(Exercise.findOneAndUpdate as jest.Mock).mockReturnValue({
+      populate: jest.fn().mockResolvedValue(mockExercise),
+    })
 
     const result = await exerciseRepository.update('123', updateData)
 
-    expect(Exercise.findOneAndUpdate).toHaveBeenCalledWith({ _id: '123' }, updateData)
+    expect(Exercise.findOneAndUpdate).toHaveBeenCalledWith({ _id: '123' }, updateData, { new: true })
     expect(result).toEqual(mockExercise)
   })
 

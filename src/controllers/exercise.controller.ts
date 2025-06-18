@@ -23,7 +23,7 @@ class ExerciseController {
   }
 
   async findById(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.body
+    const { id } = req.params
 
     try {
       const exercise = await exerciseService.findById(String(id))

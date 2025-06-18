@@ -42,7 +42,7 @@ describe('exerciseController', () => {
 
   describe('findById', () => {
     it('should return the exercise if it exists', async () => {
-      req.body = { id: '123' }
+      req.params = { id: '123' }
 
       const mockExercise = { id: '123', name: 'Push Up' }
       ;(exerciseService.findById as jest.Mock).mockResolvedValue(mockExercise)
@@ -54,7 +54,7 @@ describe('exerciseController', () => {
     })
 
     it('should throw NotFoundException if the exercise does not exist', async () => {
-      req.body = { id: '123' }
+      req.params = { id: '123' }
       ;(exerciseService.findById as jest.Mock).mockResolvedValue(null)
 
       await exerciseController.findById(req as Request, res as Response, next)
@@ -98,7 +98,6 @@ describe('exerciseController', () => {
         description: 'Best calistenics move',
         difficulty: 'medium',
       }
-
       ;(exerciseService.findByName as jest.Mock).mockResolvedValue(mockExercise)
       await exerciseController.findByName(req as Request, res as Response, next)
 

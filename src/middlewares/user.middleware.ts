@@ -8,7 +8,7 @@ class UserMiddleware {
   async validateUserExistence(req: Request, res: Response, next: NextFunction) {
     const data = req.body
     try {
-      const user = await userService.getByEmail(data.email)
+      const user = await userService.findByEmail(data.email)
 
       if (user) {
         next(new ConflictException())

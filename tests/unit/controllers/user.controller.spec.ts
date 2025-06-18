@@ -49,16 +49,16 @@ describe('UserController', () => {
   describe('findAll', () => {
     it('should return all users', async () => {
       const mockUsers = [{ id: '1', name: 'John Doe', role: 'admin' }]
-      ;(userService.getAll as jest.Mock).mockResolvedValue(mockUsers)
+      ;(userService.findAll as jest.Mock).mockResolvedValue(mockUsers)
 
       await userController.findAll(req as Request, res as Response, next)
 
-      expect(userService.getAll).toHaveBeenCalled()
+      expect(userService.findAll).toHaveBeenCalled()
       expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, expect.any(Array))
     })
 
     it('should throw NotFoundException if no users are found', async () => {
-      ;(userService.getAll as jest.Mock).mockResolvedValue(null)
+      ;(userService.findAll as jest.Mock).mockResolvedValue(null)
 
       await userController.findAll(req as Request, res as Response, next)
 
@@ -70,17 +70,17 @@ describe('UserController', () => {
     it('should return a user by ID', async () => {
       const mockUser = { id: '1', name: 'John Doe', role: 'admin' }
       req.params!.id = '1'
-      ;(userService.getById as jest.Mock).mockResolvedValue(mockUser)
+      ;(userService.findById as jest.Mock).mockResolvedValue(mockUser)
 
       await userController.findOne(req as Request, res as Response, next)
 
-      expect(userService.getById).toHaveBeenCalledWith('1')
+      expect(userService.findById).toHaveBeenCalledWith('1')
       expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, expect.any(Object))
     })
 
     it('should throw NotFoundException if user is not found', async () => {
       req.params!.id = '1'
-      ;(userService.getById as jest.Mock).mockResolvedValue(null)
+      ;(userService.findById as jest.Mock).mockResolvedValue(null)
 
       await userController.findOne(req as Request, res as Response, next)
 

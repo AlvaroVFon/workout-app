@@ -24,7 +24,7 @@ class UserController {
 
   async findAll(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
     try {
-      const users = await userService.getAll()
+      const users = await userService.findAll()
 
       if (!users) {
         throw new NotFoundException()
@@ -41,10 +41,10 @@ class UserController {
   async findOne(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
     const id = req.params.id
     try {
-      const user = await userService.getById(id)
+      const user = await userService.findById(id)
 
       if (!user) {
-        throw new NotFoundException()
+        throw new NotFoundException(`User with id: ${id} not found`)
       }
 
       const publicUser = new UserDTO(user).toPublicUser()

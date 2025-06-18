@@ -9,11 +9,13 @@ class ExerciseRepository {
   }
 
   findById(id: string, projection?: ProjectionType<ExerciseDTO>) {
-    return Exercise.findById(id, projection)
+    return Exercise.findById(id, projection).populate('muscles', { name: 1 })
   }
 
   findOne(filter: RootFilterQuery<ExerciseDTO>, projection?: ProjectionType<ExerciseDTO>) {
-    return Exercise.findOne(filter, projection)
+    return Exercise.findOne(filter, projection).populate('muscles', {
+      name: 1,
+    })
   }
 
   findAll(query: RootFilterQuery<ExerciseDTO>, projection?: ProjectionType<ExerciseDTO>) {
@@ -21,7 +23,9 @@ class ExerciseRepository {
   }
 
   update(id: string, data: Partial<ExerciseDTO>) {
-    return Exercise.findOneAndUpdate({ _id: id }, data)
+    return Exercise.findOneAndUpdate({ _id: id }, data, { new: true }).populate('muscles', {
+      name: 1,
+    })
   }
 
   delete(id: string) {
