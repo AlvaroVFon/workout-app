@@ -18,7 +18,7 @@ class ExerciseRepository {
     })
   }
 
-  findAll(query: RootFilterQuery<ExerciseDTO>, projection?: ProjectionType<ExerciseDTO>) {
+  findAll(query: RootFilterQuery<ExerciseDTO> = {}, projection?: ProjectionType<ExerciseDTO>) {
     return Exercise.find(query, projection).populate('muscles', { name: 1 })
   }
 
