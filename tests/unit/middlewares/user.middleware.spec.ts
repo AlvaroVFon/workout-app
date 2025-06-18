@@ -23,7 +23,7 @@ describe('UserMiddleware', () => {
   describe('validateUserExistence', () => {
     it('should call next with ConflictException if user exists', async () => {
       req.body = { email: 'test@example.com' }
-      ;(userService.getByEmail as jest.Mock).mockResolvedValue({ id: '123' })
+      ;(userService.findByEmail as jest.Mock).mockResolvedValue({ id: '123' })
 
       await userMiddleware.validateUserExistence(req as Request, res as Response, next)
 
@@ -32,7 +32,7 @@ describe('UserMiddleware', () => {
 
     it('should call next without error if user does not exist', async () => {
       req.body = { email: 'test@example.com' }
-      ;(userService.getByEmail as jest.Mock).mockResolvedValue(null)
+      ;(userService.findByEmail as jest.Mock).mockResolvedValue(null)
 
       await userMiddleware.validateUserExistence(req as Request, res as Response, next)
 

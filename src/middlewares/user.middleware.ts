@@ -8,13 +8,15 @@ class UserMiddleware {
   async validateUserExistence(req: Request, res: Response, next: NextFunction) {
     const data = req.body
     try {
-      const user = await userService.getByEmail(data.email)
+      const user = await userService.findByEmail(data.email)
 
       if (user) {
-        throw new ConflictException()
+        next(new ConflictException())
+        return
       }
     } catch (error) {
       next(error)
+      return
     }
 
     next()
@@ -25,7 +27,7 @@ class UserMiddleware {
       const data = req.body
       const { error } = createUserSchema.validate(data)
 
-      if (error) throw new BadRequestException(error.details[0].message)
+      if (error) return next(new BadRequestException(error.details[0].message))
 
       next()
     } catch (error) {
@@ -39,7 +41,7 @@ class UserMiddleware {
     try {
       const { error } = updateUserSchema.validate(data)
 
-      if (error) throw new BadRequestException(error.details[0].message)
+      if (error) return next(new BadRequestException(error.details[0].message))
 
       next()
     } catch (error) {

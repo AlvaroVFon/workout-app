@@ -1,5 +1,6 @@
 import { Schema, model, Types } from 'mongoose'
 import Exercise from '../DTOs/exercise/exercise.dto'
+import { DifficultyEnum } from '../utils/enums/difficulty.enum'
 
 const exerciseSchema = new Schema<Exercise>({
   name: {
@@ -13,8 +14,13 @@ const exerciseSchema = new Schema<Exercise>({
   },
   muscles: {
     type: [Types.ObjectId],
-    ref: 'Muscles',
+    ref: 'Muscle',
     required: true,
+  },
+  difficulty: {
+    type: String,
+    required: true,
+    enum: Object.values(DifficultyEnum),
   },
 })
 

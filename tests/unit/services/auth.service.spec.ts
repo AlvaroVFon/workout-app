@@ -10,7 +10,7 @@ jest.mock('bcrypt')
 describe('AuthService', () => {
   describe('login', () => {
     it('should return false if user is not found', async () => {
-      ;(userService.getByEmail as jest.Mock).mockResolvedValue(null)
+      ;(userService.findByEmail as jest.Mock).mockResolvedValue(null)
 
       const result = await AuthService.login('test@example.com', 'password123')
 
@@ -18,7 +18,9 @@ describe('AuthService', () => {
     })
 
     it('should return false if password is invalid', async () => {
-      ;(userService.getByEmail as jest.Mock).mockResolvedValue({ password: 'hashedPassword' })
+      ;(userService.findByEmail as jest.Mock).mockResolvedValue({
+        password: 'hashedPassword',
+      })
       ;(bcrypt.compareSync as jest.Mock).mockReturnValue(false)
 
       const result = await AuthService.login('test@example.com', 'password123')
@@ -35,8 +37,7 @@ describe('AuthService', () => {
         idDocument: '12345',
       }
       const tokens = { token: 'accessToken', refreshToken: 'refreshToken' }
-
-      ;(userService.getByEmail as jest.Mock).mockResolvedValue(user)
+      ;(userService.findByEmail as jest.Mock).mockResolvedValue(user)
       ;(bcrypt.compareSync as jest.Mock).mockReturnValue(true)
       ;(generateAccessTokens as jest.Mock).mockReturnValue(tokens)
 
@@ -66,8 +67,12 @@ describe('AuthService', () => {
 
   describe('info', () => {
     it('should return payload if token is valid', async () => {
-      const payload = { id: '1', name: 'Test User', email: 'test@example.com', idDocument: '12345' }
-
+      const payload = {
+        id: '1',
+        name: 'Test User',
+        email: 'test@example.com',
+        idDocument: '12345',
+      }
       ;(verifyToken as jest.Mock).mockResolvedValue(payload)
 
       const result = await AuthService.info('validToken')

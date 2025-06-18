@@ -5,6 +5,7 @@ interface Exercise {
   name: string
   description: string
   muscles: Partial<Muscle>[]
+  difficulty: string
 }
 
 export default Exercise

@@ -9,7 +9,7 @@ class GlobalValidatorMiddleware {
     try {
       const { error } = objectIdSchema.validate(objectId)
 
-      if (error) throw new BadRequestException(error.details[0].message)
+      if (error) return next(new BadRequestException(error.details[0].message))
 
       next()
     } catch (error) {

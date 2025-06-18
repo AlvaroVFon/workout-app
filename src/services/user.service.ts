@@ -17,15 +17,15 @@ class UserService {
     return await userRepository.create(data)
   }
 
-  async getAll(): Promise<UserDTO[]> {
+  async findAll(): Promise<UserDTO[]> {
     return await userRepository.findAll()
   }
 
-  async getById(id: string): Promise<UserDTO | null> {
+  async findById(id: string): Promise<UserDTO | null> {
     return await userRepository.findById(id)
   }
 
-  async getByEmail(email: string): Promise<UserDTO | null> {
+  async findByEmail(email: string): Promise<UserDTO | null> {
     return await userRepository.findOneByEmail(email)
   }
 

@@ -12,7 +12,7 @@ const opts: StrategyOptions = {
 
 export const jwtStrategy = new JwtStrategy(opts, async (payload, done) => {
   try {
-    const user = await userService.getById(payload.id)
+    const user = await userService.findById(payload.id)
 
     if (!user) {
       return done(null, false)

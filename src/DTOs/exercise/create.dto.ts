@@ -1,5 +1,8 @@
+import { ObjectId } from 'mongodb'
+
 export interface CreateExerciseDTO {
   name: string
   description: string
-  muscles: string[]
+  muscles: ObjectId[]
+  difficulty: string
 }

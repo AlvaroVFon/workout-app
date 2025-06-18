@@ -8,20 +8,24 @@ class ExerciseRepository {
     return Exercise.create(data)
   }
 
-  findById(id: string, projection: ProjectionType<ExerciseDTO> = {}) {
-    return Exercise.findById(id, projection)
+  findById(id: string, projection?: ProjectionType<ExerciseDTO>) {
+    return Exercise.findById(id, projection).populate('muscles', { name: 1 })
   }
 
-  findOne(filter: RootFilterQuery<ExerciseDTO>, projection: ProjectionType<ExerciseDTO> = {}) {
-    return Exercise.findOne(filter, projection)
+  findOne(filter: RootFilterQuery<ExerciseDTO>, projection?: ProjectionType<ExerciseDTO>) {
+    return Exercise.findOne(filter, projection).populate('muscles', {
+      name: 1,
+    })
   }
 
-  findAll() {
-    return Exercise.find()
+  findAll(query: RootFilterQuery<ExerciseDTO> = {}, projection?: ProjectionType<ExerciseDTO>) {
+    return Exercise.find(query, projection).populate('muscles', { name: 1 })
   }
 
   update(id: string, data: Partial<ExerciseDTO>) {
-    return Exercise.findOneAndUpdate({ _id: id }, data)
+    return Exercise.findOneAndUpdate({ _id: id }, data, { new: true }).populate('muscles', {
+      name: 1,
+    })
   }
 
   delete(id: string) {

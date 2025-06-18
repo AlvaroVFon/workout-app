@@ -19,8 +19,8 @@ class MuscleRepository {
     return Muscle.findOne({ name }, projection)
   }
 
-  findAll(projection?: ProjectionType<MuscleDTO>) {
-    return Muscle.find({}, projection)
+  findAll(filter: RootFilterQuery<MuscleDTO> = {}, projection?: ProjectionType<MuscleDTO>) {
+    return Muscle.find(filter, projection)
   }
 
   update(id: string, data: Partial<MuscleDTO>) {

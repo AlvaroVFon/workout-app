@@ -50,31 +50,31 @@ describe('UserService', () => {
       const users = [{ id: '1', email: 'test@example.com', name: 'Test User' }]
       ;(userRepository.findAll as jest.Mock).mockResolvedValue(users)
 
-      const result = await userService.getAll()
+      const result = await userService.findAll()
 
       expect(userRepository.findAll).toHaveBeenCalled()
       expect(result).toEqual(users)
     })
   })
 
-  describe('getById', () => {
+  describe('findById', () => {
     it('should return a user by ID', async () => {
       const user = { id: '1', email: 'test@example.com', name: 'Test User' }
       ;(userRepository.findById as jest.Mock).mockResolvedValue(user)
 
-      const result = await userService.getById('1')
+      const result = await userService.findById('1')
 
       expect(userRepository.findById).toHaveBeenCalledWith('1')
       expect(result).toEqual(user)
     })
   })
 
-  describe('getByEmail', () => {
+  describe('findByEmail', () => {
     it('should return a user by email', async () => {
       const user = { id: '1', email: 'test@example.com', name: 'Test User' }
       ;(userRepository.findOneByEmail as jest.Mock).mockResolvedValue(user)
 
-      const result = await userService.getByEmail('test@example.com')
+      const result = await userService.findByEmail('test@example.com')
 
       expect(userRepository.findOneByEmail).toHaveBeenCalledWith('test@example.com')
       expect(result).toEqual(user)
