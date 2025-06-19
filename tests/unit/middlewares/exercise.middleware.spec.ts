@@ -81,7 +81,7 @@ describe('ExerciseMiddleware', () => {
     })
   })
 
-  describe('validateExerciceExistence', () => {
+  describe('validateExerciseExistence', () => {
     it('should call next if exercise does not exists', async () => {
       ;(exerciseService.findByName as jest.Mock).mockReturnValue(null)
 
