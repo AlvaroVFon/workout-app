@@ -8,10 +8,10 @@ import { seedUsers } from './user.seeder'
 
 async function seed() {
   try {
-    await connectDatabase()
-    await seedRoles(Object.values(RolesEnum))
-    await seedMuscles(Object.values(MusclesEnum))
-    await seedUsers()
+    const dbConnection = await connectDatabase()
+    await seedRoles(Object.values(RolesEnum), dbConnection)
+    await seedMuscles(Object.values(MusclesEnum), dbConnection)
+    await seedUsers(dbConnection)
   } catch (error) {
     logger.error('Error seeding database: ', error)
   } finally {
