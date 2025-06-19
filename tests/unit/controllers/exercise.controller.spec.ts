@@ -148,7 +148,7 @@ describe('exerciseController', () => {
       await exerciseController.delete(req as Request, res as Response, next)
 
       expect(exerciseService.delete).toHaveBeenCalledWith('123')
-      // expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENTy)
+      // expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
     })
 
     it('should throw NotFoundException if the exercise does not exist', async () => {
