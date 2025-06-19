@@ -116,7 +116,7 @@ describe('exerciseController', () => {
   })
 
   describe('updateOne', () => {
-    it('Should update he exercise if exists', async () => {
+    it('Should update the exercise if exists', async () => {
       req.params = { id: '123' }
       req.body = { name: 'Updated Exercise' }
       const mockExercise = { id: '123', name: 'Updated Exercise' }
