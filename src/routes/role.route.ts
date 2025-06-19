@@ -8,13 +8,13 @@ const router = Router()
 router
   .get('/', roleController.findAll)
   .get('/:id', [globalValidatorMiddleware.validateObjectId], roleController.findById)
-  .post('/', [roleMiddleware.checkCreateRoleSchema, roleMiddleware.verifyRoleExistance], roleController.create)
+  .post('/', [roleMiddleware.checkCreateRoleSchema, roleMiddleware.validateRoleExistence], roleController.create)
   .patch(
     '/:id',
     [
       globalValidatorMiddleware.validateObjectId,
       roleMiddleware.checkCreateRoleSchema,
-      roleMiddleware.verifyRoleExistance,
+      roleMiddleware.validateRoleExistence,
     ],
     roleController.update,
   )

@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response, NextFunction, response } from 'express'
 import exerciseController from '../../../src/controllers/exercise.controller'
 import exerciseService from '../../../src/services/exercise.service'
 import { StatusCode, StatusMessage } from '../../../src/utils/enums/httpResponses.enum'
@@ -116,6 +116,54 @@ describe('exerciseController', () => {
   })
 
   describe('updateOne', () => {
-    it('Should update he exercise if exists', async () => {})
+    it('Should update he exercise if exists', async () => {
+      req.params = { id: '123' }
+      req.body = { name: 'Back lever' }
+
+      const mockUpdatedExercise = {
+        id: 123,
+        name: 'Back lever',
+      }
+
+      ;(exerciseService.update as jest.Mock).mockResolvedValue({
+        mockUpdatedExercise,
+      })
+
+      await exerciseController.update(req as Request, res as Response, next)
+
+      expect(next).not.toHaveBeenCalled()
+      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, expect.any(Object))
+    })
+
+    it('Should throw NotFoundException if exercise does not exists', async () => {
+      req.params = { id: '123' }
+      ;(exerciseService.update as jest.Mock).mockResolvedValue(null)
+
+      await exerciseController.update(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(new NotFoundException('Exercise not found'))
+    })
+  })
+
+  describe('delete', () => {
+    it('should delete an exercise if it exists', async () => {
+      req.params = { id: '123' }
+      const mockedExercise = { id: 123, name: 'delete' }
+
+      ;(exerciseService.delete as jest.Mock).mockResolvedValue(mockedExercise)
+
+      await exerciseController.delete(req as Request, res as Response, next)
+
+      expect(next).not.toHaveBeenCalled()
+      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
+    })
+    it('should throw NotFoundException if exercise does not exists', async () => {
+      req.params = { id: '123' }
+      ;(exerciseService.delete as jest.Mock).mockResolvedValue(null)
+
+      await exerciseController.delete(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(new NotFoundException('Exercise not found'))
+    })
   })
 })

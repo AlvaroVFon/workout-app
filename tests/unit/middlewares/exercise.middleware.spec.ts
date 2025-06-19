@@ -82,11 +82,11 @@ describe('ExerciseMiddleware', () => {
     })
   })
 
-  describe('verifyExerciseExistance', () => {
+  describe('verifyExerciseExistence', () => {
     it('should call next if exercise does not exists', async () => {
       ;(exerciseService.findByName as jest.Mock).mockReturnValue(null)
 
-      await exerciseMiddleware.verifyExerciseExistance(req as Request, res as Response, next)
+      await exerciseMiddleware.verifyExerciseExistence(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith()
     })
@@ -98,7 +98,7 @@ describe('ExerciseMiddleware', () => {
       }
       ;(exerciseService.findByName as jest.Mock).mockReturnValue(mockExercise)
 
-      await exerciseMiddleware.verifyExerciseExistance(req as Request, res as Response, next)
+      await exerciseMiddleware.verifyExerciseExistence(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith(new ConflictException('Exercise already exists'))
     })

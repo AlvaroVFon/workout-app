@@ -10,7 +10,7 @@ router
   .get('/:id', [globalValidatorMiddleware.validateObjectId], exerciseController.findById)
   .post(
     '/',
-    [exerciseMiddleware.checkCreateExerciseSchema, exerciseMiddleware.verifyExerciseExistance],
+    [exerciseMiddleware.checkCreateExerciseSchema, exerciseMiddleware.verifyExerciseExistence],
     exerciseController.create,
   )
   .patch(
@@ -18,7 +18,7 @@ router
     [
       globalValidatorMiddleware.validateObjectId,
       exerciseMiddleware.checkUpdateExerciseSchema,
-      exerciseMiddleware.verifyExerciseExistance,
+      exerciseMiddleware.verifyExerciseExistence,
     ],
     exerciseController.update,
   )

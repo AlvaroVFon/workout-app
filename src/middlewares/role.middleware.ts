@@ -13,7 +13,7 @@ class RoleMiddleware {
     next()
   }
 
-  async verifyRoleExistance(req: Request, res: Response, next: NextFunction) {
+  async validateRoleExistence(req: Request, res: Response, next: NextFunction) {
     const { name } = req.body
     const role = await roleService.findByName(name)
 

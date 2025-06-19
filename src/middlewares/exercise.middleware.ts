@@ -21,7 +21,7 @@ class ExerciseMiddleware {
     next()
   }
 
-  async verifyExerciseExistance(req: Request, res: Response, next: NextFunction) {
+  async verifyExerciseExistence(req: Request, res: Response, next: NextFunction) {
     const { name } = req.body
 
     try {

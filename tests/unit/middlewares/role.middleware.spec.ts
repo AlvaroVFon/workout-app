@@ -49,13 +49,13 @@ describe('RoleMiddleware', () => {
     })
   })
 
-  describe('verifyRoleExistance', () => {
+  describe('verifyRoleExistence', () => {
     it('should call next if role does not exist', async () => {
       ;(roleService.findByName as jest.Mock).mockReturnValue(null)
 
       req.body = { name: 'user' }
 
-      await roleMiddleware.verifyRoleExistance(req as Request, res as Response, next)
+      await roleMiddleware.validateRoleExistence(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalled()
     })
@@ -64,7 +64,7 @@ describe('RoleMiddleware', () => {
       const mockRole = { name: 'someRole' }
       ;(roleService.findByName as jest.Mock).mockResolvedValue(mockRole)
 
-      await roleMiddleware.verifyRoleExistance(req as Request, res as Response, next)
+      await roleMiddleware.validateRoleExistence(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith(new ConflictException('Role already exists'))
     })
