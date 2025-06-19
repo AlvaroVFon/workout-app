@@ -1,11 +1,11 @@
-import { connectDatabase, getDatabase } from '../config/db'
+import { Connection } from 'mongoose'
 import { createAdminUser, createSuperAdminUser } from '../factories/user.factory'
 import userService from '../services/user.service'
 import logger from '../utils/logger'
 
-async function seedUsers() {
+async function seedUsers(db: Connection) {
   try {
-    await deleteUsers()
+    await deleteUsers(db)
     await Promise.all([userService.create(createSuperAdminUser()), userService.create(createAdminUser())])
     logger.info('Users created successfully')
   } catch (error) {
@@ -13,10 +13,8 @@ async function seedUsers() {
   }
 }
 
-async function deleteUsers() {
+async function deleteUsers(db: Connection) {
   try {
-    await connectDatabase()
-    const db = await getDatabase()
     await db.collection('users').drop()
     logger.info('Users collection has been dropped')
   } catch (error) {

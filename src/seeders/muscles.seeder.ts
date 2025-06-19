@@ -1,10 +1,10 @@
-import { connectDatabase, getDatabase } from '../config/db'
+import { Connection } from 'mongoose'
 import muscleRepository from '../repositories/muscle.repository'
 import logger from '../utils/logger'
 
-async function seedMuscles(muscles: string[]): Promise<void> {
+async function seedMuscles(muscles: string[], db: Connection): Promise<void> {
   try {
-    await deleteMuscles()
+    await deleteMuscles(db)
     await Promise.all(
       muscles.map((muscle) => {
         muscleRepository.create(muscle)
@@ -16,11 +16,8 @@ async function seedMuscles(muscles: string[]): Promise<void> {
   }
 }
 
-async function deleteMuscles() {
+async function deleteMuscles(db: Connection): Promise<void> {
   try {
-    await connectDatabase()
-    const db = await getDatabase()
-
     await db.collection('muscles').drop()
 
     logger.info('Muscles collection has been dropped')

@@ -1,4 +1,4 @@
-import { connectDatabase } from '../config/db'
+import { connectDatabase, getDatabase } from '../config/db'
 import { seedMuscles } from './muscles.seeder'
 import { seedRoles } from './role.seeder'
 import { RolesEnum } from '../utils/enums/roles.enum'
@@ -8,10 +8,11 @@ import { seedUsers } from './user.seeder'
 
 async function seed() {
   try {
-    const dbConnection = await connectDatabase()
-    await seedRoles(Object.values(RolesEnum), dbConnection)
-    await seedMuscles(Object.values(MusclesEnum), dbConnection)
-    await seedUsers(dbConnection)
+    await connectDatabase()
+    const db = await getDatabase()
+    await seedRoles(Object.values(RolesEnum), db)
+    await seedMuscles(Object.values(MusclesEnum), db)
+    await seedUsers(db)
   } catch (error) {
     logger.error('Error seeding database: ', error)
   } finally {
