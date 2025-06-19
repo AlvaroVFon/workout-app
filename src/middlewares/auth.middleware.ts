@@ -3,7 +3,6 @@ import { loginSchema } from '../schemas/auth/auth.schema'
 import BadRequestException from '../exceptions/BadRequestException'
 import passport from '../config/passport'
 import UnauthorizedException from '../exceptions/UnauthorizedException'
-import { AuthenticatedRequest } from '../interfaces/authenticatedRequest.interface'
 import { AuthenticatedUser } from '../interfaces/user.inteface'
 import ForbiddenException from '../exceptions/ForbiddenException'
 
