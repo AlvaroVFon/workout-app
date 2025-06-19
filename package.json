@@ -14,7 +14,8 @@
     "prettier:fix": "prettier --write .",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "seed": "ts-node src/seeders/index.seeder.ts"
   },
   "keywords": [],
   "author": "Álvaro Villamarín",
