@@ -25,27 +25,23 @@ class AuthMiddleware {
   }
 
   verifyJWT(req: Request, res: Response, next: NextFunction) {
-    passport.authenticate(
-      'jwt',
-      { session: false },
-      (err: Error | null, user: Express.User | false, info: { message?: string } | undefined) => {
-        if (err || !user) return next(new UnauthorizedException())
+    passport.authenticate('jwt', { session: false }, (err: Error | null, user: Express.User | false) => {
+      if (err || !user) return next(new UnauthorizedException())
 
-        req.user = user
+      req.user = user
 
-        next()
-      },
-    )(req, res, next)
+      next()
+    })(req, res, next)
   }
 
   authorizeRoles(...authorizedRoles: string[]) {
-    return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-      if (!req.user) return next(new UnauthorizedException())
+    return (req: Request, res: Response, next: NextFunction) => {
+      const user = (req as unknown as { user?: AuthenticatedUser }).user
+      if (!user) return next(new UnauthorizedException())
 
-      const user: AuthenticatedUser = req.user
+      const isRoleAllowed = authorizedRoles.includes(user.role)
 
-      const isRoleAllowed = authorizedRoles.includes(user.role.name)
-      if (!isRoleAllowed) throw new ForbiddenException()
+      if (!isRoleAllowed) return next(new ForbiddenException())
 
       next()
     }
