@@ -64,7 +64,7 @@ class ExerciseController {
 
     try {
       const updatedExercise = await exerciseService.update(String(id), data)
-      if (!updatedExercise) throw new NotFoundException('Exercise not found')
+      if (!updatedExercise) throw new NotFoundException(`Exercise with id: ${id} not found`)
 
       return responseHandler(res, StatusCode.OK, StatusMessage.OK, updatedExercise)
     } catch (error) {
@@ -77,7 +77,7 @@ class ExerciseController {
 
     try {
       const deletedExercise = await exerciseService.delete(String(id))
-      if (!deletedExercise) throw new NotFoundException('Exercise not found')
+      if (!deletedExercise) throw new NotFoundException(`Exercise with id: ${id} not found`)
 
       return responseHandler(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
     } catch (error) {

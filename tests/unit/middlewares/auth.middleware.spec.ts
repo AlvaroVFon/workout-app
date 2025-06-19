@@ -4,6 +4,7 @@ import { loginSchema } from '../../../src/schemas/auth/auth.schema'
 import BadRequestException from '../../../src/exceptions/BadRequestException'
 import UnauthorizedException from '../../../src/exceptions/UnauthorizedException'
 import passport from '../../../src/config/passport'
+import ForbiddenException from '../../../src/exceptions/ForbiddenException'
 
 jest.mock('../../../src/schemas/auth/auth.schema')
 jest.mock('../../../src/config/passport')
@@ -66,6 +67,38 @@ describe('AuthMiddleware', () => {
 
       expect(req.user).toEqual(user)
       expect(next).toHaveBeenCalledWith()
+    })
+  })
+
+  describe('authorizeRoles', () => {
+    it('should call next with ForbiddenException if user role is not authorized', () => {
+      const user = { id: 1, username: 'testuser', role: 'user' }
+      req.user = user
+
+      const middleware = AuthMiddleware.authorizeRoles('admin')
+
+      middleware(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(new ForbiddenException())
+    })
+
+    it('should call next with no arguments if user role is authorized', () => {
+      const user = { id: 1, username: 'testuser', role: 'admin' }
+      req.user = user
+
+      const middleware = AuthMiddleware.authorizeRoles('admin')
+
+      middleware(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith()
+    })
+
+    it('should call next with UnauthorizedException if user is not authenticated', () => {
+      const middleware = AuthMiddleware.authorizeRoles('admin')
+
+      middleware(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(new UnauthorizedException())
     })
   })
 })
