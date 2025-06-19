@@ -17,6 +17,7 @@ export const jwtStrategy = new JwtStrategy(opts, async (payload, done) => {
     if (!user) {
       return done(null, false)
     }
+    console.log(user)
 
     const publicUser: PublicUserDTO = {
       id: user.id,
