@@ -3,7 +3,6 @@ import exerciseMiddleware from '../../../src/middlewares/exercise.middleware'
 import { createExerciseSchema, updateExerciseSchema } from '../../../src/schemas/exercise/exercise.schema'
 import { responseHandler } from '../../../src/handlers/responseHandler'
 import exerciseService from '../../../src/services/exercise.service'
-import { mock } from 'node:test'
 import ConflictException from '../../../src/exceptions/ConflictException'
 import BadRequestException from '../../../src/exceptions/BadRequestException'
 
@@ -82,11 +81,11 @@ describe('ExerciseMiddleware', () => {
     })
   })
 
-  describe('verifyExerciseExistance', () => {
+  describe('validateExerciseExistence', () => {
     it('should call next if exercise does not exists', async () => {
       ;(exerciseService.findByName as jest.Mock).mockReturnValue(null)
 
-      await exerciseMiddleware.verifyExerciseExistance(req as Request, res as Response, next)
+      await exerciseMiddleware.validateExerciseExistence(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith()
     })
@@ -98,7 +97,7 @@ describe('ExerciseMiddleware', () => {
       }
       ;(exerciseService.findByName as jest.Mock).mockReturnValue(mockExercise)
 
-      await exerciseMiddleware.verifyExerciseExistance(req as Request, res as Response, next)
+      await exerciseMiddleware.validateExerciseExistence(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith(new ConflictException('Exercise already exists'))
     })

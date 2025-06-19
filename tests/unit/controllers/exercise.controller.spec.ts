@@ -116,6 +116,49 @@ describe('exerciseController', () => {
   })
 
   describe('updateOne', () => {
-    it('Should update he exercise if exists', async () => {})
+    it('Should update the exercise if exists', async () => {
+      req.params = { id: '123' }
+      req.body = { name: 'Updated Exercise' }
+      const mockExercise = { id: '123', name: 'Updated Exercise' }
+      ;(exerciseService.update as jest.Mock).mockResolvedValue(mockExercise)
+
+      await exerciseController.update(req as Request, res as Response, next)
+
+      expect(exerciseService.update).toHaveBeenCalledWith('123', req.body)
+      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, mockExercise)
+    })
+
+    it('Should throw NotFoundException if exercise does not exist', async () => {
+      req.params = { id: '123' }
+      req.body = { name: 'Updated Exercise' }
+      ;(exerciseService.update as jest.Mock).mockResolvedValue(null)
+
+      await exerciseController.update(req as Request, res as Response, next)
+
+      expect(exerciseService.update).toHaveBeenCalledWith('123', req.body)
+      expect(next).toHaveBeenCalledWith(new NotFoundException('Exercise with id: 123 not found'))
+    })
+  })
+
+  describe('delete', () => {
+    it('should delete the exercise if it exists', async () => {
+      req.params = { id: '123' }
+      ;(exerciseService.delete as jest.Mock).mockResolvedValue(true)
+
+      await exerciseController.delete(req as Request, res as Response, next)
+
+      expect(exerciseService.delete).toHaveBeenCalledWith('123')
+      // expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
+    })
+
+    it('should throw NotFoundException if the exercise does not exist', async () => {
+      req.params = { id: '123' }
+      ;(exerciseService.delete as jest.Mock).mockResolvedValue(false)
+
+      await exerciseController.delete(req as Request, res as Response, next)
+
+      expect(exerciseService.delete).toHaveBeenCalledWith('123')
+      expect(next).toHaveBeenCalledWith(new NotFoundException('Exercise with id: 123 not found'))
+    })
   })
 })

@@ -34,7 +34,7 @@ describe('UserRepository', () => {
   it('should find all users', async () => {
     const mockUsers = [{ _id: '1', name: 'John Doe', email: 'john@example.com' }]
     ;(User.find as jest.Mock).mockReturnValue({
-      exec: jest.fn().mockResolvedValue(mockUsers),
+      populate: jest.fn().mockResolvedValue(mockUsers),
     })
 
     const result = await userRepository.findAll()
@@ -46,7 +46,7 @@ describe('UserRepository', () => {
   it('should find a user by ID', async () => {
     const mockUser = { _id: '1', name: 'John Doe', email: 'john@example.com' }
     ;(User.findOne as jest.Mock).mockReturnValue({
-      exec: jest.fn().mockResolvedValue(mockUser),
+      populate: jest.fn().mockResolvedValue(mockUser),
     })
 
     const result = await userRepository.findById('1')

@@ -10,11 +10,11 @@ class UserRepository {
   }
 
   findAll(): Promise<(UserDTO & Document)[]> {
-    return User.find().exec()
+    return User.find().populate('role')
   }
 
   findById(id: string): Promise<(UserDTO & Document) | null> {
-    return User.findOne({ _id: id }).exec()
+    return User.findOne({ _id: id }).populate('role')
   }
 
   findOneByEmail(email: string): Promise<(UserDTO & Document) | null> {

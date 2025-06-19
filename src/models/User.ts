@@ -20,7 +20,7 @@ const userSchema = new Schema({
   },
   role: {
     type: Types.ObjectId,
-    ref: 'Roles',
+    ref: 'Role',
     required: true,
   },
   country: {
