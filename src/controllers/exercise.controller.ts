@@ -3,6 +3,7 @@ import { responseHandler } from '../handlers/responseHandler'
 import { StatusCode, StatusMessage } from '../utils/enums/httpResponses.enum'
 import exerciseService from '../services/exercise.service'
 import NotFoundException from '../exceptions/NotFoundException'
+import { paginateResponse } from '../utils/pagination.utils'
 
 class ExerciseController {
   async create(req: Request, res: Response, next: NextFunction) {
@@ -37,9 +38,16 @@ class ExerciseController {
 
   async findAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const exercises = await exerciseService.findAll()
+      const { page, limit } = res.locals.pagination
+      const skip = (page - 1) * limit
+      const options = { limit, skip }
 
-      return responseHandler(res, StatusCode.OK, StatusMessage.OK, exercises)
+      const exercises = await exerciseService.findAll({ options })
+      const total = await exerciseService.getTotal()
+
+      const response = paginateResponse(exercises, page, limit, total, true)
+
+      return responseHandler(res, StatusCode.OK, StatusMessage.OK, response)
     } catch (error) {
       next(error)
     }

@@ -1,6 +1,7 @@
 import { ProjectionType, RootFilterQuery } from 'mongoose'
 import roleRepository from '../repositories/role.repository'
 import RoleDTO from '../DTOs/role/role.dto'
+import { ModelQuery } from '../types/index.types'
 
 class RoleService {
   create(name: string) {
@@ -19,8 +20,8 @@ class RoleService {
     return roleRepository.findOne({ name })
   }
 
-  findAll() {
-    return roleRepository.findAll()
+  findAll(query: ModelQuery<RoleDTO> = {}) {
+    return roleRepository.findAll(query)
   }
 
   update(id: string, data: Partial<RoleDTO>) {

@@ -5,6 +5,7 @@ import { RolesEnum } from '../utils/enums/roles.enum'
 import { MusclesEnum } from '../utils/enums/muscles.enum'
 import logger from '../utils/logger'
 import { seedUsers } from './user.seeder'
+import { seedExercises } from './exercise.seeder'
 
 async function seed() {
   try {
@@ -13,6 +14,7 @@ async function seed() {
     await seedRoles(Object.values(RolesEnum), db)
     await seedMuscles(Object.values(MusclesEnum), db)
     await seedUsers(db)
+    await seedExercises(db)
   } catch (error) {
     logger.error('Error seeding database: ', error)
   } finally {

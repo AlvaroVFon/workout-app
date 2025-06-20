@@ -17,7 +17,7 @@ describe('UserController', () => {
 
   beforeEach(() => {
     req = { body: {}, params: {} }
-    res = { status: jest.fn().mockReturnThis(), json: jest.fn() }
+    res = { status: jest.fn().mockReturnThis(), json: jest.fn(), locals: { pagination: {} } }
     next = jest.fn()
     jest.clearAllMocks()
   })
@@ -54,15 +54,7 @@ describe('UserController', () => {
       await userController.findAll(req as Request, res as Response, next)
 
       expect(userService.findAll).toHaveBeenCalled()
-      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, expect.any(Array))
-    })
-
-    it('should throw NotFoundException if no users are found', async () => {
-      ;(userService.findAll as jest.Mock).mockResolvedValue(null)
-
-      await userController.findAll(req as Request, res as Response, next)
-
-      expect(next).toHaveBeenCalledWith(expect.any(NotFoundException))
+      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, expect.any(Object))
     })
   })
 

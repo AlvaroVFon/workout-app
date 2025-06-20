@@ -1,6 +1,7 @@
 import { RootFilterQuery, ProjectionType } from 'mongoose'
 import Muscle from '../models/Muscle'
 import MuscleDTO from '../DTOs/muscle/muscle.dto'
+import { ModelQuery } from '../types/index.types'
 
 class MuscleRepository {
   create(name: string) {
@@ -19,8 +20,8 @@ class MuscleRepository {
     return Muscle.findOne({ name }, projection)
   }
 
-  findAll(filter: RootFilterQuery<MuscleDTO> = {}, projection?: ProjectionType<MuscleDTO>) {
-    return Muscle.find(filter, projection)
+  findAll({ query = {}, projection = {}, options = {} }: ModelQuery<MuscleDTO> = {}) {
+    return Muscle.find(query, projection, options)
   }
 
   update(id: string, data: Partial<MuscleDTO>) {
