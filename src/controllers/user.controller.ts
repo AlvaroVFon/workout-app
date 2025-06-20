@@ -7,6 +7,7 @@ import { UserDTO } from '../DTOs/user/user.dto'
 import { UpdateUserDTO } from '../DTOs/user/update.dto'
 import { ApiResponse } from '../DTOs/api/response.dto'
 import { CreateUserDTO } from '../DTOs/user/create.dto'
+import { paginateResponse } from '../utils/pagination.utils'
 
 class UserController {
   async create(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
@@ -24,15 +25,17 @@ class UserController {
 
   async findAll(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
     try {
-      const users = await userService.findAll()
+      const { page, limit } = res.locals.pagination
+      const skip = (page - 1) * limit
+      const options = { limit, skip }
 
-      if (!users) {
-        throw new NotFoundException()
-      }
+      const users = await userService.findAll({ options })
+      const total = await userService.getTotal()
 
       const publicUsers = users.map((user: UserDTO) => new UserDTO(user).toPublicUser())
+      const response = paginateResponse(publicUsers, page, limit, total, true)
 
-      return responseHandler(res, StatusCode.OK, StatusMessage.OK, publicUsers)
+      return responseHandler(res, StatusCode.OK, StatusMessage.OK, response)
     } catch (error) {
       next(error)
     }

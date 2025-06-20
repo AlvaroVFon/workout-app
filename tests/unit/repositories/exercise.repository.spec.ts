@@ -2,7 +2,6 @@ import exerciseRepository from '../../../src/repositories/exercise.repository'
 import Exercise from '../../../src/models/Exercise'
 import { CreateExerciseDTO } from '../../../src/DTOs/exercise/create.dto'
 import ExerciseDTO from '../../../src/DTOs/exercise/exercise.dto'
-import { ObjectId } from 'mongodb'
 
 jest.mock('../../../src/models/Exercise')
 
@@ -20,7 +19,7 @@ describe('ExerciseRepository', () => {
   it('should create an exercise', async () => {
     const createData: CreateExerciseDTO = {
       name: 'Push Up',
-      muscles: [new ObjectId(), new ObjectId()],
+      muscles: ['muscle1', 'muscle2'],
       description: 'mock description',
       difficulty: 'easy',
     }
@@ -61,9 +60,9 @@ describe('ExerciseRepository', () => {
       populate: jest.fn().mockResolvedValue([mockExercise]),
     })
 
-    const result = await exerciseRepository.findAll(query)
+    const result = await exerciseRepository.findAll({ query })
 
-    expect(Exercise.find).toHaveBeenCalledWith(query, undefined)
+    expect(Exercise.find).toHaveBeenCalledWith(query, {}, {})
     expect(result).toEqual([mockExercise])
   })
 

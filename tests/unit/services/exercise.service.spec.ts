@@ -2,7 +2,6 @@ import exerciseService from '../../../src/services/exercise.service'
 import exerciseRepository from '../../../src/repositories/exercise.repository'
 import muscleRepository from '../../../src/repositories/muscle.repository'
 import { CreateExerciseDTO } from '../../../src/DTOs/exercise/create.dto'
-import { ObjectId } from 'mongodb'
 
 jest.mock('../../../src/repositories/exercise.repository')
 jest.mock('../../../src/repositories/muscle.repository')
@@ -12,32 +11,34 @@ describe('ExerciseService', () => {
     it('should create an exercise with muscle IDs', async () => {
       const mockExercise = {
         name: 'Push Up',
-        muscles: [new ObjectId(), new ObjectId()],
+        muscles: ['muscle1', 'muscle2'],
         description: 'mock description',
         difficulty: 'easy',
       } as CreateExerciseDTO
 
       const mockMuscles = [
-        { _id: mockExercise.muscles[0], name: 'muscle1' },
-        { _id: mockExercise.muscles[1], name: 'muscle2' },
+        { _id: '1', name: 'muscle1' },
+        { _id: '2', name: 'muscle2' },
       ]
 
       ;(muscleRepository.findAll as jest.Mock).mockResolvedValue(mockMuscles)
       ;(exerciseRepository.create as jest.Mock).mockResolvedValue({
         ...mockExercise,
-        muscles: ['muscle1', 'muscle2'],
+        muscles: ['1', '2'],
       })
 
       const result = await exerciseService.create(mockExercise)
 
-      expect(muscleRepository.findAll).toHaveBeenCalledWith({ name: { $in: mockExercise.muscles } }, { _id: 1 })
+      expect(muscleRepository.findAll).toHaveBeenCalledWith({
+        query: { name: { $in: ['muscle1', 'muscle2'] } },
+      })
       expect(exerciseRepository.create).toHaveBeenCalledWith({
         ...mockExercise,
-        muscles: mockExercise.muscles,
+        muscles: ['1', '2'],
       })
       expect(result).toEqual({
         ...mockExercise,
-        muscles: ['muscle1', 'muscle2'],
+        muscles: ['1', '2'],
       })
     })
   })
@@ -102,9 +103,9 @@ describe('ExerciseService', () => {
       const query = { name: { $regex: '.*' } }
       ;(exerciseRepository.findAll as jest.Mock).mockResolvedValue(mockExercises)
 
-      const result = await exerciseService.findAll(query)
+      const result = await exerciseService.findAll({ query })
 
-      expect(exerciseRepository.findAll).toHaveBeenCalledWith(query, undefined)
+      expect(exerciseRepository.findAll).toHaveBeenCalledWith({ query })
       expect(result).toEqual(mockExercises)
     })
   })

@@ -2,6 +2,7 @@ import { Router } from 'express'
 import exerciseController from '../controllers/exercise.controller'
 import globalValidatorMiddleware from '../middlewares/globalValidator.middleware'
 import exerciseMiddleware from '../middlewares/exercise.middleware'
+import paginationMiddleware from '../middlewares/pagination.middleware'
 import authMiddleware from '../middlewares/auth.middleware'
 import { RolesEnum } from '../utils/enums/roles.enum'
 
@@ -9,7 +10,7 @@ const router = Router()
 
 router
   .use([authMiddleware.verifyJWT])
-  .get('/', exerciseController.findAll)
+  .get('/', [paginationMiddleware.paginate], exerciseController.findAll)
   .get('/:id', [globalValidatorMiddleware.validateObjectId], exerciseController.findById)
   .post(
     '/',

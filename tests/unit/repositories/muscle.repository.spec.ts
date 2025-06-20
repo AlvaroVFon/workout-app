@@ -52,12 +52,12 @@ describe('muscleRepository', () => {
   })
 
   it('should find all muscles by filter', async () => {
-    const filter = { name: 'Biceps' }
+    const query = { name: 'Biceps' }
     ;(Muscle.find as jest.Mock).mockResolvedValue([mockMuscle])
 
-    const result = await muscleRepository.findAll(filter)
+    const result = await muscleRepository.findAll({ query })
 
-    expect(Muscle.find).toHaveBeenCalledWith(filter, undefined)
+    expect(Muscle.find).toHaveBeenCalledWith(query, {}, {})
     expect(result).toEqual([mockMuscle])
   })
 

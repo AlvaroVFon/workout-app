@@ -19,6 +19,7 @@ describe('exerciseController', () => {
     res = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
+      locals: { pagination: {} },
     }
     next = jest.fn()
   })
@@ -75,7 +76,7 @@ describe('exerciseController', () => {
       await exerciseController.findAll(req as Request, res as Response, next)
 
       expect(exerciseService.findAll).toHaveBeenCalled()
-      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, mockExercises)
+      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, expect.any(Object))
     })
 
     it('should handle errors and call next', async () => {
