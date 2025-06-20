@@ -31,6 +31,7 @@ describe('ExerciseService', () => {
 
       expect(muscleRepository.findAll).toHaveBeenCalledWith({
         query: { name: { $in: ['muscle1', 'muscle2'] } },
+        projection: { _id: 1 },
       })
       expect(exerciseRepository.create).toHaveBeenCalledWith({
         ...mockExercise,
