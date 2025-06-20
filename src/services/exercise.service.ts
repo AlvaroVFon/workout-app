@@ -8,7 +8,7 @@ import NotFoundException from '../exceptions/NotFoundException'
 
 class ExerciseService {
   async create(exercise: CreateExerciseDTO) {
-    const muscles = await muscleRepository.findAll({ query: { name: { $in: exercise.muscles } } })
+    const muscles = await muscleRepository.findAll({ query: { name: { $in: exercise.muscles } }, projection: { _id: 1 } })
     if (!muscles || muscles.length !== exercise.muscles.length) {
       throw new NotFoundException('One or more muscles not found')
     }
