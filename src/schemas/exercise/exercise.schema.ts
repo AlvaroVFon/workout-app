@@ -3,8 +3,8 @@ import { MusclesEnum } from '../../utils/enums/muscles.enum'
 import { DifficultyEnum } from '../../utils/enums/difficulty.enum'
 
 const createExerciseSchema = Joi.object({
-  name: Joi.string().required(),
-  description: Joi.string().required(),
+  name: Joi.string().min(3).max(30).required(),
+  description: Joi.string().min(10).max(500).required(),
   muscles: Joi.array()
     .items(Joi.string().valid(...Object.values(MusclesEnum)))
     .required(),
@@ -14,8 +14,8 @@ const createExerciseSchema = Joi.object({
 })
 
 const updateExerciseSchema = Joi.object({
-  name: Joi.string().optional(),
-  description: Joi.string().optional(),
+  name: Joi.string().min(3).max(30).optional(),
+  description: Joi.string().min(10).max(500).optional(),
   muscles: Joi.array()
     .items(Joi.string().valid(...Object.values(MusclesEnum)))
     .optional(),
