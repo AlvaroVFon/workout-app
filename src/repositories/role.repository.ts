@@ -16,8 +16,8 @@ class RoleRepository {
     return Role.findOne(filter, projection)
   }
 
-  findAll(query: ModelQuery<RoleDTO> = {}) {
-    return Role.find(query)
+  findAll({ query = {}, projection = {}, options = {} }: ModelQuery<RoleDTO> = {}) {
+    return Role.find(query, projection, options)
   }
 
   update(id: string, data: Partial<RoleDTO>) {
