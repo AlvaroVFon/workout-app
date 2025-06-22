@@ -9,3 +9,5 @@ export type ModelQuery<T> = {
 export type PaginatedResponse<T> =
   | { documents: T[]; page: number; limit: number; total: number; totalPages: number }
   | T[]
+
+export type Gender = 'male' | 'female' | 'other'
