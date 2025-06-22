@@ -39,6 +39,19 @@ class AthleteController {
     }
   }
 
+  async findOneByCoach(req: Request, res: Response, next: NextFunction) {
+    try {
+      const coach = req.user as AuthenticatedUser
+      const { id } = req.params
+      const athlete = await athleteService.findOne({ query: { _id: id, coach: coach.id } })
+
+      if (!athlete) throw new NotFoundException(`Athlete with id: ${id} not found`)
+      return responseHandler(res, StatusCode.OK, StatusMessage.OK, athlete)
+    } catch (error) {
+      next(error)
+    }
+  }
+
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params

@@ -72,4 +72,33 @@ describe('athlete.middleware', () => {
       expect(next).toHaveBeenCalledWith(error)
     })
   })
+
+  describe('validateAthleteOwnership', () => {
+    const coachId = 'coachId123'
+    const athleteId = 'athleteId123'
+
+    beforeEach(() => {
+      req.params = { id: athleteId }
+      req.user = { id: coachId }
+    })
+
+    it('should call next with no error if coach owns athlete', async () => {
+      ;(athleteService.findOne as jest.Mock).mockResolvedValue({ coach: coachId })
+      await athleteMiddleware.validateAthleteOwnership(req as Request, res as Response, next)
+      expect(next).toHaveBeenCalledWith()
+    })
+
+    it('should call next with ForbiddenException if coach does not own athlete', async () => {
+      ;(athleteService.findOne as jest.Mock).mockResolvedValue({ coach: 'otherCoach' })
+      await athleteMiddleware.validateAthleteOwnership(req as Request, res as Response, next)
+      expect(next.mock.calls[0][0].constructor.name).toBe('ForbiddenException')
+    })
+
+    it('should call next with error if service throws', async () => {
+      const error = new Error('fail')
+      ;(athleteService.findOne as jest.Mock).mockRejectedValue(error)
+      await athleteMiddleware.validateAthleteOwnership(req as Request, res as Response, next)
+      expect(next).toHaveBeenCalledWith(error)
+    })
+  })
 })

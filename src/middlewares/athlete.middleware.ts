@@ -3,6 +3,8 @@ import { createAthleteSchema, updateAthleteSchema } from '../schemas/athlete/ath
 import athleteService from '../services/athlete.service'
 import ConflictException from '../exceptions/ConflictException'
 import BadRequestException from '../exceptions/BadRequestException'
+import { AuthenticatedUser } from '../interfaces/user.inteface'
+import ForbiddenException from '../exceptions/ForbiddenException'
 
 class AthleteMiddleware {
   checkCreateAthleteSchema(req: Request, res: Response, next: NextFunction) {
@@ -33,6 +35,22 @@ class AthleteMiddleware {
       const athlete = await athleteService.findOne({ query })
 
       if (athlete) return next(new ConflictException(`Athlete with idDocument: ${req.body.idDocument} already exists`))
+
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async validateAthleteOwnership(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params
+      const coach = req.user as AuthenticatedUser
+      const athlete = await athleteService.findOne({ query: { _id: id } })
+
+      console.log(coach.id, athlete?.coach)
+
+      if (athlete?.coach.toString() !== coach.id.toString()) return next(new ForbiddenException())
 
       next()
     } catch (error) {

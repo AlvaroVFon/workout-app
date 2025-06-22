@@ -83,4 +83,67 @@ describe('AthleteController (unit)', () => {
     await athleteController.update(req as Request, res as Response, next)
     expect(next).toHaveBeenCalledWith(error)
   })
+
+  it('should return athlete by id and coach', async () => {
+    if (!req.params) req.params = {}
+    req.params.id = 'athleteId'
+    ;(athleteService.findOne as jest.Mock).mockResolvedValue(mockAthlete)
+    const responseHandlerSpy = jest.spyOn(responseHandlerModule, 'responseHandler')
+    await athleteController.findOneByCoach(req as Request, res as Response, next)
+    expect(athleteService.findOne).toHaveBeenCalledWith({ query: { _id: 'athleteId', coach: mockUser.id } })
+    expect(responseHandlerSpy).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, mockAthlete)
+  })
+
+  it('should call next with NotFoundException if athlete not found by id and coach', async () => {
+    if (!req.params) req.params = {}
+    req.params.id = 'athleteId'
+    ;(athleteService.findOne as jest.Mock).mockResolvedValue(null)
+    await athleteController.findOneByCoach(req as Request, res as Response, next)
+    expect(next).toHaveBeenCalled()
+  })
+
+  it('should call next with error if service throws in findOneByCoach', async () => {
+    if (!req.params) req.params = {}
+    req.params.id = 'athleteId'
+    const error = new Error('fail')
+    ;(athleteService.findOne as jest.Mock).mockRejectedValue(error)
+    await athleteController.findOneByCoach(req as Request, res as Response, next)
+    expect(next).toHaveBeenCalledWith(error)
+  })
+
+  it('should return all athletes by coach paginated', async () => {
+    ;(athleteService.findAll as jest.Mock).mockResolvedValue([mockAthlete])
+    ;(athleteService.getTotal as jest.Mock).mockResolvedValue(1)
+    const responseHandlerSpy = jest.spyOn(responseHandlerModule, 'responseHandler')
+    await athleteController.findAllByCoach(req as Request, res as Response, next)
+    expect(athleteService.findAll).toHaveBeenCalled()
+    expect(athleteService.getTotal).toHaveBeenCalled()
+    expect(responseHandlerSpy).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, expect.anything())
+  })
+
+  it('should call next with error if service throws in findAllByCoach', async () => {
+    const error = new Error('fail')
+    ;(athleteService.findAll as jest.Mock).mockRejectedValue(error)
+    await athleteController.findAllByCoach(req as Request, res as Response, next)
+    expect(next).toHaveBeenCalledWith(error)
+  })
+
+  it('should delete athlete and return 204', async () => {
+    if (!req.params) req.params = {}
+    req.params.id = 'athleteId'
+    ;(athleteService.delete as jest.Mock).mockResolvedValue(undefined)
+    const responseHandlerSpy = jest.spyOn(responseHandlerModule, 'responseHandler')
+    await athleteController.delete(req as Request, res as Response, next)
+    expect(athleteService.delete).toHaveBeenCalledWith('athleteId')
+    expect(responseHandlerSpy).toHaveBeenCalledWith(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
+  })
+
+  it('should call next with error if service throws in delete', async () => {
+    if (!req.params) req.params = {}
+    req.params.id = 'athleteId'
+    const error = new Error('fail')
+    ;(athleteService.delete as jest.Mock).mockRejectedValue(error)
+    await athleteController.delete(req as Request, res as Response, next)
+    expect(next).toHaveBeenCalledWith(error)
+  })
 })

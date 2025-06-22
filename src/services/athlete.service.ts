@@ -4,7 +4,6 @@ import athleteRepository from '../repositories/athlete.repository'
 import { ModelQuery } from '../types/index.types'
 import AthleteDTO from '../DTOs/athlete/athlete.dto'
 import { RootFilterQuery } from 'mongoose'
-import Athlete from '../models/Athlete'
 
 class AthleteService {
   create(athlete: CreateAthleteDTO, coachId: ObjectId) {
@@ -29,7 +28,7 @@ class AthleteService {
   }
 
   async getTotal(query: RootFilterQuery<AthleteDTO> = {}) {
-    return Athlete.countDocuments(query)
+    return athleteRepository.getTotal(query)
   }
 }
 

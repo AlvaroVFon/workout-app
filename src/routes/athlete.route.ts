@@ -11,6 +11,11 @@ const router = Router()
 router
   .use(authMiddleware.verifyJWT, authMiddleware.authorizeRoles(RolesEnum.USER, RolesEnum.ADMIN, RolesEnum.SUPERADMIN))
   .get('/', [paginationMiddleware.paginate], athleteController.findAllByCoach)
+  .get(
+    '/:id',
+    [globalValidatorMiddleware.validateObjectId, athleteMiddleware.validateAthleteOwnership],
+    athleteController.findOneByCoach,
+  )
   .post(
     '/',
     [athleteMiddleware.checkCreateAthleteSchema, athleteMiddleware.validateAthleteExistence],
@@ -18,9 +23,17 @@ router
   )
   .patch(
     '/:id',
-    [globalValidatorMiddleware.validateObjectId, athleteMiddleware.checkUpdateAthleteSchema],
+    [
+      globalValidatorMiddleware.validateObjectId,
+      athleteMiddleware.validateAthleteOwnership,
+      athleteMiddleware.checkUpdateAthleteSchema,
+    ],
     athleteController.update,
   )
-  .delete('/:id', [globalValidatorMiddleware.validateObjectId], athleteController.delete)
+  .delete(
+    '/:id',
+    [globalValidatorMiddleware.validateObjectId, athleteMiddleware.validateAthleteOwnership],
+    athleteController.delete,
+  )
 
 export { router as athleteRouter }
