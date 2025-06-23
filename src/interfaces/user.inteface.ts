@@ -1,7 +1,7 @@
 import { ObjectId, Timestamp } from 'mongodb'
 
 export interface AuthenticatedUser {
-  _id: ObjectId
+  id: ObjectId
   name: string
   email: string
   password: string
