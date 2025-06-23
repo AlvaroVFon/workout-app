@@ -48,8 +48,6 @@ class AthleteMiddleware {
       const coach = req.user as AuthenticatedUser
       const athlete = await athleteService.findOne({ query: { _id: id } })
 
-      console.log(coach.id, athlete?.coach)
-
       if (athlete?.coach.toString() !== coach.id.toString()) return next(new ForbiddenException())
 
       next()
