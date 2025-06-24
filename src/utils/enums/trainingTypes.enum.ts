@@ -1,7 +1,7 @@
 export enum TrainingTypeEnum {
-  Strength = 'strength',
-  Endurance = 'endurance',
-  Explosive = 'explosive',
-  Mobility = 'mobility',
-  Other = 'other',
+  STRENGTH = 'strength',
+  ENDURANCE = 'endurance',
+  EXPLOSIVE = 'explosive',
+  MOBILITY = 'mobility',
+  OTHER = 'other',
 }

@@ -1,128 +1,183 @@
-# API-Template
+# Workout App API
 
-Este es un proyecto backend para un sistema de gestión de hogares inteligentes. Está construido con Node.js, TypeScript, Express y MongoDB.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+
+<!-- Stack Badges -->
+<p align="left">
+  <img alt="Node.js" src="https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white&style=flat-square" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white&style=flat-square" />
+  <img alt="Express" src="https://img.shields.io/badge/Express-000000?logo=express&logoColor=white&style=flat-square" />
+  <img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white&style=flat-square" />
+  <img alt="Mongoose" src="https://img.shields.io/badge/Mongoose-880000?logo=mongoose&logoColor=white&style=flat-square" />
+  <img alt="Joi" src="https://img.shields.io/badge/Joi-00B4AB?logo=data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjMDBCNEFCIiB2aWV3Qm94PSIwIDAgMjQgMjQiPjxwYXRoIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0wIDE4Yy00LjQxIDAtOC0zLjU5LTgtOHMzLjU5LTggOC04IDggMy41OSA4IDgtMy41OSA4LTggOHoiLz48L3N2Zz4=&logoColor=white&style=flat-square" />
+  <img alt="JWT" src="https://img.shields.io/badge/JWT-000000?logo=jsonwebtokens&logoColor=white&style=flat-square" />
+  <img alt="Redis" src="https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white&style=flat-square" />
+  <img alt="Jest" src="https://img.shields.io/badge/Jest-C21325?logo=jest&logoColor=white&style=flat-square" />
+  <img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white&style=flat-square" />
+</p>
+
+> **API robusta para el seguimiento de atletas y entrenadores, diseñada con Node.js, TypeScript, Express y MongoDB/Mongoose.**
+
+---
 
 ## Tabla de Contenidos
 
+- [Descripción](#descripción)
+- [Stack Tecnológico](#stack-tecnológico)
 - [Características](#características)
-- [Requisitos Previos](#requisitos-previos)
 - [Instalación](#instalación)
 - [Configuración](#configuración)
 - [Ejecución](#ejecución)
 - [Pruebas](#pruebas)
 - [Estructura del Proyecto](#estructura-del-proyecto)
-- [Documentación de API](#documentación-de-api)
+- [Endpoints Principales](#endpoints-principales)
+- [Consultas Avanzadas](#consultas-avanzadas)
+- [Seguridad](#seguridad)
 - [Contribución](#contribución)
 - [Licencia](#licencia)
 
+---
+
+## Descripción
+
+API backend para la gestión de atletas, entrenadores, ejercicios y sesiones de entrenamiento. Permite el registro, seguimiento y análisis de progreso, con endpoints seguros, validaciones exhaustivas y consultas avanzadas (populate, select, filtros).
+
+## Stack Tecnológico
+
+- **Node.js** 22+
+- **TypeScript**
+- **Express.js**
+- **MongoDB** + **Mongoose**
+- **Joi** (validación de datos)
+- **JWT** (autenticación)
+- **Redis** (opcional, para cache y sesiones)
+- **Jest** (tests unitarios)
+- **Docker** y **docker-compose** (desarrollo y despliegue)
+
 ## Características
 
-- Gestión de usuarios (crear, leer, actualizar, eliminar).
-- Autenticación y autorización con JWT.
-- Validación de datos con Joi.
-- Conexión a MongoDB y Redis.
-- Cobertura de pruebas con Jest.
-
-## Requisitos Previos
-
-- Node.js v22.14.0 (ver archivo `.nvmrc`).
-- MongoDB y Redis instalados localmente o configurados en contenedores Docker.
+- Gestión completa de atletas, ejercicios y sesiones de entrenamiento
+- Relaciones entre recursos (populate avanzado)
+- Validaciones estrictas con Joi y DTOs tipados
+- Seguridad: JWT, roles, ownership y middlewares
+- Consultas avanzadas: populate, select, filtros, paginación
+- Virtuals y cálculos automáticos (por ejemplo, caloriesBurned)
+- Tests unitarios y cobertura
+- Listo para integración con frontend (MVP)
 
 ## Instalación
 
-1. Clona este repositorio:
-
-   ```bash
-   git clone https://github.com/tu-usuario/smart-home-backend.git
-   cd smart-home-backend
-   ```
-
-2. Instala las dependencias:
-
-   ```bash
-   yarn install
-   ```
-
-3. Configura el entorno:
-   Copia el archivo `.env.test` como `.env` y ajusta las variables según sea necesario.
+```bash
+git clone https://github.com/tu-usuario/workout-app.git
+cd workout-app
+yarn install
+```
 
 ## Configuración
 
-El archivo `.env` contiene las siguientes variables:
+1. Copia `.env.example` a `.env` y ajusta las variables:
 
 ```env
-MONGO_URI=mongodb://localhost:27017/test
+MONGO_URI=mongodb://localhost:27017/workout
 REDIS_URI=redis://localhost:6379
-JWT_SECRET=tu_secreto
+JWT_SECRET=supersecret
 JWT_EXPIRATION=1h
-JWT_REFRESH_EXPIRATION=30d
 ```
 
-## Ejecución
-
-### Modo Desarrollo
-
-```bash
-yarn dev
-```
-
-### Modo Producción
-
-```bash
-yarn start
-```
-
-### Usando Docker
+2. (Opcional) Usa Docker:
 
 ```bash
 docker-compose up -d
 ```
 
-## Pruebas
+## Ejecución
 
-Ejecuta las pruebas con:
+- **Desarrollo:**
+  ```bash
+  yarn dev
+  ```
+- **Producción:**
+  ```bash
+  yarn start
+  ```
+
+## Pruebas
 
 ```bash
 yarn test
 ```
 
+Cobertura disponible en `/coverage` tras ejecutar los tests.
+
 ## Estructura del Proyecto
 
 ```plaintext
 src/
-├── config/         # Configuración de la aplicación
-├── controllers/    # Controladores de la API
+├── config/         # Configuración
+├── controllers/    # Lógica de endpoints
 ├── DTOs/           # Data Transfer Objects
-├── exceptions/     # Clases de excepciones personalizadas
-├── handlers/       # Manejadores de respuestas y errores
-├── helpers/        # Funciones auxiliares
+├── exceptions/     # Excepciones personalizadas
+├── handlers/       # Manejadores de respuesta y error
 ├── middlewares/    # Middlewares de Express
-├── models/         # Modelos de datos (Mongoose)
-├── repositories/   # Repositorios para acceso a datos
+├── models/         # Modelos Mongoose
+├── repositories/   # Acceso a datos y consultas avanzadas
 ├── routes/         # Definición de rutas
-├── schemas/        # Validación de datos con Joi
+├── schemas/        # Validación Joi
 ├── services/       # Lógica de negocio
 ├── strategies/     # Estrategias de autenticación
 ├── utils/          # Utilidades generales
-tests/
-├── unit/           # Pruebas unitarias
-├── utils/          # Utilidades para pruebas
+└── tests/          # Pruebas unitarias
 ```
 
-## Documentación de API
+## Endpoints Principales
 
-### Endpoints Principales
+### Atletas
 
-#### Usuarios
+- `GET /athletes` — Listar atletas
+- `GET /athletes/:id` — Detalle de atleta
+- `POST /athletes` — Crear atleta
+- `PATCH /athletes/:id` — Actualizar atleta
+- `DELETE /athletes/:id` — Eliminar atleta
 
-- `GET /users`: Obtiene todos los usuarios.
-- `GET /users/:id`: Obtiene un usuario por ID.
-- `POST /users`: Crea un nuevo usuario.
-- `PATCH /users/:id`: Actualiza un usuario.
-- `DELETE /users/:id`: Elimina un usuario.
+### Ejercicios
 
-#### Autenticación
+- `GET /exercises` — Listar ejercicios
+- `POST /exercises` — Crear ejercicio
 
-- `POST /auth/login`: Inicia sesión.
-- `POST /auth/signup`: Registra un nuevo usuario.
-- `GET /auth/info`: Obtiene información del usuario autenticado.
+### Sesiones de Entrenamiento
+
+- `GET /training-sessions/athlete/:id` — Listar sesiones por atleta (paginado)
+- `GET /training-sessions/:id` — Detalle de sesión (populate avanzado)
+- `POST /training-sessions` — Crear sesión
+
+### Autenticación
+
+- `POST /auth/login` — Login
+- `POST /auth/signup` — Registro
+
+## Consultas Avanzadas
+
+- **Populate:** Puedes solicitar recursos relacionados (athlete, exercises) usando populate desde el frontend o configurando el repositorio.
+- **Select:** Limita los campos devueltos usando projection/select.
+- **Filtros:** Filtra por fecha, tipo, atleta, etc. usando query params.
+- **Paginación:** Incluida en endpoints de listado.
+
+## Seguridad
+
+- **JWT** para autenticación
+- **Roles** (admin, superadmin, user)
+- **Ownership**: los usuarios solo acceden a sus propios recursos
+- **Validaciones Joi** en todos los endpoints
+
+## Ejemplo de Uso (cURL)
+
+```bash
+# Crear sesión de entrenamiento
+curl -X POST http://localhost:3000/training-sessions \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "athlete": "<athleteId>",
+    "exercises": [{ "exercise": "<exerciseId>", "sets": [{ "reps": 10 }] }]
+  }'
+```

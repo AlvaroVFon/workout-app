@@ -10,7 +10,7 @@ describe('trainingSession.schema', () => {
   const validSession = {
     athlete: '60c72b2f9b1e8e6d88f1e8e7',
     date: new Date(),
-    type: TrainingTypeEnum.Strength,
+    type: TrainingTypeEnum.STRENGTH,
     exercises: [validExercise],
     perceivedEffort: 7,
     notes: 'Good session',

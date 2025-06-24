@@ -7,6 +7,7 @@ import { muscleRouter } from '../routes/muscle.route'
 import { errorHandler } from '../handlers/errorHandler'
 import { exerciseRouter } from '../routes/exercise.route'
 import { athleteRouter } from '../routes/athlete.route'
+import { trainingSessionRouter } from '../routes/trainingSession.route'
 
 function configureRoutes(app: Express): void {
   app.use('/', indexRouter)
@@ -16,6 +17,7 @@ function configureRoutes(app: Express): void {
   app.use('/muscles', muscleRouter)
   app.use('/exercises', exerciseRouter)
   app.use('/athletes', athleteRouter)
+  app.use('/training-sessions', trainingSessionRouter)
   app.use(errorHandler)
 }
 

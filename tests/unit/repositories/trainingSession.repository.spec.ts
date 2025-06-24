@@ -10,7 +10,7 @@ describe('TrainingSessionRepository', () => {
   const mockSession: TrainingSessionDTO = {
     athlete: new ObjectId(),
     date: new Date(),
-    type: TrainingTypeEnum.Strength,
+    type: TrainingTypeEnum.STRENGTH,
     exercises: [],
   }
 
