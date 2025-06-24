@@ -16,7 +16,9 @@ export const exerciseEntrySchema = Joi.object({
 
 export const createTrainingSessionSchema = Joi.object({
   athlete: Joi.string().hex().length(24).required(),
-  date: Joi.date().optional().default(() => new Date()),
+  date: Joi.date()
+    .optional()
+    .default(() => new Date()),
   type: Joi.string()
     .valid(...trainingTypeValues)
     .optional()

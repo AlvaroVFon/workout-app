@@ -22,7 +22,7 @@ class TrainingSessionController {
       const trainingSession = await trainingSessionService.findOne({
         query: { _id: id },
         projection: {},
-        options: { populate: [{ path: 'athlete' }, { path: 'exercise' }] },
+        options: {},
       })
 
       if (!trainingSession) {

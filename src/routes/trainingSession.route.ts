@@ -5,7 +5,7 @@ import globalValidatorMiddleware from '../middlewares/globalValidator.middleware
 import paginationMiddleware from '../middlewares/pagination.middleware'
 import trainingSessionController from '../controllers/trainingSession.controller'
 import athleteMiddleware from '../middlewares/athlete.middleware'
-import traningSessionMiddleware from '../middlewares/traningSession.middleware'
+import trainingSessionMiddleware from '../middlewares/trainingSession.middleware'
 
 const router = Router()
 
@@ -25,6 +25,6 @@ router
     [globalValidatorMiddleware.validateObjectId, athleteMiddleware.validateAthleteOwnership],
     trainingSessionController.findById,
   )
-  .post('/', [traningSessionMiddleware.checkCreateTrainingSessionSchema], trainingSessionController.create)
+  .post('/', [trainingSessionMiddleware.checkCreateTrainingSessionSchema], trainingSessionController.create)
 
 export { router as trainingSessionRouter }
