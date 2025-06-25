@@ -7,7 +7,7 @@ import { RootFilterQuery } from 'mongoose'
 
 class AthleteService {
   create(athlete: CreateAthleteDTO, coachId: ObjectId) {
-    athlete.coach = coachId
+    athlete.coach = new ObjectId(coachId)
     return athleteRepository.create(athlete)
   }
 

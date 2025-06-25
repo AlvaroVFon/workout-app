@@ -2,6 +2,9 @@ import { Connection } from 'mongoose'
 import exerciseService from '../services/exercise.service'
 import logger from '../utils/logger'
 import { createExercise } from '../factories/exercise.factory'
+import { checkCollectionExistence } from '../utils/database.utils'
+
+const collectionName = 'exercises'
 
 async function seedExercises(db: Connection): Promise<void> {
   try {
@@ -15,11 +18,14 @@ async function seedExercises(db: Connection): Promise<void> {
 }
 
 async function deleteExercises(db: Connection) {
-  try {
-    await db.collection('exercises').drop()
-    logger.info('Exercises collection dropped')
-  } catch (error) {
-    logger.error(error)
+  const collectionExists = await checkCollectionExistence(db, collectionName)
+  if (collectionExists) {
+    try {
+      await db.collection(collectionName).drop()
+      logger.info('Exercises collection dropped')
+    } catch (error) {
+      logger.error(error)
+    }
   }
 }
 

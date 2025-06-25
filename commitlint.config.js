@@ -5,6 +5,7 @@ module.exports = {
     'type-enum': [2, 'always', ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'chore', 'perf', 'ci']],
     'header-max-length': [0, 'always', 0],
     'body-max-length': [0, 'always', 0],
+    'body-max-line-length': [0, 'always', 0],
     'footer-max-length': [0, 'always', 0],
   },
 }

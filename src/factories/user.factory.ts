@@ -22,7 +22,7 @@ function createAdminUser(): CreateUserDTO {
   }
 }
 
-function createSuperAdminUser() {
+function createSuperAdminUser(): CreateUserDTO {
   return {
     name: 'superadmin',
     email: 'superadmin@email.com',
@@ -32,4 +32,8 @@ function createSuperAdminUser() {
   }
 }
 
-export { createUser, createAdminUser, createSuperAdminUser }
+function createUsers(length: number = 5): CreateUserDTO[] {
+  return Array.from({ length }, () => createUser())
+}
+
+export { createUser, createAdminUser, createSuperAdminUser, createUsers }
