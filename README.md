@@ -28,6 +28,7 @@
 - [Instalación](#instalación)
 - [Configuración](#configuración)
 - [Ejecución](#ejecución)
+- [Database Seeding](#database-seeding)
 - [Pruebas](#pruebas)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Endpoints Principales](#endpoints-principales)
@@ -100,6 +101,80 @@ docker-compose up -d
   ```bash
   yarn start
   ```
+
+## Database Seeding
+
+La aplicación incluye un sistema completo de seeding para poblar la base de datos con datos de prueba.
+
+### 🌱 Ejecutar Seeding Completo
+
+```bash
+# Ejecutar todos los seeders
+yarn seed
+
+# O usando ts-node directamente
+npx ts-node src/seeders/index.seeder.ts
+```
+
+### 📊 Datos Generados
+
+El seeding crea automáticamente:
+
+- **2 Usuarios Admin** (SuperAdmin + Admin)
+- **20 Usuarios regulares** (entrenadores)
+- **Todos los músculos** (basados en `MusclesEnum`)
+- **Todos los roles** (basados en `RolesEnum`)
+- **21 Ejercicios variados** con músculos asignados
+- **10 Atletas** con datos realistas
+- **10 Sesiones de entrenamiento** completas
+
+### 🏭 Factories Disponibles
+
+Los factories utilizan **Faker.js** para generar datos realistas:
+
+```typescript
+// Atletas con datos coherentes
+createAthlete(db, customData?)
+createAthletes(quantity, db)
+
+// Ejercicios con músculos aleatorios
+createExercise(customData?)
+
+// Sesiones de entrenamiento completas
+createTrainingSession(db, customData?)
+createTrainingSessions(quantity, db)
+
+// Usuarios con roles específicos
+createUsers(quantity)
+createAdminUser()
+createSuperAdminUser()
+```
+
+### ⚙️ Configuración de Seeding
+
+Puedes personalizar las cantidades en [`src/seeders/index.seeder.ts`](src/seeders/index.seeder.ts):
+
+```typescript
+await seedAthletes(db, 10) // 10 atletas
+await seedTrainingSessions(db, 10) // 10 sesiones
+```
+
+### 🗂️ Seeders Individuales
+
+También puedes ejecutar seeders específicos:
+
+```typescript
+import { seedAthletes } from './seeders/athlete.seeder'
+import { seedExercises } from './seeders/exercise.seeder'
+// ... otros seeders
+```
+
+### 🔄 Comportamiento de Seeding
+
+- **Drop & Create**: Cada seeder elimina la colección existente antes de crear nuevos datos
+- **Relaciones**: Los seeders manejan automáticamente las relaciones (atleta ↔ coach, ejercicio ↔ músculos)
+- **Datos coherentes**: Los factories generan datos que respetan las validaciones del schema
+- **Error handling**: Logging completo de errores durante el proceso
 
 ## Pruebas
 
