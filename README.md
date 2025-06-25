@@ -36,6 +36,7 @@
 - [Seguridad](#seguridad)
 - [Contribución](#contribución)
 - [Licencia](#licencia)
+- [Documentación para Desarrolladores](#documentación-para-desarrolladores)
 
 ---
 
@@ -256,3 +257,14 @@ curl -X POST http://localhost:3000/training-sessions \
     "exercises": [{ "exercise": "<exerciseId>", "sets": [{ "reps": 10 }] }]
   }'
 ```
+
+---
+
+## 📚 Documentación para Desarrolladores
+
+### Para Nuevos Desarrolladores
+
+- **[📋 Guía de Estilos](./STYLE_GUIDE.md)** - Convenciones de código y mejores prácticas
+- **[⚙️ Configuración de Editor](./docs/EDITOR_SETUP.md)** - Setup para VS Code, WebStorm, etc.
+
+---
