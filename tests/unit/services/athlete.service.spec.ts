@@ -38,10 +38,52 @@ describe('AthleteService', () => {
     expect(result).toEqual(athleteMock)
   })
 
+  it('should find one athlete with default empty parameters', async () => {
+    ;(athleteRepository.findOne as jest.Mock).mockResolvedValue(athleteMock)
+    const result = await athleteService.findOne()
+    expect(athleteRepository.findOne).toHaveBeenCalledWith({
+      query: {},
+      projection: {},
+      options: {},
+    })
+    expect(result).toEqual(athleteMock)
+  })
+
+  it('should find one athlete with custom projection and options', async () => {
+    const query = { coach: coachId }
+    const projection = { firstname: 1, lastname: 1 }
+    const options = { sort: { firstname: 1 } }
+    ;(athleteRepository.findOne as jest.Mock).mockResolvedValue(athleteMock)
+    const result = await athleteService.findOne({ query, projection, options })
+    expect(athleteRepository.findOne).toHaveBeenCalledWith({
+      query,
+      projection,
+      options,
+    })
+    expect(result).toEqual(athleteMock)
+  })
+
   it('should find all athletes', async () => {
     ;(athleteRepository.findAll as jest.Mock).mockResolvedValue([athleteMock])
     const result = await athleteService.findAll({ query: { coach: coachId } })
     expect(athleteRepository.findAll).toHaveBeenCalledWith({ query: { coach: coachId }, projection: {}, options: {} })
+    expect(result).toEqual([athleteMock])
+  })
+
+  it('should find all athletes with default empty parameters', async () => {
+    ;(athleteRepository.findAll as jest.Mock).mockResolvedValue([athleteMock])
+    const result = await athleteService.findAll()
+    expect(athleteRepository.findAll).toHaveBeenCalledWith({ query: {}, projection: {}, options: {} })
+    expect(result).toEqual([athleteMock])
+  })
+
+  it('should find all athletes with custom projection and options', async () => {
+    const query = { coach: coachId }
+    const projection = { firstname: 1, lastname: 1 }
+    const options = { sort: { firstname: 1 }, limit: 10 }
+    ;(athleteRepository.findAll as jest.Mock).mockResolvedValue([athleteMock])
+    const result = await athleteService.findAll({ query, projection, options })
+    expect(athleteRepository.findAll).toHaveBeenCalledWith({ query, projection, options })
     expect(result).toEqual([athleteMock])
   })
 
@@ -62,6 +104,14 @@ describe('AthleteService', () => {
   it('should get total athletes', async () => {
     ;(athleteRepository.getTotal as jest.Mock).mockResolvedValue(10)
     const total = await athleteService.getTotal({ coach: coachId })
-    expect(total).toBeDefined()
+    expect(athleteRepository.getTotal).toHaveBeenCalledWith({ coach: coachId })
+    expect(total).toBe(10)
+  })
+
+  it('should get total athletes with default empty query', async () => {
+    ;(athleteRepository.getTotal as jest.Mock).mockResolvedValue(25)
+    const total = await athleteService.getTotal()
+    expect(athleteRepository.getTotal).toHaveBeenCalledWith({})
+    expect(total).toBe(25)
   })
 })

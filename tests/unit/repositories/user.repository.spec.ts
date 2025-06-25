@@ -93,4 +93,22 @@ describe('UserRepository', () => {
     expect(User.findByIdAndDelete).toHaveBeenCalledWith({ _id: '1' })
     expect(result).toEqual(mockUser)
   })
+
+  it('should get total count with custom query', async () => {
+    ;(User.countDocuments as jest.Mock).mockResolvedValue(5)
+
+    const result = await userRepository.getTotal({ role: 'admin' })
+
+    expect(User.countDocuments).toHaveBeenCalledWith({ role: 'admin' })
+    expect(result).toBe(5)
+  })
+
+  it('should get total count with default empty query', async () => {
+    ;(User.countDocuments as jest.Mock).mockResolvedValue(10)
+
+    const result = await userRepository.getTotal()
+
+    expect(User.countDocuments).toHaveBeenCalledWith({})
+    expect(result).toBe(10)
+  })
 })
