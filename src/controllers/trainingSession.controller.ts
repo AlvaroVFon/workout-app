@@ -38,7 +38,7 @@ class TrainingSessionController {
   async findAllByAthlete(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params
-      const { page = 1, limit = 10 } = res.locals.pagination
+      const { page = 1, limit = 10 } = res.locals.pagination || {}
       const query = { athlete: id }
 
       const [trainingSessions, totalSessions] = await Promise.all([

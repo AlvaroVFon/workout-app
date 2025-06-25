@@ -43,6 +43,22 @@ describe('UserService', () => {
         role: mockRole._id,
       })
     })
+
+    it('should throw NotFoundException when role is not found', async () => {
+      const mockData: CreateUserDTO = {
+        email: 'test@example.com',
+        password: 'plainPassword',
+        name: 'Test User',
+        role: 'nonexistent',
+        idDocument: '123456789',
+      }
+
+      ;(roleService.findByName as jest.Mock).mockResolvedValue(null)
+
+      await expect(userService.create(mockData)).rejects.toThrow('Invalid role: nonexistent')
+      expect(roleService.findByName).toHaveBeenCalledWith('nonexistent')
+      expect(userRepository.create).not.toHaveBeenCalled()
+    })
   })
 
   describe('getAll', () => {
@@ -52,7 +68,30 @@ describe('UserService', () => {
 
       const result = await userService.findAll()
 
-      expect(userRepository.findAll).toHaveBeenCalled()
+      expect(userRepository.findAll).toHaveBeenCalledWith({ query: {}, projection: {}, options: {} })
+      expect(result).toEqual(users)
+    })
+
+    it('should return all users with custom query', async () => {
+      const users = [{ id: '1', email: 'test@example.com', name: 'Test User' }]
+      const query = { role: 'admin' }
+      const projection = { name: 1, email: 1 }
+      const options = { sort: { name: 1 } }
+      ;(userRepository.findAll as jest.Mock).mockResolvedValue(users)
+
+      const result = await userService.findAll({ query, projection, options })
+
+      expect(userRepository.findAll).toHaveBeenCalledWith({ query, projection, options })
+      expect(result).toEqual(users)
+    })
+
+    it('should return all users with default empty object', async () => {
+      const users = [{ id: '1', email: 'test@example.com', name: 'Test User' }]
+      ;(userRepository.findAll as jest.Mock).mockResolvedValue(users)
+
+      const result = await userService.findAll({})
+
+      expect(userRepository.findAll).toHaveBeenCalledWith({ query: {}, projection: {}, options: {} })
       expect(result).toEqual(users)
     })
   })
@@ -127,6 +166,27 @@ describe('UserService', () => {
 
       expect(userRepository.delete).toHaveBeenCalledWith('1')
       expect(result).toEqual(deletedUser)
+    })
+  })
+
+  describe('getTotal', () => {
+    it('should get total count with query', async () => {
+      const query = { role: 'admin' }
+      ;(userRepository.getTotal as jest.Mock).mockResolvedValue(10)
+
+      const result = await userService.getTotal(query)
+
+      expect(userRepository.getTotal).toHaveBeenCalledWith(query)
+      expect(result).toBe(10)
+    })
+
+    it('should get total count with default empty query', async () => {
+      ;(userRepository.getTotal as jest.Mock).mockResolvedValue(25)
+
+      const result = await userService.getTotal()
+
+      expect(userRepository.getTotal).toHaveBeenCalledWith({})
+      expect(result).toBe(25)
     })
   })
 })

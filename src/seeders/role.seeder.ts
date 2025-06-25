@@ -1,6 +1,9 @@
 import { Connection } from 'mongoose'
 import roleRepository from '../repositories/role.repository'
 import logger from '../utils/logger'
+import { checkCollectionExistence } from '../utils/database.utils'
+
+const collectionName = 'roles'
 
 async function seedRoles(roles: string[], db: Connection): Promise<void> {
   try {
@@ -13,11 +16,14 @@ async function seedRoles(roles: string[], db: Connection): Promise<void> {
 }
 
 async function deleteRoles(db: Connection): Promise<void> {
-  try {
-    await db.collection('roles').drop()
-    logger.info('Roles collection has been dropped')
-  } catch (error) {
-    logger.error(error)
+  const collectionExists = await checkCollectionExistence(db, collectionName)
+  if (collectionExists) {
+    try {
+      await db.collection(collectionName).drop()
+      logger.info('Roles collection has been dropped')
+    } catch (error) {
+      logger.error(error)
+    }
   }
 }
 
