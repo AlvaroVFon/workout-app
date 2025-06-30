@@ -63,7 +63,6 @@ API backend para la gestión de atletas, entrenadores, ejercicios y sesiones de 
 - Validaciones estrictas con Joi y DTOs tipados
 - Seguridad: JWT, roles, ownership y middlewares
 - Consultas avanzadas: populate, select, filtros, paginación
-- Virtuals y cálculos automáticos (por ejemplo, caloriesBurned)
 - Tests unitarios y cobertura
 - Listo para integración con frontend (MVP)
 
