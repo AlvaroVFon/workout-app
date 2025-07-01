@@ -1,6 +1,6 @@
-import request from 'supertest'
 import { Express } from 'express'
-import { getTestApp } from './utils/getApp'
+import request from 'supertest'
+import { getTestApp } from '../utils/getApp'
 
 describe('Healthcheck', () => {
   let app: Express

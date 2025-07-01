@@ -10,6 +10,8 @@
     "start": "ts-node index.ts",
     "dev": "nodemon index.ts",
     "test": "jest --runInBand --silent --verbose",
+    "test:unit": "jest --runInBand --silent --verbose --testPathPattern=unit",
+    "test:e2e": "jest --runInBand --silent --verbose --testPathPattern=e2e",
     "prettier": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "lint": "eslint . --ext .ts",
