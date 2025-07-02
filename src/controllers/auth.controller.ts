@@ -1,23 +1,30 @@
-import { Request, Response, NextFunction } from 'express'
-import authService from '../services/auth.service'
-import userService from '../services/user.service'
-import UnauthorizedException from '../exceptions/UnauthorizedException'
-import { responseHandler } from '../handlers/responseHandler'
-import { StatusCode, StatusMessage } from '../utils/enums/httpResponses.enum'
+import { NextFunction, Request, Response } from 'express'
 import { ApiResponse } from '../DTOs/api/response.dto'
 import { UserDTO } from '../DTOs/user/user.dto'
+import UnauthorizedException from '../exceptions/UnauthorizedException'
+import { responseHandler } from '../handlers/responseHandler'
+import authService from '../services/auth.service'
+import userService from '../services/user.service'
+import { StatusCode, StatusMessage } from '../utils/enums/httpResponses.enum'
 
 class AuthController {
   async login(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
     try {
       const { email, password } = req.body
-      const tokens = await authService.login(email, password)
+      const response = await authService.login(email, password)
 
-      if (!tokens) {
+      if (!response) {
         throw new UnauthorizedException()
       }
 
-      return responseHandler(res, StatusCode.OK, StatusMessage.OK, tokens)
+      const publicUser = new UserDTO(response.user).toPublicUser()
+      const loginResponse = {
+        user: publicUser,
+        token: response.token,
+        refreshToken: response.refreshToken,
+      }
+
+      return responseHandler(res, StatusCode.OK, StatusMessage.OK, loginResponse)
     } catch (error) {
       next(error)
     }

@@ -1,7 +1,7 @@
 import { Db, ObjectId } from 'mongodb'
 import roleRepository from '../../../src/repositories/role.repository'
 import { RolesEnum } from '../../../src/utils/enums/roles.enum'
-import { getDb } from '../../setup'
+import { getDb } from '../../config/setup'
 
 const rolesCollection = 'roles'
 

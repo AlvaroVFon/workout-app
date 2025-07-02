@@ -1,11 +1,11 @@
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import AuthController from '../../../src/controllers/auth.controller'
-import authService from '../../../src/services/auth.service'
-import userService from '../../../src/services/user.service'
+import { UserDTO } from '../../../src/DTOs/user/user.dto'
 import UnauthorizedException from '../../../src/exceptions/UnauthorizedException'
 import { responseHandler } from '../../../src/handlers/responseHandler'
+import authService from '../../../src/services/auth.service'
+import userService from '../../../src/services/user.service'
 import { StatusCode, StatusMessage } from '../../../src/utils/enums/httpResponses.enum'
-import { UserDTO } from '../../../src/DTOs/user/user.dto'
 
 jest.mock('../../../src/services/auth.service')
 jest.mock('../../../src/services/user.service')
@@ -26,18 +26,61 @@ describe('AuthController', () => {
   describe('login', () => {
     it('should return tokens on successful login', async () => {
       req.body = { email: 'test@example.com', password: 'password' }
-      const tokens = { accessToken: 'token', refreshToken: 'refresh' }
-      ;(authService.login as jest.Mock).mockResolvedValue(tokens)
+
+      const mockUser = {
+        id: '1',
+        name: 'Test User',
+        lastName: 'User',
+        email: 'test@example.com',
+        password: 'hashedPassword',
+        role: { name: 'user' },
+        address: '123 Test St',
+        country: 'Testland',
+        idDocument: '12345',
+        createdAt: 123456789,
+        updatedAt: 123456789,
+      }
+
+      const serviceResponse = {
+        user: mockUser,
+        token: 'accessToken',
+        refreshToken: 'refreshToken',
+      }
+
+      const mockToPublicUser = jest.fn().mockReturnValue({
+        id: '1',
+        name: 'Test User',
+        lastName: 'User',
+        email: 'test@example.com',
+        role: 'user',
+        address: '123 Test St',
+        country: 'Testland',
+        idDocument: '12345',
+        createdAt: 123456789,
+        updatedAt: 123456789,
+      })
+
+      jest.spyOn(UserDTO.prototype, 'toPublicUser').mockImplementation(mockToPublicUser)
+      ;(authService.login as jest.Mock).mockResolvedValue(serviceResponse)
 
       await AuthController.login(req as Request, res as Response, next)
 
       expect(authService.login).toHaveBeenCalledWith('test@example.com', 'password')
-      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, tokens)
+      expect(responseHandler).toHaveBeenCalledWith(
+        res,
+        StatusCode.OK,
+        StatusMessage.OK,
+        expect.objectContaining({
+          user: expect.any(Object),
+          token: 'accessToken',
+          refreshToken: 'refreshToken',
+        }),
+      )
     })
 
     it('should call next with UnauthorizedException if login fails', async () => {
       req.body = { email: 'test@example.com', password: 'wrongpassword' }
-      ;(authService.login as jest.Mock).mockResolvedValue(null)
+      ;(authService.login as jest.Mock).mockResolvedValue(false)
 
       await AuthController.login(req as Request, res as Response, next)
 
