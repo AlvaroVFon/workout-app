@@ -106,14 +106,70 @@ docker-compose up -d
 
 La aplicación incluye un sistema completo de seeding para poblar la base de datos con datos de prueba.
 
-### 🌱 Ejecutar Seeding Completo
+### 🌱 Ejecutar Seeding
+
+#### Seeding Completo (Todos los recursos)
 
 ```bash
-# Ejecutar todos los seeders
+# Ejecutar todos los seeders con confirmación
 yarn seed
 
-# O usando ts-node directamente
-npx ts-node src/seeders/index.seeder.ts
+# Ejecutar todos los seeders sin confirmación
+yarn seed -y
+yarn seed --yes
+```
+
+#### Seeding Selectivo (Por recursos específicos)
+
+```bash
+# Seed solo roles y usuarios
+yarn seed roles,users
+
+# Seed usando flag de recursos
+yarn seed -r users,exercises
+
+# Seed específico sin confirmación
+yarn seed roles,muscles -y
+
+# Ver ayuda con todas las opciones
+yarn seed --help
+```
+
+#### Opciones Disponibles
+
+- `-h, --help`: Mostrar ayuda
+- `-y, --yes`: Omitir prompts de confirmación
+- `-r, --resources <lista>`: Lista separada por comas de recursos a seed
+
+#### Recursos Disponibles
+
+- `roles`: Roles de usuario (admin, user, etc.)
+- `muscles`: Grupos y tipos de músculos
+- `users`: Usuarios (admin y usuarios regulares)
+- `exercises`: Datos de ejercicios
+- `athletes`: Perfiles de atletas
+- `trainingSessions`: Datos de sesiones de entrenamiento
+- `all`: Todos los recursos (comportamiento por defecto)
+
+### ⚠️ Advertencias de Seguridad
+
+El sistema de seeding incluye advertencias automáticas antes de eliminar datos:
+
+- **Confirmación requerida**: Por defecto, se pide confirmación antes de proceder
+- **Advertencias claras**: Se muestra qué colecciones serán eliminadas
+- **Opción de cancelación**: Puedes cancelar en cualquier momento
+
+```bash
+⚠️  WARNING: Database Seeding Operation
+=====================================
+This operation will DROP the following collections and recreate them:
+  🗑️  users collection
+  🗑️  exercises collection
+
+❌ ALL EXISTING DATA in these collections will be LOST!
+✅ New seed data will be created
+
+Do you want to continue? (yes/no):
 ```
 
 ### 📊 Datos Generados
