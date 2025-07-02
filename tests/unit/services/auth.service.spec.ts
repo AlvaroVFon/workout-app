@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
 import AuthService from '../../../src/services/auth.service'
 import userService from '../../../src/services/user.service'
-import { generateAccessTokens, verifyToken } from '../../../src/utils/jwt.utils'
+import { generateAccessTokens, refreshToken, verifyToken } from '../../../src/utils/jwt.utils'
 
 jest.mock('../../../src/services/user.service')
 jest.mock('../../../src/utils/jwt.utils')
@@ -9,15 +9,15 @@ jest.mock('bcrypt')
 
 describe('AuthService', () => {
   describe('login', () => {
-    it('should return false if user is not found', async () => {
+    it('should return null if user is not found', async () => {
       ;(userService.findByEmail as jest.Mock).mockResolvedValue(null)
 
       const result = await AuthService.login('test@example.com', 'password123')
 
-      expect(result).toBe(false)
+      expect(result).toBe(null)
     })
 
-    it('should return false if password is invalid', async () => {
+    it('should return null if password is invalid', async () => {
       ;(userService.findByEmail as jest.Mock).mockResolvedValue({
         password: 'hashedPassword',
       })
@@ -25,7 +25,7 @@ describe('AuthService', () => {
 
       const result = await AuthService.login('test@example.com', 'password123')
 
-      expect(result).toBe(false)
+      expect(result).toBe(null)
     })
 
     it('should return tokens and full user if login is successful', async () => {
@@ -55,24 +55,6 @@ describe('AuthService', () => {
     })
   })
 
-  describe('verifyPassword', () => {
-    it('should return true if password matches', () => {
-      ;(bcrypt.compareSync as jest.Mock).mockReturnValue(true)
-
-      const result = AuthService.verifyPassword('password123', 'hashedPassword')
-
-      expect(result).toBe(true)
-    })
-
-    it('should return false if password does not match', () => {
-      ;(bcrypt.compareSync as jest.Mock).mockReturnValue(false)
-
-      const result = AuthService.verifyPassword('password123', 'hashedPassword')
-
-      expect(result).toBe(false)
-    })
-  })
-
   describe('info', () => {
     it('should return payload if token is valid', async () => {
       const payload = {
@@ -92,6 +74,35 @@ describe('AuthService', () => {
       ;(verifyToken as jest.Mock).mockResolvedValue(null)
 
       const result = await AuthService.info('invalidToken')
+
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('refreshToken', () => {
+    it('should return new tokens when refresh token is valid', async () => {
+      const newTokens = { token: 'newAccessToken', refreshToken: 'newRefreshToken' }
+
+      ;(refreshToken as jest.Mock).mockReturnValue(newTokens)
+
+      const result = await AuthService.refreshToken('validRefreshToken')
+
+      expect(refreshToken).toHaveBeenCalledWith('validRefreshToken')
+      expect(result).toEqual(newTokens)
+    })
+
+    it('should return null when refresh token is invalid', async () => {
+      ;(refreshToken as jest.Mock).mockReturnValue(null)
+
+      const result = await AuthService.refreshToken('invalidRefreshToken')
+
+      expect(result).toBeNull()
+    })
+
+    it('should return null when refresh token verification fails', async () => {
+      ;(refreshToken as jest.Mock).mockReturnValue(null)
+
+      const result = await AuthService.refreshToken('malformedToken')
 
       expect(result).toBeNull()
     })

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { loginSchema } from '../schemas/auth/auth.schema'
+import { loginSchema, refreshTokenSchema } from '../schemas/auth/auth.schema'
 import BadRequestException from '../exceptions/BadRequestException'
 import passport from '../config/passport'
 import UnauthorizedException from '../exceptions/UnauthorizedException'
@@ -13,14 +13,12 @@ class AuthMiddleware {
     try {
       const { error } = loginSchema.validate(data)
 
-      if (error) {
-        return next(new BadRequestException(error.details[0].message))
-      }
+      if (error) return next(new BadRequestException(error.details[0].message))
+
+      next()
     } catch (error) {
       next(error)
     }
-
-    next()
   }
 
   verifyJWT(req: Request, res: Response, next: NextFunction) {
@@ -43,6 +41,17 @@ class AuthMiddleware {
       if (!isRoleAllowed) return next(new ForbiddenException())
 
       next()
+    }
+  }
+
+  verifyRefreshSchema(req: Request, res: Response, next: NextFunction): void {
+    try {
+      const { error } = refreshTokenSchema.validate(req.body)
+      if (error) return next(new BadRequestException(error.details[0].message))
+
+      next()
+    } catch (error) {
+      next(error)
     }
   }
 }

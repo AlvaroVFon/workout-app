@@ -7,4 +7,8 @@ async function hashPassword(password: string): Promise<string> {
   return await bcrypt.hash(password, salt)
 }
 
-export { hashPassword }
+function verifyPassword(password: string, hashedPassword: string): boolean {
+  return bcrypt.compareSync(password, hashedPassword)
+}
+
+export { hashPassword, verifyPassword }

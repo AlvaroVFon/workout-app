@@ -1,12 +1,12 @@
-import userRepository from '../repositories/user.repository'
-import { UserDTO } from '../DTOs/user/user.dto'
+import { RootFilterQuery } from 'mongoose'
 import { CreateUserDTO } from '../DTOs/user/create.dto'
 import { UpdateUserDTO } from '../DTOs/user/update.dto'
-import { hashPassword } from '../helpers/hashPassword'
-import roleService from './role.service'
+import { UserDTO } from '../DTOs/user/user.dto'
 import NotFoundException from '../exceptions/NotFoundException'
+import { hashPassword } from '../helpers/password.helper'
+import userRepository from '../repositories/user.repository'
 import { ModelQuery } from '../types/index.types'
-import { RootFilterQuery } from 'mongoose'
+import roleService from './role.service'
 
 class UserService {
   async create(data: CreateUserDTO): Promise<UserDTO> {

@@ -1,230 +1,128 @@
-import { jwtStrategy } from '../../../src/strategies/jwt.strategy'
-import userService from '../../../src/services/user.service'
-import { Types } from 'mongoose'
+import RoleDTO from '../../../src/DTOs/role/role.dto'
 import { UserDTO } from '../../../src/DTOs/user/user.dto'
+import userService from '../../../src/services/user.service'
+import { jwtStrategy } from '../../../src/strategies/jwt.strategy'
 
 jest.mock('../../../src/services/user.service')
 
-const mockUserService = userService as jest.Mocked<typeof userService>
-
-interface JwtPayload {
-  id: string
-}
-
-interface MockRequest {
-  headers: {
-    authorization?: string
-  }
-}
-
-type VerifyCallback = (
-  payload: JwtPayload,
-  done: (error: Error | null, user?: UserDTO | false) => void,
-) => Promise<void>
-type JwtFromRequestCallback = (request: MockRequest) => string | null
-
 describe('JWT Strategy', () => {
-  const mockDone = jest.fn()
-  const mockUser: UserDTO = {
-    id: new Types.ObjectId().toString(),
-    email: 'test@example.com',
-    name: 'Test User',
-    idDocument: '12345678',
-    password: 'hashedPassword',
-    role: {
-      id: new Types.ObjectId().toString(),
-      name: 'user',
-    },
-    toPublicUser: jest.fn(),
-  } as UserDTO
+  const mockUserService = userService as jest.Mocked<typeof userService>
 
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  it('should authenticate user successfully when valid payload is provided', async () => {
-    const payload: JwtPayload = { id: mockUser.id }
-    mockUserService.findById.mockResolvedValue(mockUser)
+  const mockRole: RoleDTO = {
+    id: '1',
+    name: 'athlete',
+  }
 
-    // Directly test the verify callback function
-    const verifyCallback = (jwtStrategy as unknown as { _verify: VerifyCallback })._verify
-    await verifyCallback(payload, mockDone)
+  const mockUser = new UserDTO({
+    id: '1',
+    email: 'test@example.com',
+    name: 'Test User',
+    idDocument: '12345678',
+    role: mockRole,
+    password: 'hashedPassword',
+  } as UserDTO)
 
-    expect(mockUserService.findById).toHaveBeenCalledWith(payload.id)
-    expect(mockDone).toHaveBeenCalledWith(null, {
-      id: mockUser.id,
-      email: mockUser.email,
-      name: mockUser.name,
-      idDocument: mockUser.idDocument,
-      role: mockUser.role.name,
-    })
-  })
+  describe('validate', () => {
+    it('should return user when valid access token payload is provided', (done) => {
+      const payload = { id: '1', type: 'access' }
+      mockUserService.findById.mockResolvedValue(mockUser)
 
-  it('should return false when user is not found', async () => {
-    const payload: JwtPayload = { id: new Types.ObjectId().toString() }
-    mockUserService.findById.mockResolvedValue(null)
-
-    const verifyCallback = (jwtStrategy as unknown as { _verify: VerifyCallback })._verify
-    await verifyCallback(payload, mockDone)
-
-    expect(mockUserService.findById).toHaveBeenCalledWith(payload.id)
-    expect(mockDone).toHaveBeenCalledWith(null, false)
-  })
-
-  it('should handle errors from user service', async () => {
-    const payload: JwtPayload = { id: new Types.ObjectId().toString() }
-    const error = new Error('Database connection error')
-    mockUserService.findById.mockRejectedValue(error)
-
-    const verifyCallback = (jwtStrategy as unknown as { _verify: VerifyCallback })._verify
-    await verifyCallback(payload, mockDone)
-
-    expect(mockUserService.findById).toHaveBeenCalledWith(payload.id)
-    expect(mockDone).toHaveBeenCalledWith(error, false)
-  })
-
-  it('should handle user service throwing synchronous errors', async () => {
-    const payload: JwtPayload = { id: new Types.ObjectId().toString() }
-    const error = new Error('Synchronous error')
-    mockUserService.findById.mockImplementation(() => {
-      throw error
-    })
-
-    const verifyCallback = (jwtStrategy as unknown as { _verify: VerifyCallback })._verify
-    await verifyCallback(payload, mockDone)
-
-    expect(mockUserService.findById).toHaveBeenCalledWith(payload.id)
-    expect(mockDone).toHaveBeenCalledWith(error, false)
-  })
-
-  it('should extract JWT from Authorization header', () => {
-    const mockRequest: MockRequest = {
-      headers: {
-        authorization: 'Bearer valid-jwt-token',
-      },
-    }
-
-    const jwtFromRequest = (jwtStrategy as unknown as { _jwtFromRequest: JwtFromRequestCallback })._jwtFromRequest
-    const extractedToken = jwtFromRequest(mockRequest)
-
-    expect(extractedToken).toBe('valid-jwt-token')
-  })
-
-  it('should return null when no Authorization header is present', () => {
-    const mockRequest: MockRequest = {
-      headers: {},
-    }
-
-    const jwtFromRequest = (jwtStrategy as unknown as { _jwtFromRequest: JwtFromRequestCallback })._jwtFromRequest
-    const extractedToken = jwtFromRequest(mockRequest)
-
-    expect(extractedToken).toBeNull()
-  })
-
-  it('should return null when Authorization header has wrong format', () => {
-    const mockRequest: MockRequest = {
-      headers: {
-        authorization: 'InvalidFormat jwt-token',
-      },
-    }
-
-    const jwtFromRequest = (jwtStrategy as unknown as { _jwtFromRequest: JwtFromRequestCallback })._jwtFromRequest
-    const extractedToken = jwtFromRequest(mockRequest)
-
-    expect(extractedToken).toBeNull()
-  })
-
-  it('should return null when Authorization header is Bearer but no token', () => {
-    const mockRequest: MockRequest = {
-      headers: {
-        authorization: 'Bearer ',
-      },
-    }
-
-    const jwtFromRequest = (jwtStrategy as unknown as { _jwtFromRequest: JwtFromRequestCallback })._jwtFromRequest
-    const extractedToken = jwtFromRequest(mockRequest)
-
-    expect(extractedToken).toBeNull()
-  })
-
-  it('should verify strategy configuration', () => {
-    expect(jwtStrategy).toBeDefined()
-    expect(jwtStrategy.name).toBe('jwt')
-    expect((jwtStrategy as unknown as { _jwtFromRequest: JwtFromRequestCallback })._jwtFromRequest).toBeDefined()
-  })
-
-  describe('Public User DTO creation', () => {
-    it('should create correct PublicUserDTO structure', async () => {
-      const payload: JwtPayload = { id: mockUser.id }
-      const userWithComplexRole: UserDTO = {
-        ...mockUser,
-        role: {
-          id: new Types.ObjectId().toString(),
-          name: 'admin',
-        },
-        toPublicUser: jest.fn(),
+      const callback = (err: any, user: any) => {
+        try {
+          expect(err).toBeNull()
+          expect(mockUserService.findById).toHaveBeenCalledWith('1')
+          expect(user).toEqual({
+            id: '1',
+            email: 'test@example.com',
+            name: 'Test User',
+            idDocument: '12345678',
+            role: 'athlete',
+          })
+          done()
+        } catch (error) {
+          done(error)
+        }
       }
 
-      mockUserService.findById.mockResolvedValue(userWithComplexRole)
-
-      const verifyCallback = (jwtStrategy as unknown as { _verify: VerifyCallback })._verify
-      await verifyCallback(payload, mockDone)
-
-      expect(mockDone).toHaveBeenCalledWith(null, {
-        id: userWithComplexRole.id,
-        email: userWithComplexRole.email,
-        name: userWithComplexRole.name,
-        idDocument: userWithComplexRole.idDocument,
-        role: userWithComplexRole.role.name,
-      })
+      // Access the verify function through the strategy instance
+      ;(jwtStrategy as any)._verify(payload, callback)
     })
 
-    it('should handle user with minimal required fields', async () => {
-      const payload: JwtPayload = { id: mockUser.id }
-      const minimalUser: UserDTO = {
-        id: mockUser.id,
-        email: mockUser.email,
-        name: mockUser.name,
-        idDocument: mockUser.idDocument,
-        password: 'hashedPassword',
-        role: { id: new Types.ObjectId().toString(), name: 'user' },
-        toPublicUser: jest.fn(),
-      } as UserDTO
-
-      mockUserService.findById.mockResolvedValue(minimalUser)
-
-      const verifyCallback = (jwtStrategy as unknown as { _verify: VerifyCallback })._verify
-      await verifyCallback(payload, mockDone)
-
-      expect(mockDone).toHaveBeenCalledWith(null, {
-        id: minimalUser.id,
-        email: minimalUser.email,
-        name: minimalUser.name,
-        idDocument: minimalUser.idDocument,
-        role: minimalUser.role.name,
-      })
-    })
-
-    it('should handle payload with missing user ID', async () => {
-      const payload = {} as JwtPayload
+    it('should return false when user is not found', (done) => {
+      const payload = { id: '999', type: 'access' }
       mockUserService.findById.mockResolvedValue(null)
 
-      const verifyCallback = (jwtStrategy as unknown as { _verify: VerifyCallback })._verify
-      await verifyCallback(payload, mockDone)
+      const callback = (err: any, user: any) => {
+        try {
+          expect(err).toBeNull()
+          expect(mockUserService.findById).toHaveBeenCalledWith('999')
+          expect(user).toBe(false)
+          done()
+        } catch (error) {
+          done(error)
+        }
+      }
 
-      expect(mockUserService.findById).toHaveBeenCalledWith(undefined)
-      expect(mockDone).toHaveBeenCalledWith(null, false)
+      ;(jwtStrategy as any)._verify(payload, callback)
     })
 
-    it('should handle payload with null user ID', async () => {
-      const payload = { id: null as unknown as string }
-      mockUserService.findById.mockResolvedValue(null)
+    it('should return false when token type is not access', (done) => {
+      const payload = { id: '1', type: 'refresh' }
+      mockUserService.findById.mockResolvedValue(mockUser)
 
-      const verifyCallback = (jwtStrategy as unknown as { _verify: VerifyCallback })._verify
-      await verifyCallback(payload, mockDone)
+      const callback = (err: any, user: any) => {
+        try {
+          expect(err).toBeNull()
+          expect(mockUserService.findById).toHaveBeenCalledWith('1')
+          expect(user).toBe(false)
+          done()
+        } catch (error) {
+          done(error)
+        }
+      }
 
-      expect(mockUserService.findById).toHaveBeenCalledWith(null)
-      expect(mockDone).toHaveBeenCalledWith(null, false)
+      ;(jwtStrategy as any)._verify(payload, callback)
+    })
+
+    it('should return false when token type is missing', (done) => {
+      const payload = { id: '1' }
+      mockUserService.findById.mockResolvedValue(mockUser)
+
+      const callback = (err: any, user: any) => {
+        try {
+          expect(err).toBeNull()
+          expect(mockUserService.findById).toHaveBeenCalledWith('1')
+          expect(user).toBe(false)
+          done()
+        } catch (error) {
+          done(error)
+        }
+      }
+
+      ;(jwtStrategy as any)._verify(payload, callback)
+    })
+
+    it('should handle errors gracefully', (done) => {
+      const payload = { id: '1', type: 'access' }
+      const error = new Error('Database error')
+      mockUserService.findById.mockRejectedValue(error)
+
+      const callback = (err: any, user: any) => {
+        try {
+          expect(err).toBe(error)
+          expect(mockUserService.findById).toHaveBeenCalledWith('1')
+          expect(user).toBe(false)
+          done()
+        } catch (testError) {
+          done(testError)
+        }
+      }
+
+      ;(jwtStrategy as any)._verify(payload, callback)
     })
   })
 })

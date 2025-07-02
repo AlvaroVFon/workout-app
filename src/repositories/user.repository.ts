@@ -1,8 +1,8 @@
 import { Document, RootFilterQuery } from 'mongoose'
-import User from '../models/User'
-import { UserDTO } from '../DTOs/user/user.dto'
 import { CreateUserDTO } from '../DTOs/user/create.dto'
 import { UpdateUserDTO } from '../DTOs/user/update.dto'
+import { UserDTO } from '../DTOs/user/user.dto'
+import User from '../models/User'
 import { ModelQuery } from '../types/index.types'
 
 class UserRepository {
@@ -19,7 +19,7 @@ class UserRepository {
   }
 
   findOneByEmail(email: string): Promise<(UserDTO & Document) | null> {
-    return User.findOne({ email }).exec()
+    return User.findOne({ email }).populate('role').exec()
   }
 
   update(id: string, data: UpdateUserDTO): Promise<(UserDTO & Document) | null> {

@@ -1,18 +1,18 @@
-import bcrypt from 'bcrypt'
+import { verifyPassword } from '../helpers/password.helper'
 import { Payload } from '../interfaces/payload.interface'
 import { AuthServiceLoginResponse } from '../types/index.types'
-import { generateAccessTokens, verifyToken } from '../utils/jwt.utils'
+import { generateAccessTokens, refreshToken as refreshTokenUtil, verifyToken } from '../utils/jwt.utils'
 import userService from './user.service'
 
 class AuthService {
-  async login(email: string, password: string): Promise<AuthServiceLoginResponse | false> {
+  async login(email: string, password: string): Promise<AuthServiceLoginResponse | null> {
     const user = await userService.findByEmail(email)
 
-    if (!user) return false
+    if (!user) return null
 
-    const isValidPassword = this.verifyPassword(password, user.password)
+    const isValidPassword = verifyPassword(password, user.password)
 
-    if (!isValidPassword) return false
+    if (!isValidPassword) return null
 
     const payload: Payload = {
       id: user.id,
@@ -25,12 +25,12 @@ class AuthService {
     return { user, token, refreshToken }
   }
 
-  verifyPassword(password: string, hashedPassword: string): boolean {
-    return bcrypt.compareSync(password, hashedPassword)
-  }
-
   async info(token: string): Promise<Payload | null> {
     return verifyToken(token)
+  }
+
+  async refreshToken(token: string): Promise<{ token: string; refreshToken: string } | null> {
+    return refreshTokenUtil(token)
   }
 }
 

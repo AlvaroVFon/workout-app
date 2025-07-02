@@ -1,13 +1,13 @@
-import userService from '../../../src/services/user.service'
-import userRepository from '../../../src/repositories/user.repository'
-import { hashPassword } from '../../../src/helpers/hashPassword'
 import { CreateUserDTO } from '../../../src/DTOs/user/create.dto'
 import { UpdateUserDTO } from '../../../src/DTOs/user/update.dto'
+import { hashPassword } from '../../../src/helpers/password.helper'
+import userRepository from '../../../src/repositories/user.repository'
 import roleService from '../../../src/services/role.service'
+import userService from '../../../src/services/user.service'
 
 jest.mock('../../../src/repositories/user.repository')
 jest.mock('../../../src/services/role.service')
-jest.mock('../../../src/helpers/hashPassword', () => ({
+jest.mock('../../../src/helpers/password.helper', () => ({
   hashPassword: jest.fn(),
 }))
 

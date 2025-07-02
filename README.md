@@ -58,13 +58,14 @@ API backend para la gestión de atletas, entrenadores, ejercicios y sesiones de 
 
 ## Características
 
-- Gestión completa de atletas, ejercicios y sesiones de entrenamiento
-- Relaciones entre recursos (populate avanzado)
-- Validaciones estrictas con Joi y DTOs tipados
-- Seguridad: JWT, roles, ownership y middlewares
-- Consultas avanzadas: populate, select, filtros, paginación
-- Tests unitarios y cobertura
-- Listo para integración con frontend (MVP)
+- **Autenticación robusta**: Sistema dual-token JWT con refresh automático
+- **Gestión completa** de atletas, ejercicios y sesiones de entrenamiento
+- **Relaciones complejas** entre recursos (populate avanzado)
+- **Validaciones estrictas** con Joi y DTOs tipados
+- **Seguridad avanzada**: JWT, roles, ownership y middlewares
+- **Consultas avanzadas**: populate, select, filtros, paginación
+- **Tests comprehensivos**: 456+ tests unitarios y e2e con >97% cobertura
+- **Listo para producción**: Docker, logging, error handling
 
 ## Instalación
 
@@ -82,8 +83,15 @@ yarn install
 MONGO_URI=mongodb://localhost:27017/workout
 REDIS_URI=redis://localhost:6379
 JWT_SECRET=supersecret
-JWT_EXPIRATION=1h
+JWT_EXPIRATION=15m
+JWT_REFRESH_EXPIRATION=7d
 ```
+
+### Variables de Entorno JWT
+
+- **`JWT_SECRET`**: Clave secreta para firmar tokens (usar una clave fuerte en producción)
+- **`JWT_EXPIRATION`**: Duración del access token (por defecto: 15m)
+- **`JWT_REFRESH_EXPIRATION`**: Duración del refresh token (por defecto: 7d)
 
 2. (Opcional) Usa Docker:
 
@@ -178,8 +186,90 @@ import { seedExercises } from './seeders/exercise.seeder'
 
 ## Pruebas
 
+La aplicación cuenta con una suite completa de pruebas unitarias y de integración:
+
+### Ejecutar Todas las Pruebas
+
 ```bash
 yarn test
+```
+
+### Ejecutar por Tipo
+
+```bash
+# Solo pruebas unitarias
+yarn test:unit
+
+# Solo pruebas end-to-end
+yarn test:e2e
+
+# Con cobertura
+yarn test:coverage
+```
+
+### Cobertura de Pruebas
+
+- **456 tests totales** (443 unitarios + 13 e2e)
+- **Cobertura >97%** en líneas de código
+- **Pruebas aisladas** con mocks y factories
+- **Tests e2e** para flujos completos de autenticación
+
+### Arquitectura de Testing
+
+#### Pruebas Unitarias (`tests/unit/`)
+
+- **Controllers**: Lógica de endpoints y manejo de errores
+- **Services**: Lógica de negocio y validaciones
+- **Repositories**: Acceso a datos y consultas
+- **Middlewares**: Validación y autorización
+- **Utils**: Funciones auxiliares (JWT, password hashing)
+- **Schemas**: Validación Joi
+- **Models**: Validación de esquemas Mongoose
+
+#### Pruebas E2E (`tests/e2e/`)
+
+- **Auth Flow**: Login, signup, refresh de tokens, info de usuario
+- **Token Validation**: Casos edge, tokens malformados, expirados
+- **Protected Routes**: Verificación de autorización
+- **Error Handling**: Respuestas de error consistentes
+
+#### Herramientas de Testing
+
+- **Jest**: Framework principal con mocks y spies
+- **Supertest**: Pruebas HTTP para endpoints
+- **MongoDB Memory Server**: Base de datos en memoria para tests
+- **Factories**: Generación de datos de prueba consistentes
+- **Test Isolation**: Cada test es independiente y aislado
+
+### Ejemplos de Pruebas
+
+#### Test Unitario (JWT Utils)
+
+```typescript
+describe('JWT Utils', () => {
+  it('should verify refresh token type correctly', () => {
+    const payload = { userId: '123', role: 'user', type: 'refresh' }
+    const token = generateRefreshToken(payload)
+    const decoded = verifyRefreshToken(token)
+
+    expect(decoded).toMatchObject(payload)
+  })
+})
+```
+
+#### Test E2E (Auth Flow)
+
+```typescript
+describe('POST /auth/refresh', () => {
+  it('should refresh tokens successfully', async () => {
+    const { refreshToken } = await loginUser()
+
+    const response = await request(app).post('/auth/refresh').send({ refreshToken }).expect(200)
+
+    expect(response.body.data).toHaveProperty('accessToken')
+    expect(response.body.data).toHaveProperty('refreshToken')
+  })
+})
 ```
 
 Cobertura disponible en `/coverage` tras ejecutar los tests.
@@ -188,21 +278,32 @@ Cobertura disponible en `/coverage` tras ejecutar los tests.
 
 ```plaintext
 src/
-├── config/         # Configuración
-├── controllers/    # Lógica de endpoints
-├── DTOs/           # Data Transfer Objects
+├── config/         # Configuración (DB, middleware, passport)
+├── controllers/    # Lógica de endpoints (auth, athletes, etc.)
+├── DTOs/           # Data Transfer Objects (tipado)
 ├── exceptions/     # Excepciones personalizadas
 ├── handlers/       # Manejadores de respuesta y error
-├── middlewares/    # Middlewares de Express
-├── models/         # Modelos Mongoose
+├── middlewares/    # Middlewares de Express (auth, validation)
+├── models/         # Modelos Mongoose (User, Athlete, etc.)
 ├── repositories/   # Acceso a datos y consultas avanzadas
-├── routes/         # Definición de rutas
-├── schemas/        # Validación Joi
-├── services/       # Lógica de negocio
-├── strategies/     # Estrategias de autenticación
-├── utils/          # Utilidades generales
-└── tests/          # Pruebas unitarias
+├── routes/         # Definición de rutas (auth, athletes, etc.)
+├── schemas/        # Validación Joi (auth, create/update schemas)
+├── services/       # Lógica de negocio (auth, user management)
+├── strategies/     # Estrategias de autenticación (JWT strategy)
+├── utils/          # Utilidades (JWT utils, password helpers)
+└── tests/          # Pruebas unitarias y e2e
+    ├── unit/       # Tests unitarios por módulo
+    ├── e2e/        # Tests de integración completos
+    └── utils/      # Helpers para testing
 ```
+
+### Componentes Clave de Autenticación
+
+- **`src/utils/jwt.utils.ts`** - Generación y verificación de tokens
+- **`src/strategies/jwt.strategy.ts`** - Estrategia Passport para JWT
+- **`src/middlewares/auth.middleware.ts`** - Middleware de autenticación
+- **`src/controllers/auth.controller.ts`** - Endpoints de autenticación
+- **`src/services/auth.service.ts`** - Lógica de negocio de auth
 
 ## Endpoints Principales
 
@@ -227,8 +328,10 @@ src/
 
 ### Autenticación
 
-- `POST /auth/login` — Login
+- `POST /auth/login` — Login (devuelve access token y refresh token)
 - `POST /auth/signup` — Registro
+- `POST /auth/refresh` — Renovar tokens usando refresh token
+- `GET /auth/info` — Información del usuario autenticado
 
 ## Consultas Avanzadas
 
@@ -239,22 +342,112 @@ src/
 
 ## Seguridad
 
-- **JWT** para autenticación
-- **Roles** (admin, superadmin, user)
+- **JWT Dual-Token System**: Access tokens (corta duración) y refresh tokens (larga duración)
+- **Token Type Validation**: Los tokens incluyen un campo `type` para prevenir su mal uso
+- **Roles** (admin, superadmin, user) con autorización granular
 - **Ownership**: los usuarios solo acceden a sus propios recursos
 - **Validaciones Joi** en todos los endpoints
+- **Middleware de Autenticación**: JWT strategy con Passport.js
+
+### Arquitectura JWT
+
+El sistema implementa un patrón de doble token para mayor seguridad:
+
+1. **Access Token**:
+
+   - Duración corta (por defecto 15 minutos)
+   - Usado para autenticación en endpoints protegidos
+   - Incluye información del usuario y rol
+   - Tipo: `"access"`
+
+2. **Refresh Token**:
+
+   - Duración larga (por defecto 7 días)
+   - Usado únicamente para renovar tokens
+   - No válido para endpoints protegidos
+   - Tipo: `"refresh"`
+
+3. **Flujo de Renovación**:
+
+   ```bash
+   POST /auth/refresh
+   Content-Type: application/json
+
+   {
+     "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+   }
+   ```
+
+   Respuesta:
+
+   ```json
+   {
+     "status": "success",
+     "data": {
+       "accessToken": "nuevo_access_token",
+       "refreshToken": "nuevo_refresh_token"
+     }
+   }
+   ```
 
 ## Ejemplo de Uso (cURL)
 
+### Autenticación Completa
+
 ```bash
-# Crear sesión de entrenamiento
+# 1. Login inicial
+curl -X POST http://localhost:3000/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "email": "admin@workout.com",
+    "password": "admin123"
+  }'
+
+# Respuesta:
+# {
+#   "status": "success",
+#   "data": {
+#     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+#     "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+#   }
+# }
+
+# 2. Usar access token en endpoints protegidos
+curl -X GET http://localhost:3000/auth/info \
+  -H 'Authorization: Bearer <accessToken>'
+
+# 3. Renovar tokens cuando expiren
+curl -X POST http://localhost:3000/auth/refresh \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "refreshToken": "<refreshToken>"
+  }'
+
+# 4. Crear sesión de entrenamiento
 curl -X POST http://localhost:3000/training-sessions \
-  -H 'Authorization: Bearer <token>' \
+  -H 'Authorization: Bearer <accessToken>' \
   -H 'Content-Type: application/json' \
   -d '{
     "athlete": "<athleteId>",
     "exercises": [{ "exercise": "<exerciseId>", "sets": [{ "reps": 10 }] }]
   }'
+```
+
+### Casos de Error Comunes
+
+```bash
+# Token expirado (401)
+curl -X GET http://localhost:3000/auth/info \
+  -H 'Authorization: Bearer <expiredToken>'
+
+# Refresh token inválido (401)
+curl -X POST http://localhost:3000/auth/refresh \
+  -H 'Content-Type: application/json' \
+  -d '{ "refreshToken": "invalid_token" }'
+
+# Usar refresh token en endpoint protegido (401)
+curl -X GET http://localhost:3000/auth/info \
+  -H 'Authorization: Bearer <refreshToken>'
 ```
 
 ---

@@ -1,7 +1,7 @@
-import userRepository from '../../../src/repositories/user.repository'
-import User from '../../../src/models/User'
 import { CreateUserDTO } from '../../../src/DTOs/user/create.dto'
 import { UpdateUserDTO } from '../../../src/DTOs/user/update.dto'
+import User from '../../../src/models/User'
+import userRepository from '../../../src/repositories/user.repository'
 import roleService from '../../../src/services/role.service'
 
 jest.mock('../../../src/models/User')
@@ -58,7 +58,9 @@ describe('UserRepository', () => {
   it('should find a user by email', async () => {
     const mockUser = { _id: '1', name: 'John Doe', email: 'john@example.com' }
     ;(User.findOne as jest.Mock).mockReturnValue({
-      exec: jest.fn().mockResolvedValue(mockUser),
+      populate: jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockUser),
+      }),
     })
 
     const result = await userRepository.findOneByEmail('john@example.com')
