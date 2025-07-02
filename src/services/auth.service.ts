@@ -1,10 +1,11 @@
-import { generateAccessTokens, verifyToken } from '../utils/jwt.utils'
 import bcrypt from 'bcrypt'
-import userService from './user.service'
 import { Payload } from '../interfaces/payload.interface'
+import { AuthServiceLoginResponse } from '../types/index.types'
+import { generateAccessTokens, verifyToken } from '../utils/jwt.utils'
+import userService from './user.service'
 
 class AuthService {
-  async login(email: string, password: string): Promise<{ token: string; refreshToken: string } | false> {
+  async login(email: string, password: string): Promise<AuthServiceLoginResponse | false> {
     const user = await userService.findByEmail(email)
 
     if (!user) return false
@@ -20,7 +21,8 @@ class AuthService {
       idDocument: user.idDocument,
     }
 
-    return generateAccessTokens(payload)
+    const { token, refreshToken } = generateAccessTokens(payload)
+    return { user, token, refreshToken }
   }
 
   verifyPassword(password: string, hashedPassword: string): boolean {

@@ -1,7 +1,7 @@
+import bcrypt from 'bcrypt'
 import AuthService from '../../../src/services/auth.service'
 import userService from '../../../src/services/user.service'
 import { generateAccessTokens, verifyToken } from '../../../src/utils/jwt.utils'
-import bcrypt from 'bcrypt'
 
 jest.mock('../../../src/services/user.service')
 jest.mock('../../../src/utils/jwt.utils')
@@ -28,22 +28,30 @@ describe('AuthService', () => {
       expect(result).toBe(false)
     })
 
-    it('should return tokens if login is successful', async () => {
+    it('should return tokens and full user if login is successful', async () => {
       const user = {
         id: '1',
         name: 'Test User',
+        lastName: 'User',
         email: 'test@example.com',
         password: 'hashedPassword',
+        role: { name: 'user' },
+        address: '123 Test St',
+        country: 'Testland',
         idDocument: '12345',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
+
       const tokens = { token: 'accessToken', refreshToken: 'refreshToken' }
+
       ;(userService.findByEmail as jest.Mock).mockResolvedValue(user)
       ;(bcrypt.compareSync as jest.Mock).mockReturnValue(true)
       ;(generateAccessTokens as jest.Mock).mockReturnValue(tokens)
 
       const result = await AuthService.login('test@example.com', 'password123')
 
-      expect(result).toEqual(tokens)
+      expect(result).toEqual({ user: user, token: 'accessToken', refreshToken: 'refreshToken' })
     })
   })
 
