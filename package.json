@@ -69,5 +69,13 @@
   },
   "resolutions": {
     "@types/express": "4.17.21"
+  },
+  "lint-staged": {
+    "*.{ts,js}": [
+      "npx prettier --write"
+    ],
+    "*.{json,md}": [
+      "npx prettier --write"
+    ]
   }
 }
