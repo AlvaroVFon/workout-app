@@ -10,6 +10,7 @@ router.post(
   [userMiddleware.validateUserExistence, userMiddleware.validateCreateUserSchemas],
   authController.signUp,
 )
+router.post('/refresh', [authMiddleware.verifyRefreshTokenSchema], authController.refresh)
 router.get('/info', [authMiddleware.verifyJWT], authController.info)
 
 export { router as authRouter }

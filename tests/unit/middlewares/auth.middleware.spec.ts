@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import AuthMiddleware from '../../../src/middlewares/auth.middleware'
-import { loginSchema } from '../../../src/schemas/auth/auth.schema'
+import { loginSchema, refreshTokenSchema } from '../../../src/schemas/auth/auth.schema'
 import BadRequestException from '../../../src/exceptions/BadRequestException'
 import UnauthorizedException from '../../../src/exceptions/UnauthorizedException'
 import passport from '../../../src/config/passport'
@@ -35,6 +35,26 @@ describe('AuthMiddleware', () => {
       ;(loginSchema.validate as jest.Mock).mockReturnValueOnce({ error: null })
 
       await AuthMiddleware.verifyLoginSchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith()
+    })
+  })
+
+  describe('verifyRefreshTokenSchema', () => {
+    it('should call next with BadRequestException if validation fails', async () => {
+      ;(refreshTokenSchema.validate as jest.Mock).mockReturnValueOnce({
+        error: { details: [{ message: 'refreshToken is required' }] },
+      })
+
+      await AuthMiddleware.verifyRefreshTokenSchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(new BadRequestException('refreshToken is required'))
+    })
+
+    it('should call next with no arguments if validation passes', async () => {
+      ;(refreshTokenSchema.validate as jest.Mock).mockReturnValueOnce({ error: null })
+
+      await AuthMiddleware.verifyRefreshTokenSchema(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith()
     })

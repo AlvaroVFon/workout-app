@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { loginSchema } from '../schemas/auth/auth.schema'
+import { loginSchema, refreshTokenSchema } from '../schemas/auth/auth.schema'
 import BadRequestException from '../exceptions/BadRequestException'
 import passport from '../config/passport'
 import UnauthorizedException from '../exceptions/UnauthorizedException'
@@ -12,6 +12,22 @@ class AuthMiddleware {
 
     try {
       const { error } = loginSchema.validate(data)
+
+      if (error) {
+        return next(new BadRequestException(error.details[0].message))
+      }
+    } catch (error) {
+      next(error)
+    }
+
+    next()
+  }
+
+  async verifyRefreshTokenSchema(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const data = req.body
+
+    try {
+      const { error } = refreshTokenSchema.validate(data)
 
       if (error) {
         return next(new BadRequestException(error.details[0].message))

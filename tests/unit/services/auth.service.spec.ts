@@ -96,4 +96,99 @@ describe('AuthService', () => {
       expect(result).toBeNull()
     })
   })
+
+  describe('refreshToken', () => {
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should return null if refresh token is invalid', async () => {
+      ;(verifyToken as jest.Mock).mockReturnValue(null)
+
+      const result = await AuthService.refreshToken('invalidRefreshToken')
+
+      expect(result).toBeNull()
+      expect(verifyToken).toHaveBeenCalledWith('invalidRefreshToken')
+    })
+
+    it('should return null if user no longer exists', async () => {
+      const payload = {
+        id: '1',
+        name: 'Test User',
+        email: 'test@example.com',
+        idDocument: '12345',
+      }
+      ;(verifyToken as jest.Mock).mockReturnValue(payload)
+      ;(userService.findById as jest.Mock).mockResolvedValue(null)
+
+      const result = await AuthService.refreshToken('validRefreshToken')
+
+      expect(result).toBeNull()
+      expect(verifyToken).toHaveBeenCalledWith('validRefreshToken')
+      expect(userService.findById).toHaveBeenCalledWith('1')
+    })
+
+    it('should return new tokens if refresh token is valid and user exists', async () => {
+      const payload = {
+        id: '1',
+        name: 'Test User',
+        email: 'test@example.com',
+        idDocument: '12345',
+      }
+      const user = {
+        id: '1',
+        name: 'Test User',
+        email: 'test@example.com',
+        idDocument: '12345',
+        password: 'hashedPassword',
+      }
+      const newTokens = { token: 'newAccessToken', refreshToken: 'newRefreshToken' }
+
+      ;(verifyToken as jest.Mock).mockReturnValue(payload)
+      ;(userService.findById as jest.Mock).mockResolvedValue(user)
+      ;(generateAccessTokens as jest.Mock).mockReturnValue(newTokens)
+
+      const result = await AuthService.refreshToken('validRefreshToken')
+
+      expect(result).toEqual(newTokens)
+      expect(verifyToken).toHaveBeenCalledWith('validRefreshToken')
+      expect(userService.findById).toHaveBeenCalledWith('1')
+      expect(generateAccessTokens).toHaveBeenCalledWith({
+        id: '1',
+        name: 'Test User',
+        email: 'test@example.com',
+        idDocument: '12345',
+      })
+    })
+
+    it('should generate new tokens each time (token rotation)', async () => {
+      const payload = {
+        id: '1',
+        name: 'Test User',
+        email: 'test@example.com',
+        idDocument: '12345',
+      }
+      const user = {
+        id: '1',
+        name: 'Test User',
+        email: 'test@example.com',
+        idDocument: '12345',
+        password: 'hashedPassword',
+      }
+      const firstTokens = { token: 'firstAccessToken', refreshToken: 'firstRefreshToken' }
+      const secondTokens = { token: 'secondAccessToken', refreshToken: 'secondRefreshToken' }
+
+      ;(verifyToken as jest.Mock).mockReturnValue(payload)
+      ;(userService.findById as jest.Mock).mockResolvedValue(user)
+      ;(generateAccessTokens as jest.Mock).mockReturnValueOnce(firstTokens).mockReturnValueOnce(secondTokens)
+
+      const firstResult = await AuthService.refreshToken('validRefreshToken')
+      const secondResult = await AuthService.refreshToken('validRefreshToken')
+
+      expect(firstResult).toEqual(firstTokens)
+      expect(secondResult).toEqual(secondTokens)
+      expect(firstResult?.refreshToken).not.toBe(secondResult?.refreshToken)
+      expect(generateAccessTokens).toHaveBeenCalledTimes(2)
+    })
+  })
 })

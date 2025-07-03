@@ -229,6 +229,7 @@ src/
 
 - `POST /auth/login` — Login
 - `POST /auth/signup` — Registro
+- `POST /auth/refresh` — Renovar tokens con refresh token
 
 ## Consultas Avanzadas
 
@@ -240,13 +241,43 @@ src/
 ## Seguridad
 
 - **JWT** para autenticación
+- **Refresh Tokens** con rotación automática para seguridad mejorada
 - **Roles** (admin, superadmin, user)
 - **Ownership**: los usuarios solo acceden a sus propios recursos
 - **Validaciones Joi** en todos los endpoints
 
+### Autenticación JWT
+
+El sistema utiliza un par de tokens para la autenticación:
+
+- **Access Token**: Token de corta duración (1h) para autenticar requests
+- **Refresh Token**: Token de larga duración (30d) para renovar access tokens
+
+#### Flujo de Autenticación
+
+1. **Login**: `POST /auth/login` retorna tanto access token como refresh token
+2. **Requests**: Usar access token en header `Authorization: Bearer <token>`
+3. **Renovación**: Cuando el access token expira, usar `POST /auth/refresh` con el refresh token
+4. **Seguridad**: Cada renovación genera nuevos tokens (token rotation), invalidando los anteriores
+
 ## Ejemplo de Uso (cURL)
 
 ```bash
+# Login para obtener tokens
+curl -X POST http://localhost:3000/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "email": "usuario@example.com",
+    "password": "password123"
+  }'
+
+# Renovar tokens cuando el access token expira
+curl -X POST http://localhost:3000/auth/refresh \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "refreshToken": "<refresh_token>"
+  }'
+
 # Crear sesión de entrenamiento
 curl -X POST http://localhost:3000/training-sessions \
   -H 'Authorization: Bearer <token>' \
