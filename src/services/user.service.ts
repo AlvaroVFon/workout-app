@@ -3,7 +3,7 @@ import { CreateUserDTO } from '../DTOs/user/create.dto'
 import { UpdateUserDTO } from '../DTOs/user/update.dto'
 import { UserDTO } from '../DTOs/user/user.dto'
 import NotFoundException from '../exceptions/NotFoundException'
-import { hashPassword } from '../helpers/password.helper'
+import { hashString } from '../helpers/crypto.helper'
 import userRepository from '../repositories/user.repository'
 import { ModelQuery } from '../types/index.types'
 import roleService from './role.service'
@@ -13,7 +13,7 @@ class UserService {
     const role = await roleService.findByName(data.role)
     if (!role) throw new NotFoundException(`Invalid role: ${data.role}`)
 
-    data.password = await hashPassword(data.password)
+    data.password = await hashString(data.password)
     data.role = role._id.toString()
 
     return userRepository.create(data)
@@ -35,7 +35,7 @@ class UserService {
     data.updatedAt = Date.now()
 
     if (data.password) {
-      data.password = await hashPassword(data.password)
+      data.password = await hashString(data.password)
     }
 
     return userRepository.update(id, data)

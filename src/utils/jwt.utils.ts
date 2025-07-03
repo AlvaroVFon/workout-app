@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken'
 import { parameters } from '../config/parameters'
 import { Payload } from '../interfaces/payload.interface'
 import logger from './logger'
+import { rotateUserSessionAndTokens } from '../helpers/session.helper'
 
 const { jwtSecret, jwtExpiration, jwtRefreshExpiration } = parameters
 
@@ -32,19 +33,12 @@ function verifyToken(token: string): Payload | null {
   }
 }
 
-function refreshToken(refreshToken: string): { token: string; refreshToken: string } | null {
+async function refreshTokens(refreshToken: string): Promise<{ token: string; refreshToken: string } | null> {
   const payload = verifyRefreshToken(refreshToken)
 
   if (!payload) return null
 
-  const newPayload: Payload = {
-    id: payload.id,
-    name: payload.name,
-    email: payload.email,
-    idDocument: payload.idDocument,
-  }
-
-  const { token, refreshToken: newRefreshToken } = generateAccessTokens(newPayload)
+  const { token, refreshToken: newRefreshToken } = await rotateUserSessionAndTokens(payload)
 
   return {
     token,
@@ -65,4 +59,4 @@ function verifyRefreshToken(token: string): Payload | null {
   }
 }
 
-export { generateAccessTokens, generateRefreshToken, generateToken, refreshToken, verifyRefreshToken, verifyToken }
+export { generateAccessTokens, generateRefreshToken, generateToken, refreshTokens, verifyRefreshToken, verifyToken }

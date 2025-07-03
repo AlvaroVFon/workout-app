@@ -1,10 +1,12 @@
 import bcrypt from 'bcrypt'
 import AuthService from '../../../src/services/auth.service'
 import userService from '../../../src/services/user.service'
-import { generateAccessTokens, refreshToken, verifyToken } from '../../../src/utils/jwt.utils'
+import { generateAccessTokens, refreshTokens, verifyToken } from '../../../src/utils/jwt.utils'
+import { rotateUserSessionAndTokens } from '../../../src/helpers/session.helper'
 
 jest.mock('../../../src/services/user.service')
 jest.mock('../../../src/utils/jwt.utils')
+jest.mock('../../../src/helpers/session.helper')
 jest.mock('bcrypt')
 
 describe('AuthService', () => {
@@ -47,7 +49,7 @@ describe('AuthService', () => {
 
       ;(userService.findByEmail as jest.Mock).mockResolvedValue(user)
       ;(bcrypt.compareSync as jest.Mock).mockReturnValue(true)
-      ;(generateAccessTokens as jest.Mock).mockReturnValue(tokens)
+      ;(rotateUserSessionAndTokens as jest.Mock).mockResolvedValue(tokens)
 
       const result = await AuthService.login('test@example.com', 'password123')
 
@@ -83,26 +85,26 @@ describe('AuthService', () => {
     it('should return new tokens when refresh token is valid', async () => {
       const newTokens = { token: 'newAccessToken', refreshToken: 'newRefreshToken' }
 
-      ;(refreshToken as jest.Mock).mockReturnValue(newTokens)
+      ;(refreshTokens as jest.Mock).mockReturnValue(newTokens)
 
-      const result = await AuthService.refreshToken('validRefreshToken')
+      const result = await AuthService.refreshTokens('validRefreshToken')
 
-      expect(refreshToken).toHaveBeenCalledWith('validRefreshToken')
+      expect(refreshTokens).toHaveBeenCalledWith('validRefreshToken')
       expect(result).toEqual(newTokens)
     })
 
     it('should return null when refresh token is invalid', async () => {
-      ;(refreshToken as jest.Mock).mockReturnValue(null)
+      ;(refreshTokens as jest.Mock).mockReturnValue(null)
 
-      const result = await AuthService.refreshToken('invalidRefreshToken')
+      const result = await AuthService.refreshTokens('invalidRefreshToken')
 
       expect(result).toBeNull()
     })
 
     it('should return null when refresh token verification fails', async () => {
-      ;(refreshToken as jest.Mock).mockReturnValue(null)
+      ;(refreshTokens as jest.Mock).mockReturnValue(null)
 
-      const result = await AuthService.refreshToken('malformedToken')
+      const result = await AuthService.refreshTokens('malformedToken')
 
       expect(result).toBeNull()
     })

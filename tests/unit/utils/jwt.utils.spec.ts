@@ -5,12 +5,16 @@ import {
   generateAccessTokens,
   generateRefreshToken,
   generateToken,
-  refreshToken as refreshTokenUtil,
+  refreshTokens,
   verifyRefreshToken,
   verifyToken,
 } from '../../../src/utils/jwt.utils'
+import { rotateUserSessionAndTokens } from '../../../src/helpers/session.helper'
 
 jest.mock('jsonwebtoken')
+jest.mock('../../../src/helpers/session.helper', () => ({
+  rotateUserSessionAndTokens: jest.fn(),
+}))
 
 const mockPayload: Payload = {
   id: '12345',
@@ -173,76 +177,66 @@ describe('JWT Utils', () => {
   })
 
   describe('refreshToken', () => {
-    it('should return new tokens when valid refresh token is provided', () => {
+    it('should return new tokens when valid refresh token is provided', async () => {
       const newTokens = { token: 'newAccessToken', refreshToken: 'newRefreshToken' }
 
       ;(jwt.verify as jest.Mock).mockReturnValue(mockRefreshPayload)
-      ;(jwt.sign as jest.Mock).mockReturnValueOnce('newAccessToken').mockReturnValueOnce('newRefreshToken')
+      ;(rotateUserSessionAndTokens as jest.Mock).mockResolvedValue(newTokens)
 
-      const result = refreshTokenUtil('validRefreshToken')
+      const result = await refreshTokens('validRefreshToken')
 
       expect(result).toEqual(newTokens)
     })
 
-    it('should return null when invalid refresh token is provided', () => {
+    it('should return null when invalid refresh token is provided', async () => {
       ;(jwt.verify as jest.Mock).mockImplementation(() => {
         throw new Error('Invalid token')
       })
 
-      const result = refreshTokenUtil('invalidRefreshToken')
+      const result = await refreshTokens('invalidRefreshToken')
 
       expect(result).toBeNull()
     })
 
-    it('should return null when access token is used as refresh token', () => {
+    it('should return null when access token is used as refresh token', async () => {
       const accessTokenPayload = { ...mockPayload, type: 'access' }
       ;(jwt.verify as jest.Mock).mockReturnValue(accessTokenPayload)
 
-      const result = refreshTokenUtil('accessTokenUsedAsRefresh')
+      const result = await refreshTokens('accessTokenUsedAsRefresh')
 
       expect(result).toBeNull()
     })
 
-    it('should return null when token has no type property', () => {
+    it('should return null when token has no type property', async () => {
       const tokenWithoutType = { ...mockPayload }
       delete tokenWithoutType.type
       ;(jwt.verify as jest.Mock).mockReturnValue(tokenWithoutType)
 
-      const result = refreshTokenUtil('tokenWithoutType')
+      const result = await refreshTokens('tokenWithoutType')
 
       expect(result).toBeNull()
     })
 
-    it('should return null when expired refresh token is provided', () => {
+    it('should return null when expired refresh token is provided', async () => {
       ;(jwt.verify as jest.Mock).mockImplementation(() => {
         throw new jwt.TokenExpiredError('Token expired', new Date())
       })
 
-      const result = refreshTokenUtil('expiredRefreshToken')
+      const result = await refreshTokens('expiredRefreshToken')
 
       expect(result).toBeNull()
     })
 
-    it('should generate new tokens with clean payload (no type field)', () => {
+    it('should generate new tokens with clean payload (no type field)', async () => {
+      const newTokens = { token: 'newAccessToken', refreshToken: 'newRefreshToken' }
+
       ;(jwt.verify as jest.Mock).mockReturnValue(mockRefreshPayload)
-      ;(jwt.sign as jest.Mock).mockReturnValueOnce('newAccessToken').mockReturnValueOnce('newRefreshToken')
+      ;(rotateUserSessionAndTokens as jest.Mock).mockResolvedValue(newTokens)
 
-      const result = refreshTokenUtil('validRefreshToken')
+      const result = await refreshTokens('validRefreshToken')
 
-      const cleanPayload = {
-        id: mockRefreshPayload.id,
-        name: mockRefreshPayload.name,
-        email: mockRefreshPayload.email,
-        idDocument: mockRefreshPayload.idDocument,
-      }
-
-      expect(jwt.sign).toHaveBeenCalledWith({ ...cleanPayload, type: 'access' }, parameters.jwtSecret, {
-        expiresIn: parameters.jwtExpiration,
-      })
-      expect(jwt.sign).toHaveBeenCalledWith({ ...cleanPayload, type: 'refresh' }, parameters.jwtSecret, {
-        expiresIn: parameters.jwtRefreshExpiration,
-      })
-      expect(result).toEqual({ token: 'newAccessToken', refreshToken: 'newRefreshToken' })
+      expect(rotateUserSessionAndTokens).toHaveBeenCalledWith(mockRefreshPayload)
+      expect(result).toEqual(newTokens)
     })
   })
 })

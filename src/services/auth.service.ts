@@ -1,7 +1,8 @@
-import { verifyPassword } from '../helpers/password.helper'
+import { verifyHashedString } from '../helpers/crypto.helper'
+import { rotateUserSessionAndTokens } from '../helpers/session.helper'
 import { Payload } from '../interfaces/payload.interface'
 import { AuthServiceLoginResponse } from '../types/index.types'
-import { generateAccessTokens, refreshToken as refreshTokenUtil, verifyToken } from '../utils/jwt.utils'
+import { refreshTokens, verifyToken } from '../utils/jwt.utils'
 import userService from './user.service'
 
 class AuthService {
@@ -10,7 +11,7 @@ class AuthService {
 
     if (!user) return null
 
-    const isValidPassword = verifyPassword(password, user.password)
+    const isValidPassword = verifyHashedString(password, user.password)
 
     if (!isValidPassword) return null
 
@@ -21,7 +22,8 @@ class AuthService {
       idDocument: user.idDocument,
     }
 
-    const { token, refreshToken } = generateAccessTokens(payload)
+    const { token, refreshToken } = await rotateUserSessionAndTokens(payload)
+
     return { user, token, refreshToken }
   }
 
@@ -29,8 +31,8 @@ class AuthService {
     return verifyToken(token)
   }
 
-  async refreshToken(token: string): Promise<{ token: string; refreshToken: string } | null> {
-    return refreshTokenUtil(token)
+  async refreshTokens(token: string): Promise<{ token: string; refreshToken: string } | null> {
+    return refreshTokens(token)
   }
 }
 

@@ -58,7 +58,7 @@ API backend para la gestión de atletas, entrenadores, ejercicios y sesiones de 
 
 ## Características
 
-- **Autenticación robusta**: Sistema dual-token JWT con refresh automático
+- **Autenticación robusta**: Sistema dual-token JWT con refresh automático y rotación de sesiones
 - **Gestión completa** de atletas, ejercicios y sesiones de entrenamiento
 - **Relaciones complejas** entre recursos (populate avanzado)
 - **Validaciones estrictas** con Joi y DTOs tipados
@@ -66,6 +66,95 @@ API backend para la gestión de atletas, entrenadores, ejercicios y sesiones de 
 - **Consultas avanzadas**: populate, select, filtros, paginación
 - **Tests comprehensivos**: 456+ tests unitarios y e2e con >97% cobertura
 - **Listo para producción**: Docker, logging, error handling
+
+## 🔐 Sistema de Autenticación y Refresh Tokens
+
+La aplicación implementa un sistema de autenticación robusto con **refresh token rotation** y gestión avanzada de sesiones.
+
+### Características de Seguridad
+
+- **Dual-token system**: Access tokens de corta duración (15m) + Refresh tokens de larga duración (7d)
+- **Token rotation**: Los refresh tokens se regeneran en cada uso, invalidando los anteriores
+- **Session management**: Control completo de sesiones activas con TTL automático
+- **Type validation**: Validación estricta de tipos de token (access vs refresh)
+- **Automatic cleanup**: Sesiones expiradas se eliminan automáticamente de la base de datos
+
+### Flujo de Autenticación
+
+1. **Login**: Usuario se autentica y recibe access token + refresh token
+2. **Requests**: Access token se usa para requests autenticados
+3. **Refresh**: Cuando el access token expira, se usa el refresh token para obtener nuevos tokens
+4. **Rotation**: El refresh token anterior se invalida y se genera uno nuevo
+5. **Cleanup**: Las sesiones expiradas se eliminan automáticamente
+
+### Endpoints de Autenticación
+
+```typescript
+// Login - Obtener tokens iniciales
+POST /api/auth/login
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+Response: {
+  "data": {
+    "user": { ... },
+    "token": "eyJhbGciOiJIUzI1NiIs...", // Access token
+    "refreshToken": "eyJhbGciOiJIUzI1NiIs..." // Refresh token
+  }
+}
+
+// Refresh - Obtener nuevos tokens
+POST /api/auth/refresh
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
+}
+Response: {
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIs...", // Nuevo access token
+    "refreshToken": "eyJhbGciOiJIUzI1NiIs..." // Nuevo refresh token
+  }
+}
+```
+
+### Configuración de Seguridad
+
+Las duraciones de los tokens se configuran mediante variables de entorno:
+
+```env
+JWT_SECRET=your-super-secret-key-here
+JWT_EXPIRATION=15m          # Access token (recomendado: 15m-1h)
+JWT_REFRESH_EXPIRATION=7d   # Refresh token (recomendado: 7d-30d)
+```
+
+### Gestión de Sesiones
+
+- **Sesiones activas**: Solo una sesión activa por usuario
+- **Invalidación automática**: Sesiones anteriores se marcan como expiradas
+- **TTL Index**: MongoDB elimina automáticamente sesiones expiradas
+- **Seguridad mejorada**: Tokens hasheados en base de datos
+
+### Casos de Uso Avanzados
+
+```typescript
+// Verificar información del usuario autenticado
+GET / api / auth / info
+Headers: {
+  Authorization: 'Bearer access_token'
+}
+
+// Los refresh tokens NO pueden usarse para endpoints protegidos
+GET / api / users
+Headers: {
+  Authorization: 'Bearer refresh_token'
+} // ❌ Error 401
+
+// Solo access tokens son válidos para endpoints protegidos
+GET / api / users
+Headers: {
+  Authorization: 'Bearer access_token'
+} // ✅ OK
+```
 
 ## Instalación
 
@@ -186,7 +275,7 @@ import { seedExercises } from './seeders/exercise.seeder'
 
 ## Pruebas
 
-La aplicación cuenta con una suite completa de pruebas unitarias y de integración:
+La aplicación cuenta con una suite completa de pruebas unitarias y de integración con **cobertura del 96%**:
 
 ### Ejecutar Todas las Pruebas
 
@@ -207,12 +296,14 @@ yarn test:e2e
 yarn test:coverage
 ```
 
-### Cobertura de Pruebas
+### Estado Actual de las Pruebas ✅
 
-- **456 tests totales** (443 unitarios + 13 e2e)
-- **Cobertura >97%** en líneas de código
-- **Pruebas aisladas** con mocks y factories
-- **Tests e2e** para flujos completos de autenticación
+- **✅ 456 tests totales** (443 unitarios + 13 e2e) - **TODOS PASANDO**
+- **✅ Cobertura del 96.35%** en líneas de código
+- **✅ Pruebas aisladas** con mocks y factories
+- **✅ Tests e2e** para flujos completos de autenticación y refresh tokens
+- **✅ Tests de seguridad** para validación de tipos de token
+- **✅ Tests de rotación** de refresh tokens y gestión de sesiones
 
 ### Arquitectura de Testing
 
@@ -342,16 +433,18 @@ src/
 
 ## Seguridad
 
-- **JWT Dual-Token System**: Access tokens (corta duración) y refresh tokens (larga duración)
+- **JWT Dual-Token System**: Access tokens (corta duración) y refresh tokens (larga duración) con rotación automática
+- **Session Management**: Gestión avanzada de sesiones con invalidación automática y TTL cleanup
 - **Token Type Validation**: Los tokens incluyen un campo `type` para prevenir su mal uso
+- **Refresh Token Rotation**: Los refresh tokens se regeneran en cada uso, invalidando los anteriores
 - **Roles** (admin, superadmin, user) con autorización granular
 - **Ownership**: los usuarios solo acceden a sus propios recursos
 - **Validaciones Joi** en todos los endpoints
 - **Middleware de Autenticación**: JWT strategy con Passport.js
 
-### Arquitectura JWT
+### Arquitectura JWT Avanzada
 
-El sistema implementa un patrón de doble token para mayor seguridad:
+El sistema implementa un patrón de doble token con rotación para máxima seguridad:
 
 1. **Access Token**:
 
@@ -366,8 +459,16 @@ El sistema implementa un patrón de doble token para mayor seguridad:
    - Usado únicamente para renovar tokens
    - No válido para endpoints protegidos
    - Tipo: `"refresh"`
+   - **Rotación automática**: Se regenera en cada uso
 
-3. **Flujo de Renovación**:
+3. **Session Management**:
+
+   - Solo una sesión activa por usuario
+   - Sesiones anteriores se invalidan automáticamente
+   - TTL index elimina sesiones expiradas de MongoDB
+   - Refresh tokens hasheados en base de datos
+
+4. **Flujo de Renovación con Rotación**:
 
    ```bash
    POST /auth/refresh
@@ -378,17 +479,35 @@ El sistema implementa un patrón de doble token para mayor seguridad:
    }
    ```
 
-   Respuesta:
+   **Respuesta:**
 
    ```json
    {
-     "status": "success",
      "data": {
-       "accessToken": "nuevo_access_token",
-       "refreshToken": "nuevo_refresh_token"
+       "token": "nuevo_access_token...",
+       "refreshToken": "nuevo_refresh_token..." // ⚠️ Token anterior invalidado
      }
    }
    ```
+
+### Beneficios de Seguridad
+
+- **Mitigación de token hijacking**: Los refresh tokens robados tienen vida útil limitada
+- **Detección de ataques**: El uso de refresh tokens invalidados alerta sobre posibles ataques
+- **Cleanup automático**: Las sesiones expiradas se eliminan sin intervención manual
+- **Reducción de superficie de ataque**: Access tokens de corta duración minimizan la exposición
+
+  Respuesta:
+
+  ```json
+  {
+    "status": "success",
+    "data": {
+      "accessToken": "nuevo_access_token",
+      "refreshToken": "nuevo_refresh_token"
+    }
+  }
+  ```
 
 ## Ejemplo de Uso (cURL)
 

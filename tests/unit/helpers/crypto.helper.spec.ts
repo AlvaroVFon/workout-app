@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt'
-import { hashPassword, verifyPassword } from '../../../src/helpers/password.helper'
+import { hashString, verifyHashedString } from '../../../src/helpers/crypto.helper'
 
 jest.mock('bcrypt')
 
@@ -8,7 +8,7 @@ describe('Password Helper', () => {
     jest.clearAllMocks()
   })
 
-  describe('hashPassword', () => {
+  describe('hashString', () => {
     it('should hash the password using bcrypt', async () => {
       const password = 'testPassword'
       const salt = 'testSalt'
@@ -17,7 +17,7 @@ describe('Password Helper', () => {
       ;(bcrypt.genSalt as jest.Mock).mockResolvedValue(salt)
       ;(bcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword)
 
-      const result = await hashPassword(password)
+      const result = await hashString(password)
 
       expect(bcrypt.genSalt).toHaveBeenCalledWith(10)
       expect(bcrypt.hash).toHaveBeenCalledWith(password, salt)
@@ -30,18 +30,18 @@ describe('Password Helper', () => {
 
       ;(bcrypt.genSalt as jest.Mock).mockRejectedValue(new Error(errorMessage))
 
-      await expect(hashPassword(password)).rejects.toThrow(errorMessage)
+      await expect(hashString(password)).rejects.toThrow(errorMessage)
     })
   })
 
-  describe('verifyPassword', () => {
+  describe('verifyHashedString', () => {
     it('should return true when password matches hashed password', () => {
       const password = 'testPassword'
       const hashedPassword = 'hashedTestPassword'
 
       ;(bcrypt.compareSync as jest.Mock).mockReturnValue(true)
 
-      const result = verifyPassword(password, hashedPassword)
+      const result = verifyHashedString(password, hashedPassword)
 
       expect(bcrypt.compareSync).toHaveBeenCalledWith(password, hashedPassword)
       expect(result).toBe(true)
@@ -53,7 +53,7 @@ describe('Password Helper', () => {
 
       ;(bcrypt.compareSync as jest.Mock).mockReturnValue(false)
 
-      const result = verifyPassword(password, hashedPassword)
+      const result = verifyHashedString(password, hashedPassword)
 
       expect(bcrypt.compareSync).toHaveBeenCalledWith(password, hashedPassword)
       expect(result).toBe(false)
@@ -65,7 +65,7 @@ describe('Password Helper', () => {
 
       ;(bcrypt.compareSync as jest.Mock).mockReturnValue(false)
 
-      const result = verifyPassword(password, hashedPassword)
+      const result = verifyHashedString(password, hashedPassword)
 
       expect(result).toBe(false)
     })
@@ -76,7 +76,7 @@ describe('Password Helper', () => {
 
       ;(bcrypt.compareSync as jest.Mock).mockReturnValue(true)
 
-      const result = verifyPassword(password, hashedPassword)
+      const result = verifyHashedString(password, hashedPassword)
 
       expect(result).toBe(true)
     })

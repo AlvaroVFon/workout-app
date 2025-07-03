@@ -6,7 +6,7 @@ const router = Router()
 
 router
   .post('/login', [authMiddleware.verifyLoginSchema], authController.login)
-  .post('/refresh', [authMiddleware.verifyRefreshSchema], authController.refreshToken)
+  .post('/refresh', [authMiddleware.verifyRefreshSchema], authController.refreshTokens)
   .post(
     '/signup',
     [userMiddleware.validateUserExistence, userMiddleware.validateCreateUserSchemas],
