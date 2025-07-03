@@ -13,7 +13,7 @@ class SessionRepository {
   }
 
   findByUserId(userId: string, projection: ProjectionType<SessionDTO> = {}): Promise<SessionDTO | null> {
-    return Session.findOne({ userId }, projection).populate('user')
+    return Session.findOne({ userId }, projection).populate('user').exec()
   }
 
   findAllByUserId(userId: string, projection: ProjectionType<SessionDTO> = {}): Promise<SessionDTO[]> {
