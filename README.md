@@ -14,6 +14,7 @@
   <img alt="Redis" src="https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white&style=flat-square" />
   <img alt="Jest" src="https://img.shields.io/badge/Jest-C21325?logo=jest&logoColor=white&style=flat-square" />
   <img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white&style=flat-square" />
+  <img alt="Nodemailer" src="https://img.shields.io/badge/Nodemailer-0B3D91?logo=mailgun&logoColor=white&style=flat-square" />
 </p>
 
 > **API robusta para el seguimiento de atletas y entrenadores, diseñada con Node.js, TypeScript, Express y MongoDB/Mongoose.**
@@ -34,6 +35,7 @@
 - [Endpoints Principales](#endpoints-principales)
 - [Consultas Avanzadas](#consultas-avanzadas)
 - [Seguridad](#seguridad)
+- [Email y notificaciones](#email-y-notificaciones)
 - [Contribución](#contribución)
 - [Licencia](#licencia)
 - [Documentación para Desarrolladores](#documentación-para-desarrolladores)
@@ -567,6 +569,39 @@ curl -X POST http://localhost:3000/auth/refresh \
 # Usar refresh token en endpoint protegido (401)
 curl -X GET http://localhost:3000/auth/info \
   -H 'Authorization: Bearer <refreshToken>'
+```
+
+---
+
+## Email y Notificaciones
+
+La aplicación integra un sistema de envío de emails para notificaciones y pruebas de funcionalidades relacionadas con correo electrónico.
+
+## Nodemailer
+
+- Se utiliza [Nodemailer](https://nodemailer.com/) como librería principal para el envío de emails desde Node.js.
+- La configuración SMTP es flexible y se define por variables de entorno (`SMTP_HOST`, `SMTP_PORT`, etc.).
+- El archivo `src/services/mail.service.ts` expone un servicio reutilizable para enviar correos desde cualquier parte de la app.
+
+## Mailhog (solo desarrollo)
+
+- [Mailhog](https://github.com/mailhog/MailHog) es una herramienta para capturar y visualizar emails enviados desde entornos de desarrollo, sin enviar correos reales.
+- Se ejecuta automáticamente como servicio en `docker-compose.yml`.
+- **Puertos expuestos:**
+  - `1025`: Puerto SMTP (la app envía los correos aquí)
+  - `8025`: Interfaz web para ver los correos recibidos ([http://localhost:8025](http://localhost:8025))
+- Así puedes probar el envío de emails sin riesgo de enviar mensajes reales a usuarios.
+
+## Ejemplo de uso
+
+```typescript
+import mailService from './src/services/mail.service'
+
+await mailService.sendMail({
+  to: 'destinatario@correo.com',
+  subject: 'Bienvenido',
+  html: '<b>¡Hola!</b> Tu cuenta ha sido creada.',
+})
 ```
 
 ---

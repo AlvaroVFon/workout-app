@@ -1,4 +1,5 @@
 import { Types } from 'mongoose'
+import ms from 'ms'
 import { parameters } from '../../../src/config/parameters'
 import { SessionDTO } from '../../../src/DTOs/session/session.dto'
 import { hashString } from '../../../src/helpers/crypto.helper'
@@ -45,8 +46,15 @@ describe('Session Helper', () => {
     idDocument: '12345',
   }
 
+  const originalJwtRefreshExpiration = parameters.jwtRefreshExpiration
+
   beforeEach(() => {
     jest.clearAllMocks()
+    parameters.jwtRefreshExpiration = String(originalJwtRefreshExpiration)
+  })
+
+  afterEach(() => {
+    parameters.jwtRefreshExpiration = originalJwtRefreshExpiration
   })
 
   describe('invalidateSession', () => {
@@ -173,7 +181,6 @@ describe('Session Helper', () => {
     })
 
     it('should create session with correct expiration time', async () => {
-      jest.resetModules()
       parameters.jwtRefreshExpiration = '30d'
       ;(generateAccessTokens as jest.Mock).mockReturnValue(mockTokens)
       ;(sessionService.findActiveByUserId as jest.Mock).mockResolvedValue(null)
@@ -185,8 +192,9 @@ describe('Session Helper', () => {
       const createCall = (sessionService.create as jest.Mock).mock.calls[0][0]
       const expiresAt = createCall.expiresAt
       expect(expiresAt).toBeInstanceOf(Date)
-      const thirtyDaysFromNow = Date.now() + 30 * 24 * 60 * 60 * 1000
-      const timeDiff = Math.abs(expiresAt.getTime() - thirtyDaysFromNow)
+      const expirationMs = ms(String(parameters.jwtRefreshExpiration) as ms.StringValue)
+      const expectedExpiration = Date.now() + expirationMs
+      const timeDiff = Math.abs(expiresAt.getTime() - expectedExpiration)
       expect(timeDiff).toBeLessThan(1000)
     })
 

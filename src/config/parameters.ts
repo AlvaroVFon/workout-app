@@ -10,6 +10,14 @@ const envVarsSchema = Joi.object({
   JWT_EXPIRATION: Joi.string().default('1h'),
   JWT_REFRESH_EXPIRATION: Joi.string().default('30d'),
   SALT_ROUNDS: Joi.number().default(10),
+  SMTP_HOST: Joi.string().default('localhost'),
+  SMTP_PORT: Joi.number().default(587),
+  SMTP_SECURE: Joi.boolean().default(false),
+  SMTP_USER: Joi.string().optional().default(''),
+  SMTP_PASS: Joi.string().optional().default(''),
+  SMTP_FROM: Joi.string().optional().default('admin@email.com'),
+  SMTP_FROM_NAME: Joi.string().optional().default('Admin'),
+  LOG_LEVEL: Joi.string().valid('error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly').default('info'),
 })
   .unknown()
   .required()
@@ -29,4 +37,12 @@ export const parameters = {
   jwtExpiration: envVars.JWT_EXPIRATION,
   jwtRefreshExpiration: envVars.JWT_REFRESH_EXPIRATION,
   saltRounds: envVars.SALT_ROUNDS,
+  smtpHost: envVars.SMTP_HOST,
+  smtpPort: envVars.SMTP_PORT,
+  smtpSecure: envVars.SMTP_SECURE,
+  smtpUser: envVars.SMTP_USER,
+  smtpPass: envVars.SMTP_PASS,
+  smtpFrom: envVars.SMTP_FROM,
+  smtpFromName: envVars.SMTP_FROM_NAME,
+  logLevel: envVars.LOG_LEVEL,
 }
