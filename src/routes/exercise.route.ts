@@ -16,7 +16,7 @@ router
     '/',
     [
       authMiddleware.authorizeRoles(RolesEnum.ADMIN, RolesEnum.SUPERADMIN),
-      exerciseMiddleware.checkCreateExerciseSchema,
+      exerciseMiddleware.validateCreateExerciseSchema,
       exerciseMiddleware.validateExerciseExistence,
     ],
     exerciseController.create,
@@ -26,7 +26,7 @@ router
     [
       authMiddleware.authorizeRoles(RolesEnum.ADMIN, RolesEnum.SUPERADMIN),
       globalValidatorMiddleware.validateObjectId,
-      exerciseMiddleware.checkUpdateExerciseSchema,
+      exerciseMiddleware.validateUpdateExerciseSchema,
       exerciseMiddleware.validateExerciseExistence,
     ],
     exerciseController.update,

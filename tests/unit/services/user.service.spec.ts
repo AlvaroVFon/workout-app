@@ -1,14 +1,14 @@
-import userService from '../../../src/services/user.service'
-import userRepository from '../../../src/repositories/user.repository'
-import { hashPassword } from '../../../src/helpers/hashPassword'
 import { CreateUserDTO } from '../../../src/DTOs/user/create.dto'
 import { UpdateUserDTO } from '../../../src/DTOs/user/update.dto'
+import { hashString } from '../../../src/helpers/crypto.helper'
+import userRepository from '../../../src/repositories/user.repository'
 import roleService from '../../../src/services/role.service'
+import userService from '../../../src/services/user.service'
 
 jest.mock('../../../src/repositories/user.repository')
 jest.mock('../../../src/services/role.service')
-jest.mock('../../../src/helpers/hashPassword', () => ({
-  hashPassword: jest.fn(),
+jest.mock('../../../src/helpers/crypto.helper', () => ({
+  hashString: jest.fn(),
 }))
 
 describe('UserService', () => {
@@ -30,7 +30,7 @@ describe('UserService', () => {
       const hashedPassword = 'hashedPassword'
       const createdUser = { id: '1', ...mockData, password: hashedPassword }
       ;(roleService.findByName as jest.Mock).mockResolvedValue(mockRole)
-      ;(hashPassword as jest.Mock).mockResolvedValue(hashedPassword)
+      ;(hashString as jest.Mock).mockResolvedValue(hashedPassword)
       ;(userRepository.create as jest.Mock).mockResolvedValue(createdUser)
 
       const result = await userService.create(mockData)
@@ -129,7 +129,7 @@ describe('UserService', () => {
 
       const hashedPassword = 'hashedPassword'
       const updatedUser = { id: '1', ...mockData, password: hashedPassword }
-      ;(hashPassword as jest.Mock).mockResolvedValue(hashedPassword)
+      ;(hashString as jest.Mock).mockResolvedValue(hashedPassword)
       ;(userRepository.update as jest.Mock).mockResolvedValue(updatedUser)
 
       const result = await userService.update('1', mockData)
@@ -144,7 +144,7 @@ describe('UserService', () => {
 
       const result = await userService.update('1', mockData)
 
-      expect(hashPassword).not.toHaveBeenCalled()
+      expect(hashString).not.toHaveBeenCalled()
       expect(userRepository.update).toHaveBeenCalledWith('1', {
         ...mockData,
         updatedAt: expect.any(Number),

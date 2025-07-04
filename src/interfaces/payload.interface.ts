@@ -3,4 +3,5 @@ export interface Payload {
   name: string
   email: string
   idDocument: string
+  type?: 'access' | 'refresh'
 }

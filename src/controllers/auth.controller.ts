@@ -46,6 +46,34 @@ class AuthController {
   async info(req: Request, res: Response): Promise<Response<ApiResponse> | undefined> {
     return responseHandler(res, StatusCode.OK, StatusMessage.OK, req.user)
   }
+
+  async refreshTokens(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
+    try {
+      const { refreshToken } = req.body
+
+      const tokens = await authService.refreshTokens(refreshToken)
+
+      if (!tokens) {
+        throw new UnauthorizedException('Invalid refresh token')
+      }
+
+      return responseHandler(res, StatusCode.OK, StatusMessage.OK, tokens)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async logout(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
+    const refreshToken = req.headers['x-refresh-token'] as string
+    try {
+      const isSessionClosed = await authService.logout(refreshToken)
+      if (!isSessionClosed) throw new UnauthorizedException('Invalid session or token')
+
+      return responseHandler(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
+    } catch (error) {
+      next(error)
+    }
+  }
 }
 
 export default new AuthController()

@@ -28,7 +28,7 @@ describe('MuscleMiddleware', () => {
   it('should call next if validation passes', () => {
     ;(createMuscleSchema.validate as jest.Mock).mockReturnValue({ error: null })
 
-    muscleMiddleware.checkCreateMuscleSchema(req as Request, res as Response, next)
+    muscleMiddleware.validateCreateMuscleSchema(req as Request, res as Response, next)
 
     expect(next).toHaveBeenCalled()
   })
@@ -39,7 +39,7 @@ describe('MuscleMiddleware', () => {
       error: validationError,
     })
 
-    muscleMiddleware.checkCreateMuscleSchema(req as Request, res as Response, next)
+    muscleMiddleware.validateCreateMuscleSchema(req as Request, res as Response, next)
 
     expect(next).toHaveBeenCalledWith(new BadRequestException(validationError.details[0].message))
   })

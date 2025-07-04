@@ -127,4 +127,38 @@ describe('AuthController', () => {
       expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, req.user)
     })
   })
+
+  describe('refreshTokens', () => {
+    it('should return new tokens when refresh token is valid', async () => {
+      req.body = { refreshToken: 'validRefreshToken' }
+      const newTokens = { token: 'newAccessToken', refreshToken: 'newRefreshToken' }
+
+      ;(authService.refreshTokens as jest.Mock).mockResolvedValue(newTokens)
+
+      await AuthController.refreshTokens(req as Request, res as Response, next)
+
+      expect(authService.refreshTokens).toHaveBeenCalledWith('validRefreshToken')
+      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, newTokens)
+    })
+
+    it('should call next with UnauthorizedException when refresh token is invalid', async () => {
+      req.body = { refreshToken: 'invalidRefreshToken' }
+      ;(authService.refreshTokens as jest.Mock).mockResolvedValue(null)
+
+      await AuthController.refreshTokens(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(expect.any(UnauthorizedException))
+    })
+
+    it('should call next with error when service throws error', async () => {
+      req.body = { refreshToken: 'someToken' }
+      const error = new Error('Service error')
+
+      ;(authService.refreshTokens as jest.Mock).mockRejectedValue(error)
+
+      await AuthController.refreshTokens(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(error)
+    })
+  })
 })

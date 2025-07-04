@@ -5,7 +5,7 @@ import ConflictException from '../exceptions/ConflictException'
 import BadRequestException from '../exceptions/BadRequestException'
 
 class ExerciseMiddleware {
-  checkCreateExerciseSchema(req: Request, res: Response, next: NextFunction) {
+  validateCreateExerciseSchema(req: Request, res: Response, next: NextFunction) {
     const { error } = createExerciseSchema.validate(req.body)
 
     if (error) return next(new BadRequestException(error.details[0].message))
@@ -13,7 +13,7 @@ class ExerciseMiddleware {
     next()
   }
 
-  checkUpdateExerciseSchema(req: Request, res: Response, next: NextFunction) {
+  validateUpdateExerciseSchema(req: Request, res: Response, next: NextFunction) {
     const { error } = updateExerciseSchema.validate(req.body)
 
     if (error) return next(new BadRequestException(error.details[0].message))

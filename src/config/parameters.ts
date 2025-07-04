@@ -9,6 +9,7 @@ const envVarsSchema = Joi.object({
   JWT_SECRET: Joi.string().required(),
   JWT_EXPIRATION: Joi.string().default('1h'),
   JWT_REFRESH_EXPIRATION: Joi.string().default('30d'),
+  SALT_ROUNDS: Joi.number().default(10),
 })
   .unknown()
   .required()
@@ -27,4 +28,5 @@ export const parameters = {
   jwtSecret: envVars.JWT_SECRET,
   jwtExpiration: envVars.JWT_EXPIRATION,
   jwtRefreshExpiration: envVars.JWT_REFRESH_EXPIRATION,
+  saltRounds: envVars.SALT_ROUNDS,
 }

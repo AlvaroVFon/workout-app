@@ -1,19 +1,19 @@
-import userRepository from '../repositories/user.repository'
-import { UserDTO } from '../DTOs/user/user.dto'
+import { RootFilterQuery } from 'mongoose'
 import { CreateUserDTO } from '../DTOs/user/create.dto'
 import { UpdateUserDTO } from '../DTOs/user/update.dto'
-import { hashPassword } from '../helpers/hashPassword'
-import roleService from './role.service'
+import { UserDTO } from '../DTOs/user/user.dto'
 import NotFoundException from '../exceptions/NotFoundException'
+import { hashString } from '../helpers/crypto.helper'
+import userRepository from '../repositories/user.repository'
 import { ModelQuery } from '../types/index.types'
-import { RootFilterQuery } from 'mongoose'
+import roleService from './role.service'
 
 class UserService {
   async create(data: CreateUserDTO): Promise<UserDTO> {
     const role = await roleService.findByName(data.role)
     if (!role) throw new NotFoundException(`Invalid role: ${data.role}`)
 
-    data.password = await hashPassword(data.password)
+    data.password = await hashString(data.password)
     data.role = role._id.toString()
 
     return userRepository.create(data)
@@ -35,7 +35,7 @@ class UserService {
     data.updatedAt = Date.now()
 
     if (data.password) {
-      data.password = await hashPassword(data.password)
+      data.password = await hashString(data.password)
     }
 
     return userRepository.update(id, data)

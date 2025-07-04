@@ -11,10 +11,10 @@ router
   .use([authMiddleware.verifyJWT, authMiddleware.authorizeRoles(RolesEnum.ADMIN, RolesEnum.SUPERADMIN)])
   .get('/', muscleController.findAll)
   .get('/:id', [globalValidatorMiddleware.validateObjectId], muscleController.findById)
-  .post('/', [muscleMiddleware.checkCreateMuscleSchema], muscleController.create)
+  .post('/', [muscleMiddleware.validateCreateMuscleSchema], muscleController.create)
   .patch(
     '/:id',
-    [globalValidatorMiddleware.validateObjectId, muscleMiddleware.checkCreateMuscleSchema],
+    [globalValidatorMiddleware.validateObjectId, muscleMiddleware.validateCreateMuscleSchema],
     muscleController.update,
   )
   .delete('/:id', [globalValidatorMiddleware.validateObjectId], muscleController.delete)

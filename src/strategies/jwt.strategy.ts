@@ -1,7 +1,7 @@
-import { Strategy as JwtStrategy, ExtractJwt, StrategyOptions } from 'passport-jwt'
-import userService from '../services/user.service'
+import { ExtractJwt, Strategy as JwtStrategy, StrategyOptions } from 'passport-jwt'
 import { parameters } from '../config/parameters'
 import { PublicUserDTO } from '../DTOs/user/user.public.dto'
+import userService from '../services/user.service'
 
 const { jwtSecret } = parameters
 
@@ -14,16 +14,19 @@ export const jwtStrategy = new JwtStrategy(opts, async (payload, done) => {
   try {
     const user = await userService.findById(payload.id)
 
-    if (!user) {
+    if (!user || payload.type !== 'access') {
       return done(null, false)
     }
 
     const publicUser: PublicUserDTO = {
       id: user.id,
-      email: user.email,
       name: user.name,
+      email: user.email,
       idDocument: user.idDocument,
       role: user.role.name,
+      lastName: user.lastName,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     }
 
     return done(null, publicUser)

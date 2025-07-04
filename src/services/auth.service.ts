@@ -1,18 +1,20 @@
-import bcrypt from 'bcrypt'
+import { verifyHashedString } from '../helpers/crypto.helper'
+import { invalidateSession, rotateUserSessionAndTokens } from '../helpers/session.helper'
 import { Payload } from '../interfaces/payload.interface'
 import { AuthServiceLoginResponse } from '../types/index.types'
-import { generateAccessTokens, verifyToken } from '../utils/jwt.utils'
+import { refreshTokens, verifyToken } from '../utils/jwt.utils'
+import sessionService from './session.service'
 import userService from './user.service'
 
 class AuthService {
-  async login(email: string, password: string): Promise<AuthServiceLoginResponse | false> {
+  async login(email: string, password: string): Promise<AuthServiceLoginResponse | null> {
     const user = await userService.findByEmail(email)
 
-    if (!user) return false
+    if (!user) return null
 
-    const isValidPassword = this.verifyPassword(password, user.password)
+    const isValidPassword = verifyHashedString(password, user.password)
 
-    if (!isValidPassword) return false
+    if (!isValidPassword) return null
 
     const payload: Payload = {
       id: user.id,
@@ -21,16 +23,28 @@ class AuthService {
       idDocument: user.idDocument,
     }
 
-    const { token, refreshToken } = generateAccessTokens(payload)
-    return { user, token, refreshToken }
-  }
+    const { token, refreshToken } = await rotateUserSessionAndTokens(payload)
 
-  verifyPassword(password: string, hashedPassword: string): boolean {
-    return bcrypt.compareSync(password, hashedPassword)
+    return { user, token, refreshToken }
   }
 
   async info(token: string): Promise<Payload | null> {
     return verifyToken(token)
+  }
+
+  async refreshTokens(token: string): Promise<{ token: string; refreshToken: string } | null> {
+    return refreshTokens(token)
+  }
+
+  async logout(token: string): Promise<boolean> {
+    const payload = verifyToken(token)
+    if (!payload) return false
+
+    const session = await sessionService.findActiveByUserId(payload.id)
+    if (!session) return false
+
+    await invalidateSession(session)
+    return true
   }
 }
 

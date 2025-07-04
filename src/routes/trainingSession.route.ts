@@ -25,6 +25,6 @@ router
     [globalValidatorMiddleware.validateObjectId, athleteMiddleware.validateAthleteOwnership],
     trainingSessionController.findById,
   )
-  .post('/', [trainingSessionMiddleware.checkCreateTrainingSessionSchema], trainingSessionController.create)
+  .post('/', [trainingSessionMiddleware.validateCreateTrainingSessionSchema], trainingSessionController.create)
 
 export { router as trainingSessionRouter }
