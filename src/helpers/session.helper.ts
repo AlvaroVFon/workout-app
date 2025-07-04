@@ -6,7 +6,7 @@ import type { Payload } from '../interfaces/payload.interface'
 import sessionService from '../services/session.service'
 import { generateAccessTokens } from '../utils/jwt.utils'
 
-const jwtRefreshExpiration = parameters.jwtRefreshExpiration
+const jwtRefreshExpiration = Number(ms(parameters.jwtRefreshExpiration))
 
 function invalidateSession(session: SessionDTO, newSession?: SessionDTO) {
   return sessionService.update(session._id.toString(), { isActive: false, replacedBy: newSession?._id })
@@ -16,7 +16,7 @@ function rotateSession(oldSession: SessionDTO, newSession: SessionDTO) {
   return sessionService.update(oldSession._id.toString(), {
     isActive: false,
     replacedBy: newSession._id,
-    expiresAt: new Date() as unknown as SessionDTO['expiresAt'], // Marca como caducado para que se borre con el índice
+    expiresAt: Date.now(),
   })
 }
 
@@ -34,8 +34,8 @@ async function rotateUserSessionAndTokens(payload: Payload) {
   const newSession = await sessionService.create({
     userId: payload.id,
     isActive: true,
-    expiresAt: new Date(Date.now() + ms(jwtRefreshExpiration)),
-    refreshTokenHash: await hashString(newRefreshToken),
+    expiresAt: Date.now() + jwtRefreshExpiration,
+    refreshTokenHash: await hashString(newRefreshToken, 'sha256'),
   })
 
   if (oldSession) await rotateSession(oldSession, newSession)
@@ -43,4 +43,11 @@ async function rotateUserSessionAndTokens(payload: Payload) {
   return { token, refreshToken: newRefreshToken }
 }
 
-export { invalidateSession, rotateSession, rotateUserSessionAndTokens }
+async function isActiveSession(token: string): Promise<boolean> {
+  const hashedToken = await hashString(token, 'sha256')
+  const session = await sessionService.findByRefreshTokenHash(hashedToken)
+
+  return session?.isActive ?? false
+}
+
+export { invalidateSession, isActiveSession, rotateSession, rotateUserSessionAndTokens }

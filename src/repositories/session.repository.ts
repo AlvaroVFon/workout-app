@@ -1,11 +1,17 @@
-import { ProjectionType } from 'mongoose'
+import type { ProjectionType } from 'mongoose'
+import type { ModelQuery } from '../types/index.types'
 import { CreateSessionDTO } from '../DTOs/session/create.dto'
 import { SessionDTO } from '../DTOs/session/session.dto'
 import Session from '../models/Session'
 
+//TODO: simplify repository methods by using a generic base repository
 class SessionRepository {
   create(session: CreateSessionDTO): Promise<SessionDTO> {
     return Session.create(session)
+  }
+
+  findOne({ query = {}, projection = {}, options = {} }: ModelQuery<SessionDTO>) {
+    return Session.findOne(query, projection, options).exec()
   }
 
   findById(id: string, projection: ProjectionType<SessionDTO> = {}): Promise<SessionDTO | null> {

@@ -5,6 +5,9 @@ import ForbiddenException from '../exceptions/ForbiddenException'
 import UnauthorizedException from '../exceptions/UnauthorizedException'
 import { AuthenticatedUser } from '../interfaces/user.inteface'
 import { headerTokenSchema, loginSchema, refreshTokenSchema } from '../schemas/auth/auth.schema'
+import blockService from '../services/block.service'
+import userService from '../services/user.service'
+import { AttemptsEnum } from '../utils/enums/attempts.enum'
 
 class AuthMiddleware {
   async validateLoginSchema(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -60,6 +63,23 @@ class AuthMiddleware {
       const refreshToken = req.headers['x-refresh-token'] as string
       const { error } = headerTokenSchema.validate(refreshToken)
       if (error) return next(new BadRequestException(error.details[0].message))
+
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async verifyLoginBlock(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const { email } = req.body
+    console.log(email)
+    try {
+      const user = await userService.findByEmail(email)
+      if (!user) return next(new UnauthorizedException())
+
+      const isBlocked = await blockService.isBlocked(user.id.toString(), AttemptsEnum.LOGIN)
+
+      if (isBlocked) return next(new ForbiddenException('You are blocked from logging in.'))
 
       next()
     } catch (error) {

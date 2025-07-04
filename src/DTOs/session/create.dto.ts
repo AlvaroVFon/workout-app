@@ -1,6 +1,6 @@
 export interface CreateSessionDTO {
   userId: string
-  expiresAt: Date
+  expiresAt: number
   refreshTokenHash: string
   isActive?: boolean
   replacedBy?: string

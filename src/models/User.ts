@@ -1,7 +1,17 @@
 import { Schema, Types, model } from 'mongoose'
 import { UserDTO } from '../DTOs/user/user.dto'
+import type { BlockInfo } from '../DTOs/user/user.dto'
 
-const userSchema = new Schema({
+const BlockInfoSchema = new Schema<BlockInfo>(
+  {
+    type: { type: String, required: true },
+    reason: { type: String },
+    blockedUntil: { type: Number },
+  },
+  { _id: false },
+)
+
+const userSchema = new Schema<UserDTO>({
   name: {
     type: String,
     required: true,
@@ -23,6 +33,10 @@ const userSchema = new Schema({
     ref: 'Role',
     required: true,
   },
+  blocks: {
+    type: [BlockInfoSchema],
+    default: [],
+  },
   country: {
     type: String,
   },
@@ -37,7 +51,6 @@ const userSchema = new Schema({
     type: Number,
     default: Date.now(),
   },
-
   updatedAt: {
     type: Number,
     default: null,

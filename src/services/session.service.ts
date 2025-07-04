@@ -31,6 +31,13 @@ class SessionService {
   async delete(id: string): Promise<SessionDTO | null> {
     return sessionRepository.delete(id)
   }
+
+  async findByRefreshTokenHash(
+    refreshTokenHash: string,
+    projection: ProjectionType<SessionDTO> = {},
+  ): Promise<SessionDTO | null> {
+    return sessionRepository.findOne({ query: { refreshTokenHash }, projection })
+  }
 }
 
 export default new SessionService()

@@ -18,6 +18,9 @@ const envVarsSchema = Joi.object({
   SMTP_FROM: Joi.string().optional().default('admin@email.com'),
   SMTP_FROM_NAME: Joi.string().optional().default('Admin'),
   LOG_LEVEL: Joi.string().valid('error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly').default('info'),
+  MAX_LOGIN_ATTEMPTS: Joi.number().default(5),
+  MAX_PASSWORD_RESET_ATTEMPTS: Joi.number().default(3),
+  BLOCK_DURATION: Joi.number().default(15), // in minutes
 })
   .unknown()
   .required()
@@ -45,4 +48,7 @@ export const parameters = {
   smtpFrom: envVars.SMTP_FROM,
   smtpFromName: envVars.SMTP_FROM_NAME,
   logLevel: envVars.LOG_LEVEL,
+  maxLoginAttempts: envVars.MAX_LOGIN_ATTEMPTS,
+  maxPasswordResetAttempts: envVars.MAX_PASSWORD_RESET_ATTEMPTS,
+  blockDuration: envVars.BLOCK_DURATION,
 }

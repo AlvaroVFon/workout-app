@@ -9,7 +9,7 @@ describe('Session Model', () => {
     it('should validate required fields correctly', () => {
       const sessionData = {
         userId: mockUserId,
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
         refreshTokenHash: 'hashedRefreshToken123',
         isActive: true,
       }
@@ -22,7 +22,7 @@ describe('Session Model', () => {
 
     it('should fail validation when userId is missing', () => {
       const sessionData = {
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000,
         refreshTokenHash: 'someHash',
       }
 
@@ -51,7 +51,7 @@ describe('Session Model', () => {
     it('should fail validation when refreshTokenHash is missing', () => {
       const sessionData = {
         userId: mockUserId,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000,
       }
 
       const session = new Session(sessionData)
@@ -84,7 +84,7 @@ describe('Session Model', () => {
     it('should set default isActive to true when not provided', () => {
       const sessionData = {
         userId: mockUserId,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000,
         refreshTokenHash: 'hashedToken',
       }
 
@@ -96,7 +96,7 @@ describe('Session Model', () => {
     it('should set default replacedBy to null when not provided', () => {
       const sessionData = {
         userId: mockUserId,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000,
         refreshTokenHash: 'hashedToken',
       }
 
@@ -160,7 +160,7 @@ describe('Session Model', () => {
     it('should have correct field types', () => {
       const sessionData = {
         userId: mockUserId,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000,
         refreshTokenHash: 'hashedToken',
         isActive: true,
         replacedBy: mockReplacedBy,
@@ -169,7 +169,7 @@ describe('Session Model', () => {
       const session = new Session(sessionData)
 
       expect(session.userId).toBeInstanceOf(Types.ObjectId)
-      expect(session.expiresAt).toBeInstanceOf(Date)
+      expect(typeof session.expiresAt).toBe('number')
       expect(typeof session.refreshTokenHash).toBe('string')
       expect(typeof session.isActive).toBe('boolean')
       expect(session.replacedBy).toBeInstanceOf(Types.ObjectId)

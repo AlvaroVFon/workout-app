@@ -17,7 +17,7 @@ const sessionSchema = new Schema<SessionDTO>(
       default: null,
     },
     expiresAt: {
-      type: Date,
+      type: Number,
       required: true,
     },
     refreshTokenHash: {

@@ -13,7 +13,7 @@ describe('SessionService', () => {
 
   const mockSessionData: CreateSessionDTO = {
     userId: mockUserId,
-    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+    expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days from now
     refreshTokenHash: 'hashedRefreshToken',
     isActive: true,
   }
@@ -23,7 +23,7 @@ describe('SessionService', () => {
     userId: new Types.ObjectId(mockUserId),
     createdAt: new Date(),
     updatedAt: new Date(),
-    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
     refreshTokenHash: 'hashedRefreshToken',
     isActive: true,
     replacedBy: undefined,
