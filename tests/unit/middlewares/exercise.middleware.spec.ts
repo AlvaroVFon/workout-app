@@ -33,13 +33,13 @@ describe('ExerciseMiddleware', () => {
     jest.clearAllMocks()
   })
 
-  describe('checkCreateExerciseSchema', () => {
+  describe('validateCreateExerciseSchema', () => {
     it('should call next if validation passes', () => {
       ;(createExerciseSchema.validate as jest.Mock).mockReturnValue({
         error: null,
       })
 
-      exerciseMiddleware.checkCreateExerciseSchema(req as Request, res as Response, next)
+      exerciseMiddleware.validateCreateExerciseSchema(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalled()
       expect(responseHandler).not.toHaveBeenCalled()
@@ -51,19 +51,19 @@ describe('ExerciseMiddleware', () => {
         error: validationError,
       })
 
-      exerciseMiddleware.checkCreateExerciseSchema(req as Request, res as Response, next)
+      exerciseMiddleware.validateCreateExerciseSchema(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith(new BadRequestException(validationError.details[0].message))
     })
   })
 
-  describe('checkUpdateExerciseSchema', () => {
+  describe('validateUpdateExerciseSchema', () => {
     it('should call next if validation passes', () => {
       ;(updateExerciseSchema.validate as jest.Mock).mockReturnValue({
         error: null,
       })
 
-      exerciseMiddleware.checkUpdateExerciseSchema(req as Request, res as Response, next)
+      exerciseMiddleware.validateUpdateExerciseSchema(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalled()
       expect(responseHandler).not.toHaveBeenCalled()
@@ -75,7 +75,7 @@ describe('ExerciseMiddleware', () => {
         error: validationError,
       })
 
-      exerciseMiddleware.checkUpdateExerciseSchema(req as Request, res as Response, next)
+      exerciseMiddleware.validateUpdateExerciseSchema(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith(new BadRequestException(validationError.details[0].message))
     })

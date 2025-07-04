@@ -1,13 +1,13 @@
-import { Request, Response, NextFunction } from 'express'
-import { loginSchema, refreshTokenSchema } from '../schemas/auth/auth.schema'
-import BadRequestException from '../exceptions/BadRequestException'
+import { NextFunction, Request, Response } from 'express'
 import passport from '../config/passport'
+import BadRequestException from '../exceptions/BadRequestException'
+import ForbiddenException from '../exceptions/ForbiddenException'
 import UnauthorizedException from '../exceptions/UnauthorizedException'
 import { AuthenticatedUser } from '../interfaces/user.inteface'
-import ForbiddenException from '../exceptions/ForbiddenException'
+import { headerTokenSchema, loginSchema, refreshTokenSchema } from '../schemas/auth/auth.schema'
 
 class AuthMiddleware {
-  async verifyLoginSchema(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async validateLoginSchema(req: Request, res: Response, next: NextFunction): Promise<void> {
     const data = req.body
 
     try {
@@ -44,9 +44,21 @@ class AuthMiddleware {
     }
   }
 
-  verifyRefreshSchema(req: Request, res: Response, next: NextFunction): void {
+  validateRefreshSchema(req: Request, res: Response, next: NextFunction): void {
     try {
       const { error } = refreshTokenSchema.validate(req.body)
+      if (error) return next(new BadRequestException(error.details[0].message))
+
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  validateHeaderRefreshToken(req: Request, res: Response, next: NextFunction): void {
+    try {
+      const refreshToken = req.headers['x-refresh-token'] as string
+      const { error } = headerTokenSchema.validate(refreshToken)
       if (error) return next(new BadRequestException(error.details[0].message))
 
       next()

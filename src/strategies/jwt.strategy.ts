@@ -20,10 +20,13 @@ export const jwtStrategy = new JwtStrategy(opts, async (payload, done) => {
 
     const publicUser: PublicUserDTO = {
       id: user.id,
-      email: user.email,
       name: user.name,
+      email: user.email,
       idDocument: user.idDocument,
       role: user.role.name,
+      lastName: user.lastName,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     }
 
     return done(null, publicUser)

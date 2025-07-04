@@ -1,8 +1,8 @@
 import { Types } from 'mongoose'
-import sessionService from '../../../src/services/session.service'
-import sessionRepository from '../../../src/repositories/session.repository'
 import { CreateSessionDTO } from '../../../src/DTOs/session/create.dto'
 import { SessionDTO } from '../../../src/DTOs/session/session.dto'
+import sessionRepository from '../../../src/repositories/session.repository'
+import sessionService from '../../../src/services/session.service'
 
 jest.mock('../../../src/repositories/session.repository')
 

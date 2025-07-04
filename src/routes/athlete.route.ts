@@ -18,7 +18,7 @@ router
   )
   .post(
     '/',
-    [athleteMiddleware.checkCreateAthleteSchema, athleteMiddleware.validateAthleteExistence],
+    [athleteMiddleware.validateCreateAthleteSchema, athleteMiddleware.validateAthleteExistence],
     athleteController.create,
   )
   .patch(
@@ -26,7 +26,7 @@ router
     [
       globalValidatorMiddleware.validateObjectId,
       athleteMiddleware.validateAthleteOwnership,
-      athleteMiddleware.checkUpdateAthleteSchema,
+      athleteMiddleware.validateUpdateAthleteSchema,
     ],
     athleteController.update,
   )

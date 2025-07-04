@@ -6,7 +6,7 @@ import {
 import BadRequestException from '../exceptions/BadRequestException'
 
 class TrainingSessionMiddleware {
-  checkCreateTrainingSessionSchema(req: Request, res: Response, next: NextFunction) {
+  validateCreateTrainingSessionSchema(req: Request, res: Response, next: NextFunction) {
     try {
       const { value, error } = createTrainingSessionSchema.validate(req.body)
       if (error) return next(new BadRequestException(error.details[0].message))
@@ -18,7 +18,7 @@ class TrainingSessionMiddleware {
     }
   }
 
-  checkUpdateTrainingSessionSchema(req: Request, res: Response, next: NextFunction) {
+  validateUpdateTrainingSessionSchema(req: Request, res: Response, next: NextFunction) {
     try {
       const { error } = updateTrainingSessionSchema.validate(req.body)
       if (error) return next(new BadRequestException(error.details[0].message))

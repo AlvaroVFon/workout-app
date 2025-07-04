@@ -1,10 +1,11 @@
 import { Types } from 'mongoose'
-import { invalidateSession, rotateSession, rotateUserSessionAndTokens } from '../../../src/helpers/session.helper'
-import sessionService from '../../../src/services/session.service'
-import { hashString } from '../../../src/helpers/crypto.helper'
-import { generateAccessTokens } from '../../../src/utils/jwt.utils'
-import { Payload } from '../../../src/interfaces/payload.interface'
+import { parameters } from '../../../src/config/parameters'
 import { SessionDTO } from '../../../src/DTOs/session/session.dto'
+import { hashString } from '../../../src/helpers/crypto.helper'
+import { invalidateSession, rotateSession, rotateUserSessionAndTokens } from '../../../src/helpers/session.helper'
+import { Payload } from '../../../src/interfaces/payload.interface'
+import sessionService from '../../../src/services/session.service'
+import { generateAccessTokens } from '../../../src/utils/jwt.utils'
 
 jest.mock('../../../src/services/session.service')
 jest.mock('../../../src/helpers/crypto.helper')
@@ -102,7 +103,6 @@ describe('Session Helper', () => {
       })
       expect(result).toEqual(rotatedSession)
 
-      // Verify that the expiresAt date is set to current time (for TTL cleanup)
       const updateCall = (sessionService.update as jest.Mock).mock.calls[0][1]
       const expiresAt = updateCall.expiresAt
       expect(expiresAt).toBeInstanceOf(Date)
@@ -173,6 +173,8 @@ describe('Session Helper', () => {
     })
 
     it('should create session with correct expiration time', async () => {
+      jest.resetModules()
+      parameters.jwtRefreshExpiration = '30d'
       ;(generateAccessTokens as jest.Mock).mockReturnValue(mockTokens)
       ;(sessionService.findActiveByUserId as jest.Mock).mockResolvedValue(null)
       ;(hashString as jest.Mock).mockResolvedValue('hashedNewRefreshToken')
@@ -183,10 +185,9 @@ describe('Session Helper', () => {
       const createCall = (sessionService.create as jest.Mock).mock.calls[0][0]
       const expiresAt = createCall.expiresAt
       expect(expiresAt).toBeInstanceOf(Date)
-      // Should be approximately 30 days from now (default JWT_REFRESH_EXPIRATION is 30d)
       const thirtyDaysFromNow = Date.now() + 30 * 24 * 60 * 60 * 1000
       const timeDiff = Math.abs(expiresAt.getTime() - thirtyDaysFromNow)
-      expect(timeDiff).toBeLessThan(1000) // Allow 1 second difference
+      expect(timeDiff).toBeLessThan(1000)
     })
 
     it('should handle token generation errors', async () => {
@@ -234,7 +235,6 @@ describe('Session Helper', () => {
         email: mockPayload.email,
         idDocument: mockPayload.idDocument,
       })
-      // Should not include the type field
       expect(generateAccessTokens).not.toHaveBeenCalledWith(expect.objectContaining({ type: expect.anything() }))
     })
   })

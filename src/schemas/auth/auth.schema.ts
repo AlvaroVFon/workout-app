@@ -8,3 +8,5 @@ export const loginSchema = Joi.object({
 export const refreshTokenSchema = Joi.object({
   refreshToken: Joi.string().required(),
 }).required()
+
+export const headerTokenSchema = Joi.string().required().label('x-refresh-token')

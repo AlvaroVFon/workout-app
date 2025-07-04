@@ -20,13 +20,13 @@ describe('AuthMiddleware', () => {
     next = jest.fn()
   })
 
-  describe('verifyLoginSchema', () => {
+  describe('validateLoginSchema', () => {
     it('should call next with BadRequestException if validation fails', async () => {
       ;(loginSchema.validate as jest.Mock).mockReturnValueOnce({
         error: { details: [{ message: 'Invalid data' }] },
       })
 
-      await AuthMiddleware.verifyLoginSchema(req as Request, res as Response, next)
+      await AuthMiddleware.validateLoginSchema(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith(new BadRequestException('Invalid data'))
     })
@@ -34,7 +34,7 @@ describe('AuthMiddleware', () => {
     it('should call next with no arguments if validation passes', async () => {
       ;(loginSchema.validate as jest.Mock).mockReturnValueOnce({ error: null })
 
-      await AuthMiddleware.verifyLoginSchema(req as Request, res as Response, next)
+      await AuthMiddleware.validateLoginSchema(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith()
     })

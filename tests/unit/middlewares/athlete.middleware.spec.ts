@@ -16,7 +16,7 @@ describe('athlete.middleware', () => {
     jest.clearAllMocks()
   })
 
-  describe('checkCreateAthleteSchema', () => {
+  describe('validateCreateAthleteSchema', () => {
     it('should call next with no error for valid body', () => {
       req.body = {
         email: 'athlete@example.com',
@@ -24,27 +24,27 @@ describe('athlete.middleware', () => {
         lastname: 'Doe',
         idDocument: 'ID123',
       }
-      athleteMiddleware.checkCreateAthleteSchema(req as Request, res as Response, next)
+      athleteMiddleware.validateCreateAthleteSchema(req as Request, res as Response, next)
       expect(next).toHaveBeenCalledWith()
     })
 
     it('should call next with BadRequestException for invalid body', () => {
       req.body = { firstname: 'Jane' }
-      athleteMiddleware.checkCreateAthleteSchema(req as Request, res as Response, next)
+      athleteMiddleware.validateCreateAthleteSchema(req as Request, res as Response, next)
       expect(next.mock.calls[0][0]).toBeInstanceOf(BadRequestException)
     })
   })
 
-  describe('checkUpdateAthleteSchema', () => {
+  describe('validateUpdateAthleteSchema', () => {
     it('should call next with no error for valid update', () => {
       req.body = { firstname: 'Updated' }
-      athleteMiddleware.checkUpdateAthleteSchema(req as Request, res as Response, next)
+      athleteMiddleware.validateUpdateAthleteSchema(req as Request, res as Response, next)
       expect(next).toHaveBeenCalledWith()
     })
 
     it('should call next with BadRequestException for invalid update', () => {
       req.body = { height: 0 }
-      athleteMiddleware.checkUpdateAthleteSchema(req as Request, res as Response, next)
+      athleteMiddleware.validateUpdateAthleteSchema(req as Request, res as Response, next)
       expect(next.mock.calls[0][0]).toBeInstanceOf(BadRequestException)
     })
   })

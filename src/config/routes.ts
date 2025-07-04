@@ -1,13 +1,13 @@
 import { Express } from 'express'
-import { indexRouter } from '../routes/index.route'
-import { authRouter } from '../routes/auth.route'
-import { roleRouter } from '../routes/role.route'
-import { userRouter } from '../routes/user.route'
-import { muscleRouter } from '../routes/muscle.route'
 import { errorHandler } from '../handlers/errorHandler'
-import { exerciseRouter } from '../routes/exercise.route'
 import { athleteRouter } from '../routes/athlete.route'
+import { authRouter } from '../routes/auth.route'
+import { exerciseRouter } from '../routes/exercise.route'
+import { indexRouter } from '../routes/index.route'
+import { muscleRouter } from '../routes/muscle.route'
+import { roleRouter } from '../routes/role.route'
 import { trainingSessionRouter } from '../routes/trainingSession.route'
+import { userRouter } from '../routes/user.route'
 
 function configureRoutes(app: Express): void {
   app.use('/', indexRouter)

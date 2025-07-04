@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 import { parameters } from '../../../src/config/parameters'
+import { rotateUserSessionAndTokens } from '../../../src/helpers/session.helper'
 import { Payload } from '../../../src/interfaces/payload.interface'
 import {
   generateAccessTokens,
@@ -9,7 +10,6 @@ import {
   verifyRefreshToken,
   verifyToken,
 } from '../../../src/utils/jwt.utils'
-import { rotateUserSessionAndTokens } from '../../../src/helpers/session.helper'
 
 jest.mock('jsonwebtoken')
 jest.mock('../../../src/helpers/session.helper', () => ({

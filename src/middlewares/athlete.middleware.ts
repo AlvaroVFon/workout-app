@@ -7,7 +7,7 @@ import { AuthenticatedUser } from '../interfaces/user.inteface'
 import ForbiddenException from '../exceptions/ForbiddenException'
 
 class AthleteMiddleware {
-  checkCreateAthleteSchema(req: Request, res: Response, next: NextFunction) {
+  validateCreateAthleteSchema(req: Request, res: Response, next: NextFunction) {
     try {
       const { error } = createAthleteSchema.validate(req.body)
       if (error) return next(new BadRequestException(error.details[0].message))
@@ -18,7 +18,7 @@ class AthleteMiddleware {
     }
   }
 
-  checkUpdateAthleteSchema(req: Request, res: Response, next: NextFunction) {
+  validateUpdateAthleteSchema(req: Request, res: Response, next: NextFunction) {
     try {
       const { error } = updateAthleteSchema.validate(req.body)
       if (error) return next(new BadRequestException(error.details[0].message))

@@ -1,8 +1,9 @@
 import { verifyHashedString } from '../helpers/crypto.helper'
-import { rotateUserSessionAndTokens } from '../helpers/session.helper'
+import { invalidateSession, rotateUserSessionAndTokens } from '../helpers/session.helper'
 import { Payload } from '../interfaces/payload.interface'
 import { AuthServiceLoginResponse } from '../types/index.types'
 import { refreshTokens, verifyToken } from '../utils/jwt.utils'
+import sessionService from './session.service'
 import userService from './user.service'
 
 class AuthService {
@@ -33,6 +34,17 @@ class AuthService {
 
   async refreshTokens(token: string): Promise<{ token: string; refreshToken: string } | null> {
     return refreshTokens(token)
+  }
+
+  async logout(token: string): Promise<boolean> {
+    const payload = verifyToken(token)
+    if (!payload) return false
+
+    const session = await sessionService.findActiveByUserId(payload.id)
+    if (!session) return false
+
+    await invalidateSession(session)
+    return true
   }
 }
 

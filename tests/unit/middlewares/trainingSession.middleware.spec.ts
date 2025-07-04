@@ -28,7 +28,7 @@ describe('TrainingSession Middleware', () => {
     jest.clearAllMocks()
   })
 
-  describe('checkCreateTrainingSessionSchema', () => {
+  describe('validateCreateTrainingSessionSchema', () => {
     it('should validate valid training session data successfully', () => {
       const validTrainingSession = {
         athlete: new ObjectId(),
@@ -55,7 +55,7 @@ describe('TrainingSession Middleware', () => {
         error: undefined,
       } as never)
 
-      trainingSessionMiddleware.checkCreateTrainingSessionSchema(
+      trainingSessionMiddleware.validateCreateTrainingSessionSchema(
         mockRequest as Request,
         mockResponse as Response,
         mockNext,
@@ -83,7 +83,7 @@ describe('TrainingSession Middleware', () => {
         error: validationError,
       } as any)
 
-      trainingSessionMiddleware.checkCreateTrainingSessionSchema(
+      trainingSessionMiddleware.validateCreateTrainingSessionSchema(
         mockRequest as Request,
         mockResponse as Response,
         mockNext,
@@ -113,7 +113,7 @@ describe('TrainingSession Middleware', () => {
         error: validationError,
       } as any)
 
-      trainingSessionMiddleware.checkCreateTrainingSessionSchema(
+      trainingSessionMiddleware.validateCreateTrainingSessionSchema(
         mockRequest as Request,
         mockResponse as Response,
         mockNext,
@@ -139,7 +139,7 @@ describe('TrainingSession Middleware', () => {
         throw thrownError
       })
 
-      trainingSessionMiddleware.checkCreateTrainingSessionSchema(
+      trainingSessionMiddleware.validateCreateTrainingSessionSchema(
         mockRequest as Request,
         mockResponse as Response,
         mockNext,
@@ -159,7 +159,7 @@ describe('TrainingSession Middleware', () => {
         error: validationError,
       } as any)
 
-      trainingSessionMiddleware.checkCreateTrainingSessionSchema(
+      trainingSessionMiddleware.validateCreateTrainingSessionSchema(
         mockRequest as Request,
         mockResponse as Response,
         mockNext,
@@ -169,7 +169,7 @@ describe('TrainingSession Middleware', () => {
     })
   })
 
-  describe('checkUpdateTrainingSessionSchema', () => {
+  describe('validateUpdateTrainingSessionSchema', () => {
     it('should validate valid update data successfully', () => {
       const validUpdateData = {
         notes: 'Updated workout notes',
@@ -183,7 +183,7 @@ describe('TrainingSession Middleware', () => {
         error: undefined,
       } as any)
 
-      trainingSessionMiddleware.checkUpdateTrainingSessionSchema(
+      trainingSessionMiddleware.validateUpdateTrainingSessionSchema(
         mockRequest as Request,
         mockResponse as Response,
         mockNext,
@@ -210,7 +210,7 @@ describe('TrainingSession Middleware', () => {
         error: validationError,
       } as any)
 
-      trainingSessionMiddleware.checkUpdateTrainingSessionSchema(
+      trainingSessionMiddleware.validateUpdateTrainingSessionSchema(
         mockRequest as Request,
         mockResponse as Response,
         mockNext,
@@ -234,7 +234,7 @@ describe('TrainingSession Middleware', () => {
         throw thrownError
       })
 
-      trainingSessionMiddleware.checkUpdateTrainingSessionSchema(
+      trainingSessionMiddleware.validateUpdateTrainingSessionSchema(
         mockRequest as Request,
         mockResponse as Response,
         mockNext,
@@ -250,7 +250,7 @@ describe('TrainingSession Middleware', () => {
         error: undefined,
       } as any)
 
-      trainingSessionMiddleware.checkUpdateTrainingSessionSchema(
+      trainingSessionMiddleware.validateUpdateTrainingSessionSchema(
         mockRequest as Request,
         mockResponse as Response,
         mockNext,
@@ -271,7 +271,7 @@ describe('TrainingSession Middleware', () => {
         error: undefined,
       } as any)
 
-      trainingSessionMiddleware.checkUpdateTrainingSessionSchema(
+      trainingSessionMiddleware.validateUpdateTrainingSessionSchema(
         mockRequest as Request,
         mockResponse as Response,
         mockNext,
@@ -299,7 +299,7 @@ describe('TrainingSession Middleware', () => {
         error: validationError,
       } as any)
 
-      trainingSessionMiddleware.checkUpdateTrainingSessionSchema(
+      trainingSessionMiddleware.validateUpdateTrainingSessionSchema(
         mockRequest as Request,
         mockResponse as Response,
         mockNext,

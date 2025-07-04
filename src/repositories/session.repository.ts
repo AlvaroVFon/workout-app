@@ -9,15 +9,15 @@ class SessionRepository {
   }
 
   findById(id: string, projection: ProjectionType<SessionDTO> = {}): Promise<SessionDTO | null> {
-    return Session.findById({ _id: id }, projection).populate('user').exec()
+    return Session.findById({ _id: id }, projection).exec()
   }
 
   findByUserId(userId: string, projection: ProjectionType<SessionDTO> = {}): Promise<SessionDTO | null> {
-    return Session.findOne({ userId }, projection).populate('user').exec()
+    return Session.findOne({ userId }, projection).exec()
   }
 
   findAllByUserId(userId: string, projection: ProjectionType<SessionDTO> = {}): Promise<SessionDTO[]> {
-    return Session.find({ userId }, projection).populate('user').exec()
+    return Session.find({ userId }, projection).exec()
   }
 
   findActiveByUserId(userId: string, projection: ProjectionType<SessionDTO> = {}): Promise<SessionDTO | null> {

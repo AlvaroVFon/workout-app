@@ -1,9 +1,9 @@
-import { Request, Response, NextFunction } from 'express'
-import roleMiddleware from '../../../src/middlewares/role.middleware'
-import roleService from '../../../src/services/role.service'
-import { createRoleSchema } from '../../../src/schemas/role/role.schema'
+import { Request, Response } from 'express'
 import BadRequestException from '../../../src/exceptions/BadRequestException'
 import ConflictException from '../../../src/exceptions/ConflictException'
+import roleMiddleware from '../../../src/middlewares/role.middleware'
+import { createRoleSchema } from '../../../src/schemas/role/role.schema'
+import roleService from '../../../src/services/role.service'
 
 jest.mock('../../../src/schemas/role/role.schema', () => ({
   createRoleSchema: {
@@ -28,11 +28,11 @@ describe('RoleMiddleware', () => {
     next = jest.fn()
   })
 
-  describe('checkCreateRoleSchema', () => {
+  describe('validateCreateRoleSchema', () => {
     it('should call next if validation passes', () => {
       ;(createRoleSchema.validate as jest.Mock).mockReturnValue({ error: null })
 
-      roleMiddleware.checkCreateRoleSchema(req as Request, res as Response, next)
+      roleMiddleware.validateCreateRoleSchema(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalled()
     })
@@ -43,19 +43,19 @@ describe('RoleMiddleware', () => {
         error: validationError,
       })
 
-      roleMiddleware.checkCreateRoleSchema(req as Request, res as Response, next)
+      roleMiddleware.validateCreateRoleSchema(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith(new BadRequestException(validationError.details[0].message))
     })
   })
 
-  describe('verifyRoleExistance', () => {
+  describe('verifyRoleExistence', () => {
     it('should call next if role does not exist', async () => {
       ;(roleService.findByName as jest.Mock).mockReturnValue(null)
 
       req.body = { name: 'user' }
 
-      await roleMiddleware.verifyRoleExistance(req as Request, res as Response, next)
+      await roleMiddleware.verifyRoleExistence(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalled()
     })
@@ -64,7 +64,7 @@ describe('RoleMiddleware', () => {
       const mockRole = { name: 'someRole' }
       ;(roleService.findByName as jest.Mock).mockResolvedValue(mockRole)
 
-      await roleMiddleware.verifyRoleExistance(req as Request, res as Response, next)
+      await roleMiddleware.verifyRoleExistence(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith(new ConflictException('Role already exists'))
     })
