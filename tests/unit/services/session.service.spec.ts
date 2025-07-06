@@ -13,7 +13,7 @@ describe('SessionService', () => {
 
   const mockSessionData: CreateSessionDTO = {
     userId: mockUserId,
-    expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days from now
+    expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
     refreshTokenHash: 'hashedRefreshToken',
     isActive: true,
   }
@@ -57,7 +57,7 @@ describe('SessionService', () => {
 
       const result = await sessionService.findById(mockSessionId)
 
-      expect(sessionRepository.findById).toHaveBeenCalledWith(mockSessionId, {})
+      expect(sessionRepository.findById).toHaveBeenCalledWith(mockSessionId, {}, {})
       expect(result).toEqual(mockSession)
     })
 
@@ -67,7 +67,7 @@ describe('SessionService', () => {
 
       const result = await sessionService.findById(mockSessionId, projection)
 
-      expect(sessionRepository.findById).toHaveBeenCalledWith(mockSessionId, projection)
+      expect(sessionRepository.findById).toHaveBeenCalledWith(mockSessionId, projection, {})
       expect(result).toEqual(mockSession)
     })
 
@@ -82,16 +82,20 @@ describe('SessionService', () => {
 
   describe('findByUserId', () => {
     it('should find a session by user ID successfully', async () => {
-      ;(sessionRepository.findByUserId as jest.Mock).mockResolvedValue(mockSession)
+      ;(sessionRepository.findOne as jest.Mock).mockResolvedValue(mockSession)
 
       const result = await sessionService.findByUserId(mockUserId)
 
-      expect(sessionRepository.findByUserId).toHaveBeenCalledWith(mockUserId, {})
+      expect(sessionRepository.findOne).toHaveBeenCalledWith({
+        query: { userId: mockUserId },
+        projection: {},
+        options: {},
+      })
       expect(result).toEqual(mockSession)
     })
 
     it('should return null when no session is found for user', async () => {
-      ;(sessionRepository.findByUserId as jest.Mock).mockResolvedValue(null)
+      ;(sessionRepository.findOne as jest.Mock).mockResolvedValue(null)
 
       const result = await sessionService.findByUserId(mockUserId)
 
@@ -102,16 +106,20 @@ describe('SessionService', () => {
   describe('findAllByUserId', () => {
     it('should find all sessions for a user', async () => {
       const mockSessions = [mockSession, { ...mockSession, _id: new Types.ObjectId() }]
-      ;(sessionRepository.findAllByUserId as jest.Mock).mockResolvedValue(mockSessions)
+      ;(sessionRepository.findAll as jest.Mock).mockResolvedValue(mockSessions)
 
       const result = await sessionService.findAllByUserId(mockUserId)
 
-      expect(sessionRepository.findAllByUserId).toHaveBeenCalledWith(mockUserId, {})
+      expect(sessionRepository.findAll).toHaveBeenCalledWith({
+        query: { userId: mockUserId },
+        projection: {},
+        options: {},
+      })
       expect(result).toEqual(mockSessions)
     })
 
     it('should return empty array when no sessions found', async () => {
-      ;(sessionRepository.findAllByUserId as jest.Mock).mockResolvedValue([])
+      ;(sessionRepository.findAll as jest.Mock).mockResolvedValue([])
 
       const result = await sessionService.findAllByUserId(mockUserId)
 
@@ -121,16 +129,20 @@ describe('SessionService', () => {
 
   describe('findActiveByUserId', () => {
     it('should find active session for a user', async () => {
-      ;(sessionRepository.findActiveByUserId as jest.Mock).mockResolvedValue(mockSession)
+      ;(sessionRepository.findOne as jest.Mock).mockResolvedValue(mockSession)
 
       const result = await sessionService.findActiveByUserId(mockUserId)
 
-      expect(sessionRepository.findActiveByUserId).toHaveBeenCalledWith(mockUserId, {})
+      expect(sessionRepository.findOne).toHaveBeenCalledWith({
+        query: { userId: mockUserId, isActive: true },
+        projection: {},
+        options: {},
+      })
       expect(result).toEqual(mockSession)
     })
 
     it('should return null when no active session found', async () => {
-      ;(sessionRepository.findActiveByUserId as jest.Mock).mockResolvedValue(null)
+      ;(sessionRepository.findOne as jest.Mock).mockResolvedValue(null)
 
       const result = await sessionService.findActiveByUserId(mockUserId)
 

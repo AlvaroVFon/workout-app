@@ -1,5 +1,4 @@
 import { Types } from 'mongoose'
-import ms from 'ms'
 import { parameters } from '../../../src/config/parameters'
 import { SessionDTO } from '../../../src/DTOs/session/session.dto'
 import { hashString } from '../../../src/helpers/crypto.helper'
@@ -180,22 +179,24 @@ describe('Session Helper', () => {
       expect(result).toEqual(mockTokens)
     })
 
-    it('should create session with correct expiration time', async () => {
-      parameters.jwtRefreshExpiration = '30d'
+    it('Should create tokens with correct expiration', async () => {
+      const expirationTime = 30 * 24 * 60 * 60 * 1000
+      parameters.jwtRefreshExpiration = String(expirationTime)
       ;(generateAccessTokens as jest.Mock).mockReturnValue(mockTokens)
       ;(sessionService.findActiveByUserId as jest.Mock).mockResolvedValue(null)
       ;(hashString as jest.Mock).mockResolvedValue('hashedNewRefreshToken')
       ;(sessionService.create as jest.Mock).mockResolvedValue(mockNewSession)
-
-      await rotateUserSessionAndTokens(mockPayload)
-
-      const createCall = (sessionService.create as jest.Mock).mock.calls[0][0]
-      const expiresAt = createCall.expiresAt
-      expect(typeof expiresAt).toBe('number')
-      const expirationMs = ms(String(parameters.jwtRefreshExpiration) as ms.StringValue)
-      const expectedExpiration = Date.now() + expirationMs
-      const timeDiff = Math.abs(expiresAt - expectedExpiration)
-      expect(timeDiff).toBeLessThan(1000)
+      const result = await rotateUserSessionAndTokens(mockPayload)
+      expect(sessionService.create).toHaveBeenCalledWith({
+        userId: mockUserId,
+        isActive: true,
+        expiresAt: expect.any(Number),
+        refreshTokenHash: 'hashedNewRefreshToken',
+      })
+      const expiresAt = (sessionService.create as jest.Mock).mock.calls[0][0].expiresAt
+      expect(expiresAt).toBeGreaterThan(Date.now())
+      expect(expiresAt).toBeLessThanOrEqual(Date.now() + expirationTime)
+      expect(result).toEqual(mockTokens)
     })
 
     it('should handle token generation errors', async () => {

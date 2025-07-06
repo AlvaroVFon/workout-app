@@ -9,19 +9,19 @@ class AttemptService {
   }
 
   async findByUserAndType(userId: string, type: string): Promise<AttemptDTO | null> {
-    return attemptRepository.findByUserIdAndType(userId, type)
+    return attemptRepository.findOne({ query: { userId, type } })
   }
 
   async countByUserAndType(userId: string, type: string, success: boolean = false): Promise<number> {
-    return attemptRepository.countByUserIdAndType(userId, type, success)
+    return attemptRepository.count({ userId, type, success })
   }
 
   async countByUserEmailAndType(email: string, type: string, success: boolean = false): Promise<number> {
-    return attemptRepository.countByUserEmailAndType(email, type, success)
+    return attemptRepository.count({ email, type, success })
   }
 
   async deleteByUserAndType(userId: string, type: string, success: boolean = false): Promise<void> {
-    await attemptRepository.deleteByUserIdAndType(userId, type, success)
+    await attemptRepository.delete({ userId, type, success })
   }
 
   async isMaxLoginAttemptsReached(userId: string, maxAttempts: number): Promise<boolean> {

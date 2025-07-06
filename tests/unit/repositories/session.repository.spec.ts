@@ -1,4 +1,4 @@
-import { Types } from 'mongoose'
+import { ObjectId } from 'mongodb'
 import { CreateSessionDTO } from '../../../src/DTOs/session/create.dto'
 import { SessionDTO } from '../../../src/DTOs/session/session.dto'
 import Session from '../../../src/models/Session'
@@ -7,8 +7,8 @@ import sessionRepository from '../../../src/repositories/session.repository'
 jest.mock('../../../src/models/Session')
 
 describe('SessionRepository', () => {
-  const mockSessionId = new Types.ObjectId().toString()
-  const mockUserId = new Types.ObjectId().toString()
+  const mockSessionId = new ObjectId().toString()
+  const mockUserId = new ObjectId().toString()
 
   const mockSessionData: CreateSessionDTO = {
     userId: mockUserId,
@@ -18,8 +18,8 @@ describe('SessionRepository', () => {
   }
 
   const mockSession = {
-    _id: new Types.ObjectId(mockSessionId),
-    userId: new Types.ObjectId(mockUserId),
+    _id: new ObjectId(mockSessionId),
+    userId: new ObjectId(mockUserId),
     createdAt: new Date(),
     updatedAt: new Date(),
     expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
@@ -35,7 +35,6 @@ describe('SessionRepository', () => {
   describe('create', () => {
     it('should create a session successfully', async () => {
       ;(Session.create as jest.Mock).mockResolvedValue(mockSession)
-
       const result = await sessionRepository.create(mockSessionData)
 
       expect(Session.create).toHaveBeenCalledWith(mockSessionData)
@@ -50,6 +49,42 @@ describe('SessionRepository', () => {
     })
   })
 
+  describe('findOne', () => {
+    it('should find a session by query successfully', async () => {
+      const mockQuery = {
+        exec: jest.fn().mockResolvedValue(mockSession),
+      }
+      ;(Session.findOne as jest.Mock).mockReturnValue(mockQuery)
+      const result = await sessionRepository.findOne({ query: { userId: mockUserId } })
+      expect(Session.findOne).toHaveBeenCalledWith({ userId: mockUserId }, {}, {})
+      expect(result).toEqual(mockSession)
+    })
+
+    it('should return null when session is not found', async () => {
+      const mockQuery = {
+        exec: jest.fn().mockResolvedValue(null),
+      }
+      ;(Session.findOne as jest.Mock).mockReturnValue(mockQuery)
+
+      const result = await sessionRepository.findOne({ query: { userId: mockUserId } })
+
+      expect(result).toBeNull()
+    })
+
+    it('should find a session with custom projection', async () => {
+      const projection = { refreshTokenHash: 0 }
+      const mockQuery = {
+        exec: jest.fn().mockResolvedValue(mockSession),
+      }
+      ;(Session.findOne as jest.Mock).mockReturnValue(mockQuery)
+
+      const result = await sessionRepository.findOne({ query: { userId: mockUserId }, projection })
+
+      expect(Session.findOne).toHaveBeenCalledWith({ userId: mockUserId }, projection, {})
+      expect(result).toEqual(mockSession)
+    })
+  })
+
   describe('findById', () => {
     it('should find a session by ID successfully', async () => {
       const mockQuery = {
@@ -59,7 +94,7 @@ describe('SessionRepository', () => {
 
       const result = await sessionRepository.findById(mockSessionId)
 
-      expect(Session.findById).toHaveBeenCalledWith({ _id: mockSessionId }, {})
+      expect(Session.findById).toHaveBeenCalledWith(mockSessionId, {}, {})
       expect(result).toEqual(mockSession)
     })
 
@@ -71,9 +106,9 @@ describe('SessionRepository', () => {
       }
       ;(Session.findById as jest.Mock).mockReturnValue(mockQuery)
 
-      const result = await sessionRepository.findById(mockSessionId, projection)
+      const result = await sessionRepository.findById(mockSessionId.toString(), projection)
 
-      expect(Session.findById).toHaveBeenCalledWith({ _id: mockSessionId }, projection)
+      expect(Session.findById).toHaveBeenCalledWith(mockSessionId.toString(), projection, {})
       expect(result).toEqual(mockSession)
     })
 
@@ -90,43 +125,17 @@ describe('SessionRepository', () => {
     })
   })
 
-  describe('findByUserId', () => {
-    it('should find a session by user ID successfully', async () => {
-      const mockQuery = {
-        exec: jest.fn().mockResolvedValue(mockSession),
-      }
-      ;(Session.findOne as jest.Mock).mockReturnValue(mockQuery)
-
-      const result = await sessionRepository.findByUserId(mockUserId)
-
-      expect(Session.findOne).toHaveBeenCalledWith({ userId: mockUserId }, {})
-      expect(result).toEqual(mockSession)
-    })
-
-    it('should return null when no session is found for user', async () => {
-      const mockQuery = {
-        populate: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(null),
-      }
-      ;(Session.findOne as jest.Mock).mockReturnValue(mockQuery)
-
-      const result = await sessionRepository.findByUserId(mockUserId)
-
-      expect(result).toBeNull()
-    })
-  })
-
-  describe('findAllByUserId', () => {
+  describe('findAll', () => {
     it('should find all sessions for a user', async () => {
-      const mockSessions = [mockSession, { ...mockSession, _id: new Types.ObjectId() }]
+      const mockSessions = [mockSession, { ...mockSession, _id: new ObjectId() }]
       const mockQuery = {
         exec: jest.fn().mockResolvedValue(mockSessions),
       }
       ;(Session.find as jest.Mock).mockReturnValue(mockQuery)
 
-      const result = await sessionRepository.findAllByUserId(mockUserId)
+      const result = await sessionRepository.findAll({ query: { userId: mockUserId } })
 
-      expect(Session.find).toHaveBeenCalledWith({ userId: mockUserId }, {})
+      expect(Session.find as jest.Mock).toHaveBeenCalledWith({ userId: mockUserId }, {}, {})
       expect(result).toEqual(mockSessions)
     })
 
@@ -137,34 +146,9 @@ describe('SessionRepository', () => {
       }
       ;(Session.find as jest.Mock).mockReturnValue(mockQuery)
 
-      const result = await sessionRepository.findAllByUserId(mockUserId)
+      const result = await sessionRepository.findAll({ query: { userId: mockUserId } })
 
       expect(result).toEqual([])
-    })
-  })
-
-  describe('findActiveByUserId', () => {
-    it('should find active session for a user', async () => {
-      const mockQuery = {
-        exec: jest.fn().mockResolvedValue(mockSession),
-      }
-      ;(Session.findOne as jest.Mock).mockReturnValue(mockQuery)
-
-      const result = await sessionRepository.findActiveByUserId(mockUserId)
-
-      expect(Session.findOne).toHaveBeenCalledWith({ userId: mockUserId, isActive: true }, {})
-      expect(result).toEqual(mockSession)
-    })
-
-    it('should return null when no active session found', async () => {
-      const mockQuery = {
-        exec: jest.fn().mockResolvedValue(null),
-      }
-      ;(Session.findOne as jest.Mock).mockReturnValue(mockQuery)
-
-      const result = await sessionRepository.findActiveByUserId(mockUserId)
-
-      expect(result).toBeNull()
     })
   })
 

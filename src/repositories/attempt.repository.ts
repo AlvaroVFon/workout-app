@@ -1,33 +1,25 @@
-import { DeleteResult } from 'mongoose'
+import { DeleteResult, RootFilterQuery } from 'mongoose'
 import { CreateAttemptDTO } from '../DTOs/attempt/create.dto'
 import { AttemptDTO } from '../DTOs/attempt/attempt.dto'
 import Attempt from '../models/Attempt'
+import { ModelQuery } from '../types/index.types'
 
 //TODO: simplificar repository, remove unnecessary methods and use generic repository pattern
 class RecoveryAttemptRepository {
-  create(recoveryAttempt: CreateAttemptDTO): Promise<AttemptDTO> {
-    return Attempt.create(recoveryAttempt)
+  create(attempt: CreateAttemptDTO): Promise<AttemptDTO> {
+    return Attempt.create(attempt)
   }
 
-  findByUserId(userId: string): Promise<AttemptDTO | null> {
-    return Attempt.findOne({ userId }).exec()
+  findOne({ query = {}, projection = {}, options = {} }: ModelQuery<AttemptDTO>) {
+    return Attempt.findOne(query, projection, options).exec()
   }
 
-  findByUserIdAndType(userId: string, type: string): Promise<AttemptDTO | null> {
-    return Attempt.findOne({ userId, type }).exec()
+  count(query: RootFilterQuery<AttemptDTO> = {}): Promise<number> {
+    return Attempt.countDocuments(query).exec()
   }
 
-  countByUserIdAndType(userId: string, type: string, success: boolean = false): Promise<number> {
-    return Attempt.countDocuments({ userId, type, success }).exec()
-  }
-
-  countByUserEmailAndType(email: string, type: string, success: boolean = false): Promise<number> {
-    return Attempt.countDocuments({ email, type, success }).exec()
-  }
-
-  deleteByUserIdAndType(userId: string, type: string, success: boolean = false): Promise<DeleteResult> {
-    return Attempt.deleteMany({ userId, type, success }).exec()
+  delete(query: RootFilterQuery<AttemptDTO>): Promise<DeleteResult> {
+    return Attempt.deleteOne(query).exec()
   }
 }
-
 export default new RecoveryAttemptRepository()
