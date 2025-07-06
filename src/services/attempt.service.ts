@@ -20,8 +20,8 @@ class AttemptService {
     return attemptRepository.count({ email, type, success })
   }
 
-  async deleteByUserAndType(userId: string, type: string, success: boolean = false): Promise<void> {
-    await attemptRepository.delete({ userId, type, success })
+  async deleteByUserAndType(userId: string, type: string, success: boolean = false): Promise<{ deletedCount: number }> {
+    return attemptRepository.delete({ userId, type, success })
   }
 
   async isMaxLoginAttemptsReached(userId: string, maxAttempts: number): Promise<boolean> {

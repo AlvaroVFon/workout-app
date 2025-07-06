@@ -72,7 +72,6 @@ class AuthMiddleware {
 
   async verifyLoginBlock(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { email } = req.body
-    console.log(email)
     try {
       const user = await userService.findByEmail(email)
       if (!user) return next(new UnauthorizedException())

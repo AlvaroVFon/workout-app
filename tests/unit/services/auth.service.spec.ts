@@ -85,7 +85,7 @@ describe('AuthService', () => {
     })
   })
 
-  describe('refreshToken', () => {
+  describe('refreshTokens', () => {
     beforeEach(() => {
       ;(isActiveSession as jest.Mock).mockReturnValue(true)
     })

@@ -1,10 +1,9 @@
 import { DeleteResult, RootFilterQuery } from 'mongoose'
-import { CreateAttemptDTO } from '../DTOs/attempt/create.dto'
 import { AttemptDTO } from '../DTOs/attempt/attempt.dto'
+import { CreateAttemptDTO } from '../DTOs/attempt/create.dto'
 import Attempt from '../models/Attempt'
 import { ModelQuery } from '../types/index.types'
 
-//TODO: simplificar repository, remove unnecessary methods and use generic repository pattern
 class RecoveryAttemptRepository {
   create(attempt: CreateAttemptDTO): Promise<AttemptDTO> {
     return Attempt.create(attempt)
