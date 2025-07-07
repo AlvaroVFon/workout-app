@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose'
-import { RecoveryCodeDTO } from '../DTOs/recoveryCode/recoveryCode.dto'
+import { CodeDTO } from '../DTOs/code/code.dto'
 
-const recoveryCodeSchema = new Schema<RecoveryCodeDTO>(
+const codeSchema = new Schema<CodeDTO>(
   {
     userId: {
       type: String,
@@ -21,8 +21,12 @@ const recoveryCodeSchema = new Schema<RecoveryCodeDTO>(
       default: Date.now,
     },
     expiresAt: {
-      type: Date,
-      required: false,
+      type: Number,
+      required: true,
+    },
+    type: {
+      type: String,
+      required: true,
     },
   },
   {
@@ -30,6 +34,6 @@ const recoveryCodeSchema = new Schema<RecoveryCodeDTO>(
   },
 )
 
-const RecoveryCode = model<RecoveryCodeDTO>('RecoveryCode', recoveryCodeSchema)
+const code = model<CodeDTO>('Code', codeSchema)
 
-export default RecoveryCode
+export default code

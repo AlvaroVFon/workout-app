@@ -1,6 +1,8 @@
+import { RolesEnum } from '../../utils/enums/roles.enum'
+
 interface Role {
   id: string
-  name: string
+  name: RolesEnum
 }
 
 export default Role

@@ -20,7 +20,10 @@ const envVarsSchema = Joi.object({
   LOG_LEVEL: Joi.string().valid('error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly').default('info'),
   MAX_LOGIN_ATTEMPTS: Joi.number().default(5),
   MAX_PASSWORD_RESET_ATTEMPTS: Joi.number().default(3),
-  BLOCK_DURATION: Joi.number().default(15), // in minutes
+  BLOCK_DURATION: Joi.number().default(900000),
+  CODE_EXPIRATION: Joi.number().default(300000),
+  CODE_LENGTH: Joi.number().default(6),
+  CODE_RETRY_INTERVAL: Joi.number().default(30000),
 })
   .unknown()
   .required()
@@ -51,4 +54,7 @@ export const parameters = {
   maxLoginAttempts: envVars.MAX_LOGIN_ATTEMPTS,
   maxPasswordResetAttempts: envVars.MAX_PASSWORD_RESET_ATTEMPTS,
   blockDuration: envVars.BLOCK_DURATION,
+  codeExpiration: envVars.CODE_EXPIRATION,
+  codeLength: envVars.CODE_LENGTH,
+  codeRetryInterval: envVars.CODE_RETRY_INTERVAL,
 }

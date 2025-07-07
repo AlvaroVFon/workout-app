@@ -4,7 +4,7 @@ import { CreateAttemptDTO } from '../DTOs/attempt/create.dto'
 import Attempt from '../models/Attempt'
 import { ModelQuery } from '../types/index.types'
 
-class RecoveryAttemptRepository {
+class AttemptRepository {
   create(attempt: CreateAttemptDTO): Promise<AttemptDTO> {
     return Attempt.create(attempt)
   }
@@ -21,4 +21,5 @@ class RecoveryAttemptRepository {
     return Attempt.deleteOne(query).exec()
   }
 }
-export default new RecoveryAttemptRepository()
+
+export default new AttemptRepository()

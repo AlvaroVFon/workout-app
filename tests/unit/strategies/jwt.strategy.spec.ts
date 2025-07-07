@@ -2,6 +2,7 @@ import RoleDTO from '../../../src/DTOs/role/role.dto'
 import { UserDTO } from '../../../src/DTOs/user/user.dto'
 import userService from '../../../src/services/user.service'
 import { jwtStrategy } from '../../../src/strategies/jwt.strategy'
+import { RolesEnum } from '../../../src/utils/enums/roles.enum'
 
 jest.mock('../../../src/services/user.service')
 
@@ -14,7 +15,7 @@ describe('JWT Strategy', () => {
 
   const mockRole: RoleDTO = {
     id: '1',
-    name: 'athlete',
+    name: RolesEnum.USER,
   }
 
   const mockUser = new UserDTO({
@@ -40,7 +41,7 @@ describe('JWT Strategy', () => {
             email: 'test@example.com',
             name: 'Test User',
             idDocument: '12345678',
-            role: 'athlete',
+            role: 'user',
           })
           done()
         } catch (error) {
