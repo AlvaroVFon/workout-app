@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 import { parameters } from '../config/parameters'
-import { hashString, verifyHashedString } from '../helpers/crypto.helper'
+import { verifyHashedString } from '../helpers/crypto.helper'
 import { invalidateSession, isActiveSession, rotateUserSessionAndTokens } from '../helpers/session.helper'
 import { Payload } from '../interfaces/payload.interface'
 import { AuthServiceLoginResponse } from '../types/index.types'
@@ -36,6 +36,7 @@ class AuthService {
     }
 
     const isValidPassword = verifyHashedString(password, user.password)
+
     if (!isValidPassword) {
       await attemptService.create({
         userId: new ObjectId(user.id),
@@ -81,11 +82,7 @@ class AuthService {
 
     const code = await codeService.create(user.id, CodeType.RECOVERY)
 
-    await mailService.sendMail({
-      to: user.email,
-      subject: 'Password Recovery',
-      text: `Your password recovery code is: ${code.code}`,
-    })
+    await mailService.sendPasswordRecoveryEmail(user.email, code.code)
   }
 
   async resetPassword(email: string, code: string, password: string): Promise<boolean> {
@@ -101,6 +98,8 @@ class AuthService {
     await codeService.invalidateCode(code, user.id)
 
     await userService.update(user.id, { password })
+    await mailService.sendResetPasswordOkEmail(email)
+
     return true
   }
 
