@@ -6,7 +6,7 @@ import { responseHandler } from '../handlers/responseHandler'
 import authService from '../services/auth.service'
 import userService from '../services/user.service'
 import { StatusCode, StatusMessage } from '../utils/enums/httpResponses.enum'
-import codeService from '../services/code.service'
+
 import BadRequestException from '../exceptions/BadRequestException'
 
 class AuthController {

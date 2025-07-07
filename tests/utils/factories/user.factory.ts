@@ -8,6 +8,7 @@ const userFactory = (user?: CreateUserDTO): CreateUserDTO => ({
   password: user?.password ?? faker.internet.password(),
   createdAt: Date.now(),
   updatedAt: Date.now(),
+  role: user?.role ?? 'user',
 })
 
 export { userFactory }

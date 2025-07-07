@@ -15,6 +15,7 @@
   <img alt="Jest" src="https://img.shields.io/badge/Jest-C21325?logo=jest&logoColor=white&style=flat-square" />
   <img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white&style=flat-square" />
   <img alt="Nodemailer" src="https://img.shields.io/badge/Nodemailer-0B3D91?logo=mailgun&logoColor=white&style=flat-square" />
+  <img alt="Handlebars" src="https://img.shields.io/badge/Handlebars.js-f0772b?logo=handlebarsdotjs&logoColor=white&style=flat-square" />
 </p>
 
 > **API robusta para el seguimiento de atletas y entrenadores, diseñada con Node.js, TypeScript, Express y MongoDB/Mongoose.**
@@ -123,7 +124,9 @@ Response: {
 
 La API ahora soporta recuperación y reseteo de contraseña mediante código enviado por email.
 
-#### Flujo
+#### Flujo y Plantillas de Email
+
+El sistema ahora utiliza plantillas HTML personalizadas para notificaciones de recuperación y reseteo de contraseña, mejorando la experiencia de usuario y la seguridad.
 
 1. **Solicitar código de recuperación**
 
@@ -133,6 +136,7 @@ La API ahora soporta recuperación y reseteo de contraseña mediante código env
      "email": "user@example.com"
    }
    // Respuesta: 204 No Content (si el email existe, se envía un código)
+   // El usuario recibe un email con un código y un mensaje personalizado.
    ```
 
 2. **Resetear contraseña**
@@ -144,7 +148,19 @@ La API ahora soporta recuperación y reseteo de contraseña mediante código env
      "password": "nuevaPassword123"
    }
    // Respuesta: 204 No Content (si el código es válido y la contraseña se actualiza)
+   // El usuario recibe un email de confirmación de cambio de contraseña.
    ```
+
+#### Seguridad y buenas prácticas
+
+- Los emails no revelan si el usuario existe o no.
+- El código de recuperación tiene expiración y solo puede usarse una vez.
+- El sistema limita la frecuencia de solicitudes de código.
+- Los emails de confirmación advierten sobre acciones no reconocidas.
+
+  ```
+
+  ```
 
 #### Validaciones
 
@@ -720,6 +736,32 @@ curl -X GET http://localhost:3000/auth/info \
 ## Email y Notificaciones
 
 La aplicación integra un sistema de envío de emails para notificaciones y pruebas de funcionalidades relacionadas con correo electrónico.
+
+### Plantillas de Email con Handlebars
+
+Se utilizan plantillas HTML personalizadas con Handlebars para los correos transaccionales más importantes:
+
+- `password-recovery.hbs`: Notificación de recuperación de contraseña, incluye código y branding de la app.
+- `reset-password-succeed.hbs`: Confirmación de reseteo exitoso, con advertencia de seguridad.
+
+Las plantillas se encuentran en `src/templates/mail/` y permiten personalización dinámica de los mensajes (nombre de la app, año, código, etc.).
+
+**Ventajas:**
+
+- Correos más profesionales y consistentes.
+- Fácil mantenimiento y escalabilidad para nuevos tipos de notificaciones.
+- Separación clara entre lógica y presentación.
+
+**Ejemplo de uso:**
+
+```typescript
+import mailService from './src/services/mail.service'
+
+await mailService.sendPasswordRecoveryEmail('usuario@correo.com', '123456')
+await mailService.sendResetPasswordOkEmail('usuario@correo.com')
+```
+
+**Stack:** Se utiliza la librería [Handlebars.js](https://handlebarsjs.com/) para el renderizado de plantillas.
 
 ## Nodemailer
 

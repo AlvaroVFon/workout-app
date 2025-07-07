@@ -238,12 +238,7 @@ describe('AuthService', () => {
       await AuthService.forgotPassword(user.email)
 
       expect(codeService.create).toHaveBeenCalledWith(user.id, CodeType.RECOVERY)
-      expect(mailService.sendMail).toHaveBeenCalledWith(
-        expect.objectContaining({
-          to: user.email,
-          subject: 'Password Recovery',
-        }),
-      )
+      expect(mailService.sendPasswordRecoveryEmail).toHaveBeenCalledWith(user.email, '123456')
     })
   })
 
@@ -277,6 +272,7 @@ describe('AuthService', () => {
 
       expect(codeService.invalidateCode).toHaveBeenCalledWith(code, user.id)
       expect(userService.update).toHaveBeenCalledWith(user.id, { password })
+      expect(mailService.sendResetPasswordOkEmail).toHaveBeenCalledWith(user.email)
       expect(result).toBe(true)
     })
   })
