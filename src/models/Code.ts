@@ -34,6 +34,8 @@ const codeSchema = new Schema<CodeDTO>(
   },
 )
 
+codeSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 })
+
 const code = model<CodeDTO>('Code', codeSchema)
 
 export default code

@@ -119,6 +119,62 @@ Response: {
 }
 ```
 
+### Recuperación y Reseteo de Contraseña
+
+La API ahora soporta recuperación y reseteo de contraseña mediante código enviado por email.
+
+#### Flujo
+
+1. **Solicitar código de recuperación**
+
+   ```http
+   POST /api/auth/forgot-password
+   {
+     "email": "user@example.com"
+   }
+   // Respuesta: 204 No Content (si el email existe, se envía un código)
+   ```
+
+2. **Resetear contraseña**
+   ```http
+   POST /api/auth/reset-password
+   {
+     "email": "user@example.com",
+     "code": "123456",
+     "password": "nuevaPassword123"
+   }
+   // Respuesta: 204 No Content (si el código es válido y la contraseña se actualiza)
+   ```
+
+#### Validaciones
+
+- El email debe existir en la base de datos.
+- El código tiene expiración y solo puede usarse una vez.
+- El endpoint limita la frecuencia de solicitud de códigos (ver `CODE_RETRY_INTERVAL`).
+- La nueva contraseña debe cumplir requisitos de longitud y formato.
+
+#### Variables de entorno relevantes
+
+- `CODE_EXPIRATION`: Tiempo de validez del código (ms)
+- `CODE_LENGTH`: Longitud del código generado
+- `CODE_RETRY_INTERVAL`: Tiempo mínimo entre solicitudes de código (ms)
+
+#### Ejemplo de uso (cURL)
+
+```bash
+# Solicitar código de recuperación
+curl -X POST http://localhost:3000/auth/forgot-password \
+  -H 'Content-Type: application/json' \
+  -d '{ "email": "user@example.com" }'
+
+# Resetear contraseña
+curl -X POST http://localhost:3000/auth/reset-password \
+  -H 'Content-Type: application/json' \
+  -d '{ "email": "user@example.com", "code": "123456", "password": "NuevaPass123" }'
+```
+
+---
+
 ### Configuración de Seguridad
 
 Las duraciones de los tokens se configuran mediante variables de entorno:

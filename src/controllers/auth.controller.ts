@@ -6,6 +6,8 @@ import { responseHandler } from '../handlers/responseHandler'
 import authService from '../services/auth.service'
 import userService from '../services/user.service'
 import { StatusCode, StatusMessage } from '../utils/enums/httpResponses.enum'
+import codeService from '../services/code.service'
+import BadRequestException from '../exceptions/BadRequestException'
 
 class AuthController {
   async login(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
@@ -38,6 +40,32 @@ class AuthController {
       const publicUser = new UserDTO(user).toPublicUser()
 
       return responseHandler(res, StatusCode.CREATED, StatusMessage.CREATED, publicUser)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async forgotPassword(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
+    const { email } = req.body
+
+    try {
+      await authService.forgotPassword(email)
+      return responseHandler(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async resetPassword(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
+    try {
+      const { email, code, password } = req.body
+
+      const isPasswordReset = await authService.resetPassword(email, code, password)
+      if (!isPasswordReset) {
+        throw new BadRequestException('Invalid code or email')
+      }
+
+      return responseHandler(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
     } catch (error) {
       next(error)
     }

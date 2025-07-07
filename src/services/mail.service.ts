@@ -8,13 +8,14 @@ class MailService {
   private readonly smtpFromName: string = parameters.smtpFromName
 
   async sendMail(options: MailOptions): Promise<void> {
-    const { from = `"${this.smtpFromName}" <${this.smtpFrom}>`, to, subject, html } = options
+    const { from = `"${this.smtpFromName}" <${this.smtpFrom}>`, to, subject, html = '', text = '' } = options
 
     await transporter.sendMail({
       from,
       to,
       subject,
       html,
+      text,
     })
 
     logger.debug(`Email sent from ${from} to ${to} with subject "${subject}"`)

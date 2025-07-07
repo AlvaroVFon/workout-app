@@ -1,11 +1,20 @@
 function generateCode(length: number): string {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+  const numbers = '0123456789'
+  const characters = letters + numbers
   let result = ''
-  for (let i = 0; i < length; i++) {
+
+  result += letters[Math.floor(Math.random() * letters.length)]
+  result += numbers[Math.floor(Math.random() * numbers.length)]
+
+  for (let i = 2; i < length; i++) {
     const randomIndex = Math.floor(Math.random() * characters.length)
     result += characters[randomIndex]
   }
-  return result
-}
 
+  return result
+    .split('')
+    .sort(() => Math.random() - 0.5)
+    .join('')
+}
 export { generateCode }

@@ -4,7 +4,13 @@ import BadRequestException from '../exceptions/BadRequestException'
 import ForbiddenException from '../exceptions/ForbiddenException'
 import UnauthorizedException from '../exceptions/UnauthorizedException'
 import { AuthenticatedUser } from '../interfaces/user.inteface'
-import { headerTokenSchema, loginSchema, refreshTokenSchema } from '../schemas/auth/auth.schema'
+import {
+  forgotPasswordSchema,
+  headerTokenSchema,
+  loginSchema,
+  refreshTokenSchema,
+  resetPasswordSchema,
+} from '../schemas/auth/auth.schema'
 import blockService from '../services/block.service'
 import userService from '../services/user.service'
 import { AttemptsEnum } from '../utils/enums/attempts.enum'
@@ -15,6 +21,30 @@ class AuthMiddleware {
 
     try {
       const { error } = loginSchema.validate(data)
+
+      if (error) return next(new BadRequestException(error.details[0].message))
+
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async validateForgotPasswordSchema(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { error } = forgotPasswordSchema.validate(req.body)
+
+      if (error) return next(new BadRequestException(error.details[0].message))
+
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async validateResetPasswordSchema(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { error } = resetPasswordSchema.validate(req.body)
 
       if (error) return next(new BadRequestException(error.details[0].message))
 
