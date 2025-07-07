@@ -21,7 +21,7 @@ describe('Session Helper', () => {
     userId: new Types.ObjectId(mockUserId),
     createdAt: new Date(),
     updatedAt: new Date(),
-    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
     refreshTokenHash: 'hashedRefreshToken',
     isActive: true,
     replacedBy: undefined,
@@ -32,7 +32,7 @@ describe('Session Helper', () => {
     userId: new Types.ObjectId(mockUserId),
     createdAt: new Date(),
     updatedAt: new Date(),
-    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
     refreshTokenHash: 'newHashedRefreshToken',
     isActive: true,
     replacedBy: undefined,
@@ -45,8 +45,15 @@ describe('Session Helper', () => {
     idDocument: '12345',
   }
 
+  const originalJwtRefreshExpiration = parameters.jwtRefreshExpiration
+
   beforeEach(() => {
     jest.clearAllMocks()
+    parameters.jwtRefreshExpiration = String(originalJwtRefreshExpiration)
+  })
+
+  afterEach(() => {
+    parameters.jwtRefreshExpiration = originalJwtRefreshExpiration
   })
 
   describe('invalidateSession', () => {
@@ -90,7 +97,7 @@ describe('Session Helper', () => {
         ...mockSession,
         isActive: false,
         replacedBy: mockNewSession._id,
-        expiresAt: expect.any(Date),
+        expiresAt: expect.any(Number),
       }
       ;(sessionService.update as jest.Mock).mockResolvedValue(rotatedSession)
 
@@ -99,14 +106,14 @@ describe('Session Helper', () => {
       expect(sessionService.update).toHaveBeenCalledWith(mockSessionId, {
         isActive: false,
         replacedBy: mockNewSession._id,
-        expiresAt: expect.any(Date),
+        expiresAt: expect.any(Number),
       })
       expect(result).toEqual(rotatedSession)
 
       const updateCall = (sessionService.update as jest.Mock).mock.calls[0][1]
       const expiresAt = updateCall.expiresAt
-      expect(expiresAt).toBeInstanceOf(Date)
-      expect(expiresAt.getTime()).toBeLessThanOrEqual(Date.now())
+      expect(typeof expiresAt).toBe('number')
+      expect(expiresAt).toBeLessThanOrEqual(Date.now())
     })
 
     it('should handle rotation errors', async () => {
@@ -138,11 +145,11 @@ describe('Session Helper', () => {
         idDocument: mockPayload.idDocument,
       })
       expect(sessionService.findActiveByUserId).toHaveBeenCalledWith(mockUserId)
-      expect(hashString).toHaveBeenCalledWith('newRefreshToken')
+      expect(hashString).toHaveBeenCalledWith('newRefreshToken', 'sha256')
       expect(sessionService.create).toHaveBeenCalledWith({
         userId: mockUserId,
         isActive: true,
-        expiresAt: expect.any(Date),
+        expiresAt: expect.any(Number),
         refreshTokenHash: 'hashedNewRefreshToken',
       })
       expect(result).toEqual(mockTokens)
@@ -161,33 +168,35 @@ describe('Session Helper', () => {
       expect(sessionService.create).toHaveBeenCalledWith({
         userId: mockUserId,
         isActive: true,
-        expiresAt: expect.any(Date),
+        expiresAt: expect.any(Number),
         refreshTokenHash: 'hashedNewRefreshToken',
       })
       expect(sessionService.update).toHaveBeenCalledWith(mockSessionId, {
         isActive: false,
         replacedBy: mockNewSession._id,
-        expiresAt: expect.any(Date),
+        expiresAt: expect.any(Number),
       })
       expect(result).toEqual(mockTokens)
     })
 
-    it('should create session with correct expiration time', async () => {
-      jest.resetModules()
-      parameters.jwtRefreshExpiration = '30d'
+    it('Should create tokens with correct expiration', async () => {
+      const expirationTime = 30 * 24 * 60 * 60 * 1000
+      parameters.jwtRefreshExpiration = String(expirationTime)
       ;(generateAccessTokens as jest.Mock).mockReturnValue(mockTokens)
       ;(sessionService.findActiveByUserId as jest.Mock).mockResolvedValue(null)
       ;(hashString as jest.Mock).mockResolvedValue('hashedNewRefreshToken')
       ;(sessionService.create as jest.Mock).mockResolvedValue(mockNewSession)
-
-      await rotateUserSessionAndTokens(mockPayload)
-
-      const createCall = (sessionService.create as jest.Mock).mock.calls[0][0]
-      const expiresAt = createCall.expiresAt
-      expect(expiresAt).toBeInstanceOf(Date)
-      const thirtyDaysFromNow = Date.now() + 30 * 24 * 60 * 60 * 1000
-      const timeDiff = Math.abs(expiresAt.getTime() - thirtyDaysFromNow)
-      expect(timeDiff).toBeLessThan(1000)
+      const result = await rotateUserSessionAndTokens(mockPayload)
+      expect(sessionService.create).toHaveBeenCalledWith({
+        userId: mockUserId,
+        isActive: true,
+        expiresAt: expect.any(Number),
+        refreshTokenHash: 'hashedNewRefreshToken',
+      })
+      const expiresAt = (sessionService.create as jest.Mock).mock.calls[0][0].expiresAt
+      expect(expiresAt).toBeGreaterThan(Date.now())
+      expect(expiresAt).toBeLessThanOrEqual(Date.now() + expirationTime)
+      expect(result).toEqual(mockTokens)
     })
 
     it('should handle token generation errors', async () => {

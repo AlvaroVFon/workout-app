@@ -1,6 +1,7 @@
-import muscleRepository from '../../../src/repositories/muscle.repository'
-import Muscle from '../../../src/models/Muscle'
 import MuscleDTO from '../../../src/DTOs/muscle/muscle.dto'
+import Muscle from '../../../src/models/Muscle'
+import muscleRepository from '../../../src/repositories/muscle.repository'
+import { MusclesEnum } from '../../../src/utils/enums/muscles.enum'
 
 jest.mock('../../../src/models/Muscle')
 
@@ -114,7 +115,7 @@ describe('muscleRepository', () => {
   })
 
   it('should update a muscle', async () => {
-    const updateData: Partial<MuscleDTO> = { name: 'Updated Biceps' }
+    const updateData: Partial<MuscleDTO> = { name: MusclesEnum.BICEPS }
     ;(Muscle.findOneAndUpdate as jest.Mock).mockResolvedValue(mockMuscle)
 
     const result = await muscleRepository.update('456', updateData)

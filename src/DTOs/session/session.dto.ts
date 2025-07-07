@@ -5,7 +5,7 @@ export interface SessionDTO {
   userId: ObjectId
   createdAt: Date
   updatedAt?: Date
-  expiresAt: Date
+  expiresAt: number
   refreshTokenHash: string
   isActive: boolean
   replacedBy?: ObjectId

@@ -1,11 +1,12 @@
-import MuscleService from '../../../src/services/muscle.service'
-import muscleRepository from '../../../src/repositories/muscle.repository'
 import MuscleDTO from '../../../src/DTOs/muscle/muscle.dto'
+import muscleRepository from '../../../src/repositories/muscle.repository'
+import MuscleService from '../../../src/services/muscle.service'
+import { MusclesEnum } from '../../../src/utils/enums/muscles.enum'
 
 jest.mock('../../../src/repositories/muscle.repository')
 
 describe('MuscleService', () => {
-  const mockMuscle = { id: '1', name: 'Biceps' } as MuscleDTO
+  const mockMuscle = { id: '1', name: MusclesEnum.BICEPS } as MuscleDTO
 
   afterEach(() => {
     jest.clearAllMocks()
@@ -48,10 +49,10 @@ describe('MuscleService', () => {
 
   it('should update a muscle', async () => {
     ;(muscleRepository.update as jest.Mock).mockResolvedValue(mockMuscle)
-    const result = await MuscleService.update('1', { name: 'Triceps' })
+    const result = await MuscleService.update('1', { name: MusclesEnum.TRICEPS })
     expect(result).toEqual(mockMuscle)
     expect(muscleRepository.update).toHaveBeenCalledWith('1', {
-      name: 'Triceps',
+      name: 'triceps',
     })
   })
 

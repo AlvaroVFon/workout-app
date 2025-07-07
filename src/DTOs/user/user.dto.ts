@@ -7,6 +7,7 @@ class UserDTO {
   public password: string
   public idDocument: string
   public role: Role
+  public blocks: BlockInfo[]
   public lastName?: string
   public country?: string
   public address?: string
@@ -20,6 +21,7 @@ class UserDTO {
     this.password = user.password
     this.idDocument = user.idDocument
     this.role = user.role
+    this.blocks = user.blocks || []
     this.lastName = user.lastName
     this.country = user.country
     this.address = user.address
@@ -41,6 +43,12 @@ class UserDTO {
       updatedAt: this.updatedAt,
     }
   }
+}
+
+export interface BlockInfo {
+  type: 'login' | 'recovery' | string
+  reason?: string
+  blockedUntil: number
 }
 
 export { UserDTO }

@@ -14,6 +14,7 @@
   <img alt="Redis" src="https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white&style=flat-square" />
   <img alt="Jest" src="https://img.shields.io/badge/Jest-C21325?logo=jest&logoColor=white&style=flat-square" />
   <img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white&style=flat-square" />
+  <img alt="Nodemailer" src="https://img.shields.io/badge/Nodemailer-0B3D91?logo=mailgun&logoColor=white&style=flat-square" />
 </p>
 
 > **API robusta para el seguimiento de atletas y entrenadores, diseñada con Node.js, TypeScript, Express y MongoDB/Mongoose.**
@@ -34,6 +35,7 @@
 - [Endpoints Principales](#endpoints-principales)
 - [Consultas Avanzadas](#consultas-avanzadas)
 - [Seguridad](#seguridad)
+- [Email y notificaciones](#email-y-notificaciones)
 - [Contribución](#contribución)
 - [Licencia](#licencia)
 - [Documentación para Desarrolladores](#documentación-para-desarrolladores)
@@ -169,11 +171,39 @@ yarn install
 1. Copia `.env.example` a `.env` y ajusta las variables:
 
 ```env
+# Entorno y puertos
+NODE_ENV=development
+PORT=3000
+
+# Base de datos
 MONGO_URI=mongodb://localhost:27017/workout
 REDIS_URI=redis://localhost:6379
+
+# Seguridad y JWT
 JWT_SECRET=supersecret
-JWT_EXPIRATION=15m
-JWT_REFRESH_EXPIRATION=7d
+JWT_EXPIRATION=3600000            # ms (1h)
+JWT_REFRESH_EXPIRATION=2592000000 # ms (30d)
+SALT_ROUNDS=10
+
+# Email/SMTP
+SMTP_HOST=localhost
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM=admin@email.com
+SMTP_FROM_NAME=Admin
+
+# Logging
+LOG_LEVEL=info
+
+# Seguridad avanzada
+MAX_LOGIN_ATTEMPTS=5
+MAX_PASSWORD_RESET_ATTEMPTS=3
+BLOCK_DURATION=900000           # ms (15 min)
+CODE_EXPIRATION=300000          # ms (5 min)
+CODE_LENGTH=6
+CODE_RETRY_INTERVAL=30000       # ms (30 seg)
 ```
 
 ### Variables de Entorno JWT
@@ -367,25 +397,84 @@ Cobertura disponible en `/coverage` tras ejecutar los tests.
 
 ## Estructura del Proyecto
 
+## Arquitectura y Patrones
+
+El proyecto sigue una arquitectura modular y desacoplada, inspirada en principios de Clean Architecture y DDD (Domain-Driven Design) para facilitar la escalabilidad, el testing y el mantenimiento.
+
+### Principios y Patrones Clave
+
+- **Separación de responsabilidades:** Cada capa y carpeta tiene una función clara (DTOs, modelos, servicios, repositorios, controladores, middlewares, etc.).
+- **DTOs (Data Transfer Objects):** Definen la estructura de los datos que viajan entre capas, asegurando tipado y validación.
+- **Repositorios:** Encapsulan el acceso a datos y consultas a la base de datos, desacoplando la lógica de negocio de la persistencia.
+- **Servicios:** Contienen la lógica de negocio y orquestan operaciones complejas, interactuando con repositorios y otros servicios.
+- **Controladores:** Gestionan la entrada/salida HTTP, delegando la lógica a los servicios.
+- **Middlewares:** Validación, autenticación, autorización y manejo global de errores.
+- **Validación centralizada:** Uso de Joi y middlewares para validar datos de entrada en todos los endpoints.
+- **Enums y tipado estricto:** Uso extensivo de enums y tipos TypeScript para evitar errores y mejorar la autocompletación.
+- **Factories y seeders:** Generación de datos de prueba y poblamiento de la base de datos para desarrollo y testing.
+- **Testing aislado:** Pruebas unitarias y de integración con mocks, spies y base de datos en memoria.
+
+### Flujo típico de una petición
+
+1. **Request HTTP** →
+2. **Middleware de validación/autenticación** →
+3. **Controlador** →
+4. **Servicio** →
+5. **Repositorio** →
+6. **Modelo (Mongoose)** →
+7. **Respuesta**
+
+### Ventajas
+
+- Fácil de testear y mantener
+- Escalable y extensible (agregar nuevas entidades o reglas es sencillo)
+- Bajo acoplamiento entre capas
+- Código reutilizable y DRY
+
+Esta arquitectura permite que el proyecto crezca de forma ordenada y que los cambios en una capa no afecten negativamente a las demás.
+
 ```plaintext
 src/
-├── config/         # Configuración (DB, middleware, passport)
+├── config/         # Configuración (DB, middlewares, passport, parámetros)
 ├── controllers/    # Lógica de endpoints (auth, athletes, etc.)
-├── DTOs/           # Data Transfer Objects (tipado)
+├── DTOs/           # Data Transfer Objects (tipado, subcarpetas por dominio)
+│   ├── attempt/
+│   ├── code/
+│   ├── muscle/
+│   ├── role/
+│   ├── session/
+│   ├── user/
+│   └── ...
 ├── exceptions/     # Excepciones personalizadas
+├── factories/      # Factories para tests y seeders
 ├── handlers/       # Manejadores de respuesta y error
-├── middlewares/    # Middlewares de Express (auth, validation)
-├── models/         # Modelos Mongoose (User, Athlete, etc.)
-├── repositories/   # Acceso a datos y consultas avanzadas
+├── helpers/        # Helpers de utilidades (hash, sesión, etc.)
+├── interfaces/     # Interfaces TypeScript
+├── middlewares/    # Middlewares de Express (auth, validation, global, etc.)
+├── models/         # Modelos Mongoose (User, Athlete, Attempt, Code, etc.)
+├── repositories/   # Acceso a datos y consultas avanzadas (por entidad)
 ├── routes/         # Definición de rutas (auth, athletes, etc.)
-├── schemas/        # Validación Joi (auth, create/update schemas)
-├── services/       # Lógica de negocio (auth, user management)
-├── strategies/     # Estrategias de autenticación (JWT strategy)
-├── utils/          # Utilidades (JWT utils, password helpers)
-└── tests/          # Pruebas unitarias y e2e
-    ├── unit/       # Tests unitarios por módulo
-    ├── e2e/        # Tests de integración completos
-    └── utils/      # Helpers para testing
+├── schemas/        # Validación Joi (por dominio)
+├── seeders/        # Seeders para poblar la base de datos
+├── services/       # Lógica de negocio (auth, user, block, code, etc.)
+├── strategies/     # Estrategias de autenticación (JWT, Passport)
+├── templates/      # Plantillas de email u otros
+├── types/          # Tipos globales y utilidades TS
+├── utils/          # Utilidades generales (JWT, password helpers, generadores)
+
+tests/
+├── config/
+├── e2e/            # Tests de integración completos
+├── unit/           # Tests unitarios por módulo
+│   ├── controllers/
+│   ├── helpers/
+│   ├── middlewares/
+│   ├── models/
+│   ├── repositories/
+│   ├── schemas/
+│   ├── services/
+│   └── ...
+├── utils/          # Helpers para testing
 ```
 
 ### Componentes Clave de Autenticación
@@ -422,6 +511,7 @@ src/
 - `POST /auth/login` — Login (devuelve access token y refresh token)
 - `POST /auth/signup` — Registro
 - `POST /auth/refresh` — Renovar tokens usando refresh token
+- `POST /auth/logout` — Logout (cierra la sesión y revoca el refresh token)
 - `GET /auth/info` — Información del usuario autenticado
 
 ## Consultas Avanzadas
@@ -567,6 +657,39 @@ curl -X POST http://localhost:3000/auth/refresh \
 # Usar refresh token en endpoint protegido (401)
 curl -X GET http://localhost:3000/auth/info \
   -H 'Authorization: Bearer <refreshToken>'
+```
+
+---
+
+## Email y Notificaciones
+
+La aplicación integra un sistema de envío de emails para notificaciones y pruebas de funcionalidades relacionadas con correo electrónico.
+
+## Nodemailer
+
+- Se utiliza [Nodemailer](https://nodemailer.com/) como librería principal para el envío de emails desde Node.js.
+- La configuración SMTP es flexible y se define por variables de entorno (`SMTP_HOST`, `SMTP_PORT`, etc.).
+- El archivo `src/services/mail.service.ts` expone un servicio reutilizable para enviar correos desde cualquier parte de la app.
+
+## Mailhog (solo desarrollo)
+
+- [Mailhog](https://github.com/mailhog/MailHog) es una herramienta para capturar y visualizar emails enviados desde entornos de desarrollo, sin enviar correos reales.
+- Se ejecuta automáticamente como servicio en `docker-compose.yml`.
+- **Puertos expuestos:**
+  - `1025`: Puerto SMTP (la app envía los correos aquí)
+  - `8025`: Interfaz web para ver los correos recibidos ([http://localhost:8025](http://localhost:8025))
+- Así puedes probar el envío de emails sin riesgo de enviar mensajes reales a usuarios.
+
+## Ejemplo de uso
+
+```typescript
+import mailService from './src/services/mail.service'
+
+await mailService.sendMail({
+  to: 'destinatario@correo.com',
+  subject: 'Bienvenido',
+  html: '<b>¡Hola!</b> Tu cuenta ha sido creada.',
+})
 ```
 
 ---

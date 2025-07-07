@@ -1,20 +1,48 @@
+import { ObjectId } from 'mongodb'
+import { parameters } from '../config/parameters'
 import { verifyHashedString } from '../helpers/crypto.helper'
-import { invalidateSession, rotateUserSessionAndTokens } from '../helpers/session.helper'
+import { invalidateSession, isActiveSession, rotateUserSessionAndTokens } from '../helpers/session.helper'
 import { Payload } from '../interfaces/payload.interface'
 import { AuthServiceLoginResponse } from '../types/index.types'
+import { AttemptsEnum } from '../utils/enums/attempts.enum'
+import { BlockReasonEnum } from '../utils/enums/blocks.enum'
 import { refreshTokens, verifyToken } from '../utils/jwt.utils'
+import attemptService from './attempt.service'
+import blockService from './block.service'
 import sessionService from './session.service'
 import userService from './user.service'
+
+const { maxLoginAttempts } = parameters
+const maxLoginAttemptsDuration = parameters.blockDuration
 
 class AuthService {
   async login(email: string, password: string): Promise<AuthServiceLoginResponse | null> {
     const user = await userService.findByEmail(email)
-
     if (!user) return null
 
-    const isValidPassword = verifyHashedString(password, user.password)
+    const areMaxAttemptsReached = await attemptService.isMaxLoginAttemptsReached(user.id, maxLoginAttempts)
+    if (areMaxAttemptsReached) {
+      await blockService.setBlock(
+        user.id,
+        AttemptsEnum.LOGIN,
+        Date.now() + maxLoginAttemptsDuration,
+        BlockReasonEnum.MAX_ATTEMPTS,
+      )
 
-    if (!isValidPassword) return null
+      return null
+    }
+
+    const isValidPassword = verifyHashedString(password, user.password)
+    if (!isValidPassword) {
+      await attemptService.create({
+        userId: new ObjectId(user.id),
+        type: AttemptsEnum.LOGIN,
+        success: false,
+        email: user.email,
+      })
+
+      return null
+    }
 
     const payload: Payload = {
       id: user.id,
@@ -22,8 +50,10 @@ class AuthService {
       email: user.email,
       idDocument: user.idDocument,
     }
-
     const { token, refreshToken } = await rotateUserSessionAndTokens(payload)
+
+    await attemptService.deleteByUserAndType(user.id, AttemptsEnum.LOGIN, false)
+    await blockService.removeBlocks(user.id, AttemptsEnum.LOGIN)
 
     return { user, token, refreshToken }
   }
@@ -33,6 +63,9 @@ class AuthService {
   }
 
   async refreshTokens(token: string): Promise<{ token: string; refreshToken: string } | null> {
+    const isActiveToken = await isActiveSession(token)
+    if (!isActiveToken) return null
+
     return refreshTokens(token)
   }
 

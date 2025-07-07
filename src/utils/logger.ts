@@ -1,7 +1,8 @@
 import { createLogger, transports, format } from 'winston'
+import { parameters } from '../config/parameters'
 
 const logger = createLogger({
-  level: 'info',
+  level: parameters.logLevel,
   format: format.combine(
     format.colorize(),
     format.timestamp(),
