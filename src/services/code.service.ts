@@ -17,6 +17,13 @@ class CodeService {
     })
   }
 
+  async findLastByUserIdAndType(userId: string, type: CodeType) {
+    return codeRepository.findOne({
+      query: { userId, type, used: false },
+      options: { sort: { createdAt: -1 } },
+    })
+  }
+
   async isCodeValid(code: string, userId: string): Promise<boolean> {
     const codeData = await codeRepository.findOne({
       query: { code, userId, used: false },

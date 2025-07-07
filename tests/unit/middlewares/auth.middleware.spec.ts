@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import AuthMiddleware from '../../../src/middlewares/auth.middleware'
-import { loginSchema } from '../../../src/schemas/auth/auth.schema'
+import { loginSchema, forgotPasswordSchema, resetPasswordSchema } from '../../../src/schemas/auth/auth.schema'
 import BadRequestException from '../../../src/exceptions/BadRequestException'
 import UnauthorizedException from '../../../src/exceptions/UnauthorizedException'
 import passport from '../../../src/config/passport'
@@ -35,6 +35,46 @@ describe('AuthMiddleware', () => {
       ;(loginSchema.validate as jest.Mock).mockReturnValueOnce({ error: null })
 
       await AuthMiddleware.validateLoginSchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith()
+    })
+  })
+
+  describe('validateForgotPasswordSchema', () => {
+    it('should call next with BadRequestException if validation fails', async () => {
+      ;(forgotPasswordSchema.validate as jest.Mock).mockReturnValueOnce({
+        error: { details: [{ message: 'Invalid data' }] },
+      })
+
+      await AuthMiddleware.validateForgotPasswordSchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(new BadRequestException('Invalid data'))
+    })
+
+    it('should call next with no arguments if validation passes', async () => {
+      ;(forgotPasswordSchema.validate as jest.Mock).mockReturnValueOnce({ error: null })
+
+      await AuthMiddleware.validateForgotPasswordSchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith()
+    })
+  })
+
+  describe('validateResetPasswordSchema', () => {
+    it('should call next with BadRequestException if validation fails', async () => {
+      ;(resetPasswordSchema.validate as jest.Mock).mockReturnValueOnce({
+        error: { details: [{ message: 'Invalid data' }] },
+      })
+
+      await AuthMiddleware.validateResetPasswordSchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(new BadRequestException('Invalid data'))
+    })
+
+    it('should call next with no arguments if validation passes', async () => {
+      ;(resetPasswordSchema.validate as jest.Mock).mockReturnValueOnce({ error: null })
+
+      await AuthMiddleware.validateResetPasswordSchema(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith()
     })

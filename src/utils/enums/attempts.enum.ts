@@ -1,6 +1,6 @@
 export enum AttemptsEnum {
   LOGIN = 'login',
-  RECOVERY = 'recovery',
+  PASSWORD_RECOVERY = 'password_recovery',
   REGISTRATION = 'registration',
   PASSWORD_CHANGE = 'password_change',
   TWO_FACTOR_AUTH = 'two_factor_auth',

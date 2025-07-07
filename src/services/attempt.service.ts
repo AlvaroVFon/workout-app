@@ -12,6 +12,10 @@ class AttemptService {
     return attemptRepository.findOne({ query: { userId, type } })
   }
 
+  findLastByUserAndType(userId: string, type: AttemptsEnum): Promise<AttemptDTO | null> {
+    return attemptRepository.findOne({ query: { userId, type }, options: { sort: { attemptedAt: -1 } } })
+  }
+
   async countByUserAndType(userId: string, type: string, success: boolean = false): Promise<number> {
     return attemptRepository.count({ userId, type, success })
   }
@@ -24,8 +28,8 @@ class AttemptService {
     return attemptRepository.delete({ userId, type, success })
   }
 
-  async isMaxLoginAttemptsReached(userId: string, maxAttempts: number): Promise<boolean> {
-    const attempts = await this.countByUserAndType(userId, AttemptsEnum.LOGIN, false)
+  async isMaxLoginAttemptsReached(userId: string, maxAttempts: number, type: AttemptsEnum): Promise<boolean> {
+    const attempts = await this.countByUserAndType(userId, type, false)
     return attempts >= maxAttempts
   }
 }
