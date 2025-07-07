@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import AuthController from '../../../src/controllers/auth.controller'
 import { UserDTO } from '../../../src/DTOs/user/user.dto'
+import BadRequestException from '../../../src/exceptions/BadRequestException'
 import UnauthorizedException from '../../../src/exceptions/UnauthorizedException'
 import { responseHandler } from '../../../src/handlers/responseHandler'
 import authService from '../../../src/services/auth.service'
@@ -157,6 +158,59 @@ describe('AuthController', () => {
       ;(authService.refreshTokens as jest.Mock).mockRejectedValue(error)
 
       await AuthController.refreshTokens(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(error)
+    })
+  })
+
+  describe('forgotPassword', () => {
+    it('should return 204 on successful password recovery request', async () => {
+      req.body = { email: 'test@example.com' }
+      ;(authService.forgotPassword as jest.Mock).mockResolvedValue(undefined)
+
+      await AuthController.forgotPassword(req as Request, res as Response, next)
+
+      expect(authService.forgotPassword).toHaveBeenCalledWith('test@example.com')
+      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
+    })
+
+    it('should call next with error if service throws error', async () => {
+      req.body = { email: 'test@example.com' }
+      const error = new Error('Service error')
+      ;(authService.forgotPassword as jest.Mock).mockRejectedValue(error)
+
+      await AuthController.forgotPassword(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(error)
+    })
+  })
+
+  describe('resetPassword', () => {
+    it('should return 204 on successful password reset', async () => {
+      req.body = { email: 'test@example.com', code: '123456', password: 'newPassword' }
+      ;(authService.resetPassword as jest.Mock).mockResolvedValue(true)
+
+      await AuthController.resetPassword(req as Request, res as Response, next)
+
+      expect(authService.resetPassword).toHaveBeenCalledWith('test@example.com', '123456', 'newPassword')
+      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
+    })
+
+    it('should throw BadRequestException if password reset fails', async () => {
+      req.body = { email: 'test@example.com', code: '123456', password: 'newPassword' }
+      ;(authService.resetPassword as jest.Mock).mockResolvedValue(false)
+
+      await AuthController.resetPassword(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(new BadRequestException('Invalid code or email'))
+    })
+
+    it('should call next with error if service throws error', async () => {
+      req.body = { email: 'test@example.com', code: '123456', password: 'newPassword' }
+      const error = new Error('Service error')
+      ;(authService.resetPassword as jest.Mock).mockRejectedValue(error)
+
+      await AuthController.resetPassword(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith(error)
     })

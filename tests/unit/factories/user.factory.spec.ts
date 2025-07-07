@@ -6,6 +6,7 @@ jest.mock('@faker-js/faker', () => ({
   faker: {
     person: {
       firstName: jest.fn(() => 'John'),
+      lastName: jest.fn(() => 'Doe'),
     },
     internet: {
       email: jest.fn(() => 'test@example.com'),
@@ -13,6 +14,9 @@ jest.mock('@faker-js/faker', () => ({
     },
     string: {
       numeric: jest.fn(() => '123456789'),
+    },
+    location: {
+      country: jest.fn(() => 'Testland'),
     },
   },
 }))
@@ -28,20 +32,24 @@ describe('User Factory', () => {
 
       expect(result).toEqual({
         name: 'John',
+        lastName: 'Doe',
         email: 'test@example.com',
         password: 'password123',
         idDocument: '123456789',
         role: RolesEnum.USER,
+        country: 'Testland',
       })
     })
 
     it('should use provided user data when available', () => {
       const providedUser: CreateUserDTO = {
         name: 'Jane',
+        lastName: 'Doe',
         email: 'jane@example.com',
         password: 'customPassword',
         idDocument: 'custom-id',
         role: RolesEnum.ADMIN,
+        country: 'Testland',
       }
 
       const result = createUser(providedUser)
@@ -71,10 +79,13 @@ describe('User Factory', () => {
 
       expect(result).toEqual({
         name: 'admin',
+        lastName: 'admin',
         email: 'admin@email.com',
         password: '123456Aa.',
         idDocument: '000000',
         role: RolesEnum.ADMIN,
+        country: 'Spain',
+        address: 'Calle de la Admin, 123',
       })
     })
 
@@ -92,10 +103,13 @@ describe('User Factory', () => {
 
       expect(result).toEqual({
         name: 'superadmin',
+        lastName: 'superadmin',
         email: 'superadmin@email.com',
         password: '123456Aa.',
         idDocument: '000000',
         role: RolesEnum.SUPERADMIN,
+        country: 'Spain',
+        address: 'Calle del Superadmin, 456',
       })
     })
 

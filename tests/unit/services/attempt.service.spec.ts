@@ -3,6 +3,7 @@ import { AttemptDTO } from '../../../src/DTOs/attempt/attempt.dto'
 import { CreateAttemptDTO } from '../../../src/DTOs/attempt/create.dto'
 import attemptRepository from '../../../src/repositories/attempt.repository'
 import attemptService from '../../../src/services/attempt.service'
+import { AttemptsEnum } from '../../../src/utils/enums/attempts.enum'
 
 jest.mock('../../../src/repositories/attempt.repository')
 
@@ -71,7 +72,11 @@ describe('AttemptService', () => {
     ;(attemptRepository.count as jest.Mock).mockResolvedValue(3)
     const maxAttempts = 5
 
-    const isMaxReached = await attemptService.isMaxLoginAttemptsReached(mockNewAttempt.userId.toString(), maxAttempts)
+    const isMaxReached = await attemptService.isMaxLoginAttemptsReached(
+      mockNewAttempt.userId.toString(),
+      maxAttempts,
+      AttemptsEnum.LOGIN,
+    )
 
     expect(isMaxReached).toBe(false)
   })

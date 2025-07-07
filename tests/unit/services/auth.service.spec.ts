@@ -6,12 +6,19 @@ import AuthService from '../../../src/services/auth.service'
 import sessionService from '../../../src/services/session.service'
 import userService from '../../../src/services/user.service'
 import { refreshTokens, verifyToken } from '../../../src/utils/jwt.utils'
+import codeService from '../../../src/services/code.service'
+import mailService from '../../../src/services/mail.service'
+import TooManyRequestException from '../../../src/exceptions/TooManyRequestException'
+import { CodeType } from '../../../src/utils/enums/code.enum'
+import NotFoundException from '../../../src/exceptions/NotFoundException'
 
 jest.mock('../../../src/services/user.service')
 jest.mock('../../../src/services/session.service')
 jest.mock('../../../src/utils/jwt.utils')
 jest.mock('../../../src/helpers/session.helper')
 jest.mock('bcrypt')
+jest.mock('../../../src/services/code.service')
+jest.mock('../../../src/services/mail.service')
 
 describe('AuthService', () => {
   describe('login', () => {
@@ -50,7 +57,6 @@ describe('AuthService', () => {
       }
 
       const tokens = { token: 'accessToken', refreshToken: 'refreshToken' }
-
       ;(userService.findByEmail as jest.Mock).mockResolvedValue(user)
       ;(bcrypt.compareSync as jest.Mock).mockReturnValue(true)
       ;(rotateUserSessionAndTokens as jest.Mock).mockResolvedValue(tokens)
@@ -199,6 +205,79 @@ describe('AuthService', () => {
       expect(verifyToken).toHaveBeenCalledWith('malformedToken')
       expect(sessionService.findActiveByUserId).not.toHaveBeenCalled()
       expect(invalidateSession).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('forgotPassword', () => {
+    const user = { id: 'userId', email: 'user@example.com' }
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should not send email if user not found', async () => {
+      ;(userService.findByEmail as jest.Mock).mockResolvedValue(null)
+      await AuthService.forgotPassword('user@example.com')
+      expect(mailService.sendMail).not.toHaveBeenCalled()
+    })
+
+    it('should throw TooManyRequestException if last code was sent recently', async () => {
+      ;(userService.findByEmail as jest.Mock).mockResolvedValue(user)
+      ;(codeService.findLastByUserIdAndType as jest.Mock).mockResolvedValue({
+        createdAt: Date.now(),
+      })
+
+      await expect(AuthService.forgotPassword(user.email)).rejects.toThrow(TooManyRequestException)
+    })
+
+    it('should create and send a recovery code', async () => {
+      ;(userService.findByEmail as jest.Mock).mockResolvedValue(user)
+      ;(codeService.findLastByUserIdAndType as jest.Mock).mockResolvedValue(null)
+      ;(codeService.create as jest.Mock).mockResolvedValue({ code: '123456' })
+
+      await AuthService.forgotPassword(user.email)
+
+      expect(codeService.create).toHaveBeenCalledWith(user.id, CodeType.RECOVERY)
+      expect(mailService.sendMail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: user.email,
+          subject: 'Password Recovery',
+        }),
+      )
+    })
+  })
+
+  describe('resetPassword', () => {
+    const user = { id: 'userId', email: 'user@example.com' }
+    const code = '123456'
+    const password = 'newPassword'
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should return false if user not found', async () => {
+      ;(userService.findByEmail as jest.Mock).mockResolvedValue(null)
+      const result = await AuthService.resetPassword(user.email, code, password)
+      expect(result).toBe(false)
+    })
+
+    it('should throw NotFoundException if code is invalid', async () => {
+      ;(userService.findByEmail as jest.Mock).mockResolvedValue(user)
+      ;(codeService.isCodeValid as jest.Mock).mockResolvedValue(false)
+
+      await expect(AuthService.resetPassword(user.email, code, password)).rejects.toThrow(NotFoundException)
+    })
+
+    it('should reset password and invalidate code if code is valid', async () => {
+      ;(userService.findByEmail as jest.Mock).mockResolvedValue(user)
+      ;(codeService.isCodeValid as jest.Mock).mockResolvedValue(true)
+
+      const result = await AuthService.resetPassword(user.email, code, password)
+
+      expect(codeService.invalidateCode).toHaveBeenCalledWith(code, user.id)
+      expect(userService.update).toHaveBeenCalledWith(user.id, { password })
+      expect(result).toBe(true)
     })
   })
 })
