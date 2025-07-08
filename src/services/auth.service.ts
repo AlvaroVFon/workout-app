@@ -6,7 +6,7 @@ import { Payload } from '../interfaces/payload.interface'
 import { AuthServiceLoginResponse } from '../types/index.types'
 import { AttemptsEnum } from '../utils/enums/attempts.enum'
 import { BlockReasonEnum } from '../utils/enums/blocks.enum'
-import { refreshTokens, verifyToken } from '../utils/jwt.utils'
+import { buildPayload, generateResetPasswordToken, refreshTokens, verifyToken } from '../utils/jwt.utils'
 import attemptService from './attempt.service'
 import blockService from './block.service'
 import sessionService from './session.service'
@@ -48,17 +48,13 @@ class AuthService {
       return null
     }
 
-    const payload: Payload = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      idDocument: user.idDocument,
-    }
+    const payload: Payload = buildPayload(user)
     const { token, refreshToken } = await rotateUserSessionAndTokens(payload)
 
     await attemptService.deleteByUserAndType(user.id, AttemptsEnum.LOGIN, false)
     await blockService.removeBlocks(user.id, AttemptsEnum.LOGIN)
 
+    await mailService.sendWelcomeEmail('test@test.com', user.name)
     return { user, token, refreshToken }
   }
 
@@ -81,12 +77,17 @@ class AuthService {
     }
 
     const code = await codeService.create(user.id, CodeType.RECOVERY)
+    const payload: Payload = buildPayload(user)
 
-    await mailService.sendPasswordRecoveryEmail(user.email, code.code)
+    const resetPasswordToken = generateResetPasswordToken(payload)
+    await mailService.sendPasswordRecoveryEmail(user.email, code.code, resetPasswordToken)
   }
 
-  async resetPassword(email: string, code: string, password: string): Promise<boolean> {
-    const user = await userService.findByEmail(email)
+  async resetPassword(token: string, code: string, password: string): Promise<boolean> {
+    const payload = verifyToken(token)
+    if (!payload) return false
+
+    const user = await userService.findById(payload?.id)
     if (!user) return false
 
     const isCodeValid = await codeService.isCodeValid(code, user.id)
@@ -98,7 +99,8 @@ class AuthService {
     await codeService.invalidateCode(code, user.id)
 
     await userService.update(user.id, { password })
-    await mailService.sendResetPasswordOkEmail(email)
+
+    await mailService.sendResetPasswordOkEmail(user.email)
 
     return true
   }

@@ -82,7 +82,7 @@ describe('MailService', () => {
     it('should send a password recovery email', async () => {
       const to = 'recipient@example.com'
       const code = '123456'
-      await MailService.sendPasswordRecoveryEmail(to, code)
+      await MailService.sendPasswordRecoveryEmail(to, code, 'someRandomToken')
       expect(compileTemplate).toHaveBeenCalledWith(
         TemplateEnum.PASSWORD_RECOVERY,
         expect.objectContaining({

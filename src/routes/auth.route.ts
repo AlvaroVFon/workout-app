@@ -15,6 +15,10 @@ router
   .get('/info', [authMiddleware.verifyJWT], authController.info)
   .post('/logout', [authMiddleware.verifyJWT, authMiddleware.validateHeaderRefreshToken], authController.logout)
   .post('/forgot-password', [authMiddleware.validateForgotPasswordSchema], authController.forgotPassword)
-  .post('/reset-password', [authMiddleware.validateResetPasswordSchema], authController.resetPassword)
+  .post(
+    '/reset-password',
+    [authMiddleware.validateResetPasswordSchema, authMiddleware.verifyResetPasswordToken],
+    authController.resetPassword,
+  )
 
 export { router as authRouter }

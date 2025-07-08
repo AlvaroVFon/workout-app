@@ -1,10 +1,15 @@
-import { Request, Response, NextFunction } from 'express'
-import AuthMiddleware from '../../../src/middlewares/auth.middleware'
-import { loginSchema, forgotPasswordSchema, resetPasswordSchema } from '../../../src/schemas/auth/auth.schema'
-import BadRequestException from '../../../src/exceptions/BadRequestException'
-import UnauthorizedException from '../../../src/exceptions/UnauthorizedException'
+import { NextFunction, Request, Response } from 'express'
 import passport from '../../../src/config/passport'
+import BadRequestException from '../../../src/exceptions/BadRequestException'
 import ForbiddenException from '../../../src/exceptions/ForbiddenException'
+import UnauthorizedException from '../../../src/exceptions/UnauthorizedException'
+import AuthMiddleware from '../../../src/middlewares/auth.middleware'
+import {
+  forgotPasswordSchema,
+  loginSchema,
+  queryTokenSchema,
+  resetPasswordSchema,
+} from '../../../src/schemas/auth/auth.schema'
 
 jest.mock('../../../src/schemas/auth/auth.schema')
 jest.mock('../../../src/config/passport')
@@ -15,7 +20,7 @@ describe('AuthMiddleware', () => {
   let next: jest.Mock
 
   beforeEach(() => {
-    req = { body: {} }
+    req = { body: {}, user: {}, query: {} }
     res = {}
     next = jest.fn()
   })
@@ -62,6 +67,8 @@ describe('AuthMiddleware', () => {
 
   describe('validateResetPasswordSchema', () => {
     it('should call next with BadRequestException if validation fails', async () => {
+      req.query = { token: 'invalidToken' }
+      ;(queryTokenSchema.validate as jest.Mock).mockReturnValueOnce({})
       ;(resetPasswordSchema.validate as jest.Mock).mockReturnValueOnce({
         error: { details: [{ message: 'Invalid data' }] },
       })
@@ -72,6 +79,8 @@ describe('AuthMiddleware', () => {
     })
 
     it('should call next with no arguments if validation passes', async () => {
+      req.query = { token: 'validToken' }
+      ;(queryTokenSchema.validate as jest.Mock).mockReturnValueOnce({ error: null })
       ;(resetPasswordSchema.validate as jest.Mock).mockReturnValueOnce({ error: null })
 
       await AuthMiddleware.validateResetPasswordSchema(req as Request, res as Response, next)
@@ -138,7 +147,7 @@ describe('AuthMiddleware', () => {
 
       middleware(req as Request, res as Response, next)
 
-      expect(next).toHaveBeenCalledWith(new UnauthorizedException())
+      expect(next).toHaveBeenCalledWith(new UnauthorizedException('Access Denied'))
     })
   })
 })

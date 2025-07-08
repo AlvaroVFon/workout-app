@@ -1,16 +1,16 @@
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'mongodb'
 import { Types } from 'mongoose'
+import NotFoundException from '../../../src/exceptions/NotFoundException'
+import TooManyRequestException from '../../../src/exceptions/TooManyRequestException'
 import { invalidateSession, isActiveSession, rotateUserSessionAndTokens } from '../../../src/helpers/session.helper'
 import AuthService from '../../../src/services/auth.service'
-import sessionService from '../../../src/services/session.service'
-import userService from '../../../src/services/user.service'
-import { refreshTokens, verifyToken } from '../../../src/utils/jwt.utils'
 import codeService from '../../../src/services/code.service'
 import mailService from '../../../src/services/mail.service'
-import TooManyRequestException from '../../../src/exceptions/TooManyRequestException'
+import sessionService from '../../../src/services/session.service'
+import userService from '../../../src/services/user.service'
 import { CodeType } from '../../../src/utils/enums/code.enum'
-import NotFoundException from '../../../src/exceptions/NotFoundException'
+import { generateResetPasswordToken, refreshTokens, verifyToken } from '../../../src/utils/jwt.utils'
 
 jest.mock('../../../src/services/user.service')
 jest.mock('../../../src/services/session.service')
@@ -233,12 +233,13 @@ describe('AuthService', () => {
     it('should create and send a recovery code', async () => {
       ;(userService.findByEmail as jest.Mock).mockResolvedValue(user)
       ;(codeService.findLastByUserIdAndType as jest.Mock).mockResolvedValue(null)
-      ;(codeService.create as jest.Mock).mockResolvedValue({ code: '123456' })
+      ;(codeService.create as jest.Mock).mockResolvedValue({ code: '123456', type: CodeType.RECOVERY })
+      ;(generateResetPasswordToken as jest.Mock).mockReturnValue('resetToken')
 
       await AuthService.forgotPassword(user.email)
 
       expect(codeService.create).toHaveBeenCalledWith(user.id, CodeType.RECOVERY)
-      expect(mailService.sendPasswordRecoveryEmail).toHaveBeenCalledWith(user.email, '123456')
+      expect(mailService.sendPasswordRecoveryEmail).toHaveBeenCalledWith(user.email, '123456', 'resetToken')
     })
   })
 
@@ -252,20 +253,23 @@ describe('AuthService', () => {
     })
 
     it('should return false if user not found', async () => {
-      ;(userService.findByEmail as jest.Mock).mockResolvedValue(null)
+      ;(verifyToken as jest.Mock).mockReturnValue({ id: user.id })
+      ;(userService.findById as jest.Mock).mockResolvedValue(null)
       const result = await AuthService.resetPassword(user.email, code, password)
       expect(result).toBe(false)
     })
 
     it('should throw NotFoundException if code is invalid', async () => {
-      ;(userService.findByEmail as jest.Mock).mockResolvedValue(user)
+      ;(verifyToken as jest.Mock).mockReturnValue({ id: user.id })
+      ;(userService.findById as jest.Mock).mockResolvedValue(user)
       ;(codeService.isCodeValid as jest.Mock).mockResolvedValue(false)
 
       await expect(AuthService.resetPassword(user.email, code, password)).rejects.toThrow(NotFoundException)
     })
 
     it('should reset password and invalidate code if code is valid', async () => {
-      ;(userService.findByEmail as jest.Mock).mockResolvedValue(user)
+      ;(verifyToken as jest.Mock).mockReturnValue({ id: user.id })
+      ;(userService.findById as jest.Mock).mockResolvedValue(user)
       ;(codeService.isCodeValid as jest.Mock).mockResolvedValue(true)
 
       const result = await AuthService.resetPassword(user.email, code, password)

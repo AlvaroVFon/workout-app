@@ -18,7 +18,7 @@ describe('AuthController', () => {
   let next: NextFunction
 
   beforeEach(() => {
-    req = { body: {}, user: {} }
+    req = { body: {}, user: {}, query: {} }
     res = { status: jest.fn().mockReturnThis(), json: jest.fn() }
     next = jest.fn()
     jest.clearAllMocks()
@@ -187,12 +187,13 @@ describe('AuthController', () => {
 
   describe('resetPassword', () => {
     it('should return 204 on successful password reset', async () => {
-      req.body = { email: 'test@example.com', code: '123456', password: 'newPassword' }
+      req.body = { code: '123456', password: 'newPassword' }
+      req.query = { token: 'validToken' }
       ;(authService.resetPassword as jest.Mock).mockResolvedValue(true)
 
       await AuthController.resetPassword(req as Request, res as Response, next)
 
-      expect(authService.resetPassword).toHaveBeenCalledWith('test@example.com', '123456', 'newPassword')
+      expect(authService.resetPassword).toHaveBeenCalledWith('validToken', '123456', 'newPassword')
       expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
     })
 

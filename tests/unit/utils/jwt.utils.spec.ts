@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken'
 import { parameters } from '../../../src/config/parameters'
 import { rotateUserSessionAndTokens } from '../../../src/helpers/session.helper'
 import { Payload } from '../../../src/interfaces/payload.interface'
+import { TokenTypeEnum } from '../../../src/utils/enums/token.enum'
 import {
   generateAccessTokens,
   generateRefreshToken,
@@ -21,12 +22,12 @@ const mockPayload: Payload = {
   name: 'user',
   email: 'alvaro@email.com',
   idDocument: '1234545453',
-  type: 'access',
+  type: TokenTypeEnum.ACCESS,
 }
 
 const mockRefreshPayload: Payload = {
   ...mockPayload,
-  type: 'refresh',
+  type: TokenTypeEnum.REFRESH,
 }
 
 const mockToken = 'mockToken'

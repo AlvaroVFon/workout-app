@@ -8,12 +8,14 @@ import {
   forgotPasswordSchema,
   headerTokenSchema,
   loginSchema,
+  queryTokenSchema,
   refreshTokenSchema,
   resetPasswordSchema,
 } from '../schemas/auth/auth.schema'
 import blockService from '../services/block.service'
 import userService from '../services/user.service'
 import { AttemptsEnum } from '../utils/enums/attempts.enum'
+import { verifyToken } from '../utils/jwt.utils'
 
 class AuthMiddleware {
   async validateLoginSchema(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -45,8 +47,10 @@ class AuthMiddleware {
   async validateResetPasswordSchema(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { error } = resetPasswordSchema.validate(req.body)
+      const { error: resetTokenError } = queryTokenSchema.validate(req.query.token)
 
       if (error) return next(new BadRequestException(error.details[0].message))
+      if (resetTokenError) return next(new BadRequestException(resetTokenError.details[0].message))
 
       next()
     } catch (error) {
@@ -62,6 +66,20 @@ class AuthMiddleware {
 
       next()
     })(req, res, next)
+  }
+
+  verifyResetPasswordToken(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { token } = req.query
+      const verifiedToken = verifyToken(String(token))
+
+      if (!verifiedToken) {
+        return next(new UnauthorizedException('Invalid or expired reset password token.'))
+      }
+      next()
+    } catch (error) {
+      next(error)
+    }
   }
 
   authorizeRoles(...authorizedRoles: string[]) {

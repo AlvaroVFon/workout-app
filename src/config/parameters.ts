@@ -9,6 +9,7 @@ const envVarsSchema = Joi.object({
   JWT_SECRET: Joi.string().required(),
   JWT_EXPIRATION: Joi.string().default('1h'),
   JWT_REFRESH_EXPIRATION: Joi.string().default('30d'),
+  JWT_RESET_PASSWORD_EXPIRATION: Joi.string().default('1h'),
   SALT_ROUNDS: Joi.number().default(10),
   SMTP_HOST: Joi.string().default('localhost'),
   SMTP_PORT: Joi.number().default(587),
@@ -24,6 +25,7 @@ const envVarsSchema = Joi.object({
   CODE_EXPIRATION: Joi.number().default(300000),
   CODE_LENGTH: Joi.number().default(6),
   CODE_RETRY_INTERVAL: Joi.number().default(30000),
+  FRONTEND_URL: Joi.string().uri().default('http://localhost:5173'),
 })
   .unknown()
   .required()
@@ -42,6 +44,7 @@ export const parameters = {
   jwtSecret: envVars.JWT_SECRET,
   jwtExpiration: envVars.JWT_EXPIRATION,
   jwtRefreshExpiration: envVars.JWT_REFRESH_EXPIRATION,
+  jwtResetPasswordExpiration: envVars.JWT_RESET_PASSWORD_EXPIRATION,
   saltRounds: envVars.SALT_ROUNDS,
   smtpHost: envVars.SMTP_HOST,
   smtpPort: envVars.SMTP_PORT,
@@ -57,4 +60,5 @@ export const parameters = {
   codeExpiration: envVars.CODE_EXPIRATION,
   codeLength: envVars.CODE_LENGTH,
   codeRetryInterval: envVars.CODE_RETRY_INTERVAL,
+  frontUrl: envVars.FRONTEND_URL,
 }
