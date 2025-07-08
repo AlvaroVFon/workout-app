@@ -58,9 +58,10 @@ class AuthController {
 
   async resetPassword(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
     try {
-      const { email, code, password } = req.body
+      const { code, password } = req.body
+      const { token } = req.query
 
-      const isPasswordReset = await authService.resetPassword(email, code, password)
+      const isPasswordReset = await authService.resetPassword(String(token), code, password)
       if (!isPasswordReset) {
         throw new BadRequestException('Invalid code or email')
       }

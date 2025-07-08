@@ -35,7 +35,7 @@ class UserService {
     data.updatedAt = Date.now()
 
     if (data.password) {
-      data.password = await hashString(data.password)
+      data.password = await hashString(data.password, 'bcrypt')
     }
 
     return userRepository.update(id, data)

@@ -1,10 +1,12 @@
 import jwt from 'jsonwebtoken'
 import { parameters } from '../config/parameters'
 import { Payload } from '../interfaces/payload.interface'
+import { UserDTO } from '../DTOs/user/user.dto'
 import logger from './logger'
 import { rotateUserSessionAndTokens } from '../helpers/session.helper'
+import { TokenTypeEnum } from './enums/token.enum'
 
-const { jwtSecret, jwtExpiration, jwtRefreshExpiration } = parameters
+const { jwtSecret, jwtExpiration, jwtRefreshExpiration, jwtResetPasswordExpiration } = parameters
 
 function generateToken(payload: Payload): string {
   const tokenPayload = { ...payload, type: 'access' }
@@ -14,6 +16,11 @@ function generateToken(payload: Payload): string {
 function generateRefreshToken(payload: Payload): string {
   const refreshPayload = { ...payload, type: 'refresh' }
   return jwt.sign(refreshPayload, jwtSecret, { expiresIn: jwtRefreshExpiration })
+}
+
+function generateResetPasswordToken(payload: Payload): string {
+  const resetPayload = { id: payload.id, type: 'resetPassword' }
+  return jwt.sign(resetPayload, jwtSecret, { expiresIn: jwtResetPasswordExpiration })
 }
 
 function generateAccessTokens(payload: Payload): { token: string; refreshToken: string } {
@@ -59,4 +66,23 @@ function verifyRefreshToken(token: string): Payload | null {
   }
 }
 
-export { generateAccessTokens, generateRefreshToken, generateToken, refreshTokens, verifyRefreshToken, verifyToken }
+function buildPayload(user: UserDTO, type?: TokenTypeEnum): Payload {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    idDocument: user.idDocument,
+    type,
+  }
+}
+
+export {
+  generateAccessTokens,
+  generateRefreshToken,
+  generateToken,
+  generateResetPasswordToken,
+  refreshTokens,
+  verifyRefreshToken,
+  verifyToken,
+  buildPayload,
+}

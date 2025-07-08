@@ -8,6 +8,7 @@ import { compileTemplate } from '../config/templateEngine'
 class MailService {
   private readonly smtpFrom: string = parameters.smtpFrom
   private readonly smtpFromName: string = parameters.smtpFromName
+  private readonly frontUrl: string = parameters.frontUrl
 
   async sendMail(options: MailOptions): Promise<void> {
     const { from = `"${this.smtpFromName}" <${this.smtpFrom}>`, to, subject, html = '', text = '' } = options
@@ -47,7 +48,7 @@ class MailService {
     logger.debug(`Email template "${template}" compiled with context`, context)
   }
 
-  async sendPasswordRecoveryEmail(to: string, code: string): Promise<void> {
+  async sendPasswordRecoveryEmail(to: string, code: string, resetPasswordToken: string): Promise<void> {
     this.sendMailWithTemplate({
       to,
       subject: 'Password Recovery',
@@ -56,6 +57,7 @@ class MailService {
         code,
         appName: this.smtpFromName,
         year: new Date().getFullYear(),
+        link: `${this.frontUrl}/reset-password/${resetPasswordToken}`,
       },
     })
   }
@@ -68,6 +70,20 @@ class MailService {
       context: {
         appName: this.smtpFromName,
         year: new Date().getFullYear(),
+      },
+    })
+  }
+
+  async sendWelcomeEmail(to: string, userName: string): Promise<void> {
+    this.sendMailWithTemplate({
+      to,
+      subject: 'Welcome to Our Service',
+      template: TemplateEnum.WELCOME,
+      context: {
+        appName: this.smtpFromName,
+        year: new Date().getFullYear(),
+        link: this.frontUrl,
+        userName,
       },
     })
   }
