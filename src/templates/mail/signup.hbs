@@ -1,27 +1,29 @@
 <html lang='es'>
   <head>
     <meta charset='UTF-8' />
-    <title>¡Bienvenido a {{appName}}!</title>
+    <title>Confirma tu registro</title>
     <style>
       :root {
-        /* Catppuccin Latte */
+        /* Catppuccin Latte (light mode) */
         --bg: #f9f9fb;
         --text: #4c4f69;
         --card: #ffffff;
-        --accent: #8839ef;
-        --btn-bg: #8839ef;
+        --accent: #dc8a78;
+        --code-bg: #f2cdcd;
+        --btn-bg: #7287fd;
         --btn-text: #ffffff;
         --muted: #9ca0b0;
       }
 
       @media (prefers-color-scheme: dark) {
         :root {
-          /* Catppuccin Mocha */
+          /* Catppuccin Mocha (dark mode) */
           --bg: #1e1e2e;
           --text: #cdd6f4;
           --card: #313244;
-          --accent: #cba6f7;
-          --btn-bg: #cba6f7;
+          --accent: #f38ba8;
+          --code-bg: #45475a;
+          --btn-bg: #89b4fa;
           --btn-text: #1e1e2e;
           --muted: #a6adc8;
         }
@@ -55,9 +57,20 @@
         margin: 16px 0;
       }
 
+      .code-box {
+        margin: 24px 0;
+        background-color: var(--code-bg);
+        border-radius: 8px;
+        padding: 16px 24px;
+        text-align: center;
+        font-size: 26px;
+        font-weight: bold;
+        letter-spacing: 5px;
+        color: var(--text);
+      }
+
       .btn {
         display: inline-block;
-        margin-top: 24px;
         padding: 12px 20px;
         background-color: var(--btn-bg);
         color: var(--btn-text) !important;
@@ -84,21 +97,23 @@
     <div class='container'>
       <h2>¡Bienvenido a {{appName}}!</h2>
 
-      <p>Hola {{userName}},</p>
+      <p>Gracias por registrarte</p>
 
-      <p>Estamos muy contentos de que te hayas unido a nuestra comunidad. En
-        {{appName}}, trabajamos para ofrecerte la mejor experiencia posible.</p>
+      <p>Para completar tu registro, introduce este código de verificación:</p>
 
-      <p>Puedes comenzar explorando tu perfil o descubriendo todo lo que ofrecemos desde tu panel principal.</p>
+      <div class='code-box'>{{code}}</div>
+
+      <p>Haz clic en el siguiente botón para confirmar tu cuenta:</p>
 
       <div style='text-align: center;'>
-        <a class='btn' href='{{link}}'>Ir al panel</a>
+        <a class='btn' href='{{link}}'>Confirmar cuenta</a>
       </div>
 
-      <p style='margin-top: 32px;'>Si tienes alguna duda o necesitas ayuda, no dudes en ponerte en contacto con
-        nosotros.</p>
+      <p style='margin-top: 24px;'>
+        Si no has creado esta cuenta, puedes ignorar este mensaje.
+      </p>
 
-      <p>¡Gracias por unirte!<br />El equipo de {{appName}}</p>
+      <p>Gracias,<br />El equipo de {{appName}}</p>
 
       <div class='footer'>© {{year}} {{appName}}. Todos los derechos reservados.</div>
     </div>

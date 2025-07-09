@@ -2,7 +2,6 @@ import CodeService from '../../../src/services/code.service'
 import codeRepository from '../../../src/repositories/code.repository'
 import { generateCode } from '../../../src/utils/codeGenerator.utils'
 import { CodeType } from '../../../src/utils/enums/code.enum'
-import { parameters } from '../../../src/config/parameters'
 
 jest.mock('../../../src/repositories/code.repository')
 jest.mock('../../../src/utils/codeGenerator.utils')
@@ -66,13 +65,13 @@ describe('CodeService', () => {
     it('should return true if code is valid and not expired', async () => {
       const mockCode = 'ABCDEF'
       const mockUserId = 'user123'
-      const mockCodeData = { expiresAt: Date.now() + 10000 }
+      const mockCodeData = { expiresAt: Date.now() + 10000, CodeType: CodeType.RECOVERY, used: false }
       ;(codeRepository.findOne as jest.Mock).mockResolvedValue(mockCodeData)
 
-      const result = await CodeService.isCodeValid(mockCode, mockUserId)
+      const result = await CodeService.isCodeValid(mockCode, mockUserId, CodeType.RECOVERY)
 
       expect(codeRepository.findOne).toHaveBeenCalledWith({
-        query: { code: mockCode, userId: mockUserId, used: false },
+        query: { code: mockCode, userId: mockUserId, used: false, type: CodeType.RECOVERY },
         projection: { expiresAt: 1 },
       })
       expect(result).toBe(true)
@@ -81,10 +80,10 @@ describe('CodeService', () => {
     it('should return false if code is expired', async () => {
       const mockCode = 'ABCDEF'
       const mockUserId = 'user123'
-      const mockCodeData = { expiresAt: Date.now() - 10000 }
+      const mockCodeData = { expiresAt: Date.now() - 10000, tupe: CodeType.RECOVERY, used: false }
       ;(codeRepository.findOne as jest.Mock).mockResolvedValue(mockCodeData)
 
-      const result = await CodeService.isCodeValid(mockCode, mockUserId)
+      const result = await CodeService.isCodeValid(mockCode, mockUserId, CodeType.RECOVERY)
 
       expect(result).toBe(false)
     })
@@ -94,7 +93,7 @@ describe('CodeService', () => {
       const mockUserId = 'user123'
       ;(codeRepository.findOne as jest.Mock).mockResolvedValue(null)
 
-      const result = await CodeService.isCodeValid(mockCode, mockUserId)
+      const result = await CodeService.isCodeValid(mockCode, mockUserId, CodeType.RECOVERY)
 
       expect(result).toBe(false)
     })

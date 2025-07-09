@@ -13,7 +13,6 @@ class UserService {
     const role = await roleService.findByName(data.role)
     if (!role) throw new NotFoundException(`Invalid role: ${data.role}`)
 
-    data.password = await hashString(data.password)
     data.role = role._id.toString()
 
     return userRepository.create(data)

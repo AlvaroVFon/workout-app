@@ -11,6 +11,8 @@ import sessionService from '../../../src/services/session.service'
 import userService from '../../../src/services/user.service'
 import { CodeType } from '../../../src/utils/enums/code.enum'
 import { generateResetPasswordToken, refreshTokens, verifyToken } from '../../../src/utils/jwt.utils'
+import { Payload } from '../../../src/interfaces/payload.interface'
+import { TokenTypeEnum } from '../../../src/utils/enums/token.enum'
 
 jest.mock('../../../src/services/user.service')
 jest.mock('../../../src/services/session.service')
@@ -209,10 +211,23 @@ describe('AuthService', () => {
   })
 
   describe('forgotPassword', () => {
-    const user = { id: 'userId', email: 'user@example.com' }
+    const user = { id: new ObjectId(), email: 'user@example.com' }
 
     beforeEach(() => {
       jest.clearAllMocks()
+    })
+
+    it('should create and send a recovery code', async () => {
+      ;(userService.findByEmail as jest.Mock).mockResolvedValue(user)
+      ;(codeService.verifyLastCodeInterval as jest.Mock).mockResolvedValue(true)
+      ;(codeService.findLastByUserIdAndType as jest.Mock).mockResolvedValue(null)
+      ;(codeService.create as jest.Mock).mockResolvedValue({ code: '123456', type: CodeType.RECOVERY })
+      ;(generateResetPasswordToken as jest.Mock).mockReturnValue('resetToken')
+
+      await AuthService.forgotPassword(user.email)
+
+      expect(codeService.create).toHaveBeenCalledWith(user.id, CodeType.RECOVERY)
+      expect(mailService.sendPasswordRecoveryEmail).toHaveBeenCalledWith(user.email, '123456', 'resetToken')
     })
 
     it('should not send email if user not found', async () => {
@@ -223,28 +238,17 @@ describe('AuthService', () => {
 
     it('should throw TooManyRequestException if last code was sent recently', async () => {
       ;(userService.findByEmail as jest.Mock).mockResolvedValue(user)
+      ;(codeService.verifyLastCodeInterval as jest.Mock).mockResolvedValue(false)
       ;(codeService.findLastByUserIdAndType as jest.Mock).mockResolvedValue({
         createdAt: Date.now(),
       })
 
       await expect(AuthService.forgotPassword(user.email)).rejects.toThrow(TooManyRequestException)
     })
-
-    it('should create and send a recovery code', async () => {
-      ;(userService.findByEmail as jest.Mock).mockResolvedValue(user)
-      ;(codeService.findLastByUserIdAndType as jest.Mock).mockResolvedValue(null)
-      ;(codeService.create as jest.Mock).mockResolvedValue({ code: '123456', type: CodeType.RECOVERY })
-      ;(generateResetPasswordToken as jest.Mock).mockReturnValue('resetToken')
-
-      await AuthService.forgotPassword(user.email)
-
-      expect(codeService.create).toHaveBeenCalledWith(user.id, CodeType.RECOVERY)
-      expect(mailService.sendPasswordRecoveryEmail).toHaveBeenCalledWith(user.email, '123456', 'resetToken')
-    })
   })
 
   describe('resetPassword', () => {
-    const user = { id: 'userId', email: 'user@example.com' }
+    const user = { id: new ObjectId(), email: 'user@example.com' }
     const code = '123456'
     const password = 'newPassword'
 
@@ -253,9 +257,18 @@ describe('AuthService', () => {
     })
 
     it('should return false if user not found', async () => {
-      ;(verifyToken as jest.Mock).mockReturnValue({ id: user.id })
+      const payload: Payload = {
+        id: user.id.toString(),
+        email: user.email,
+        type: TokenTypeEnum.RESET_PASSWORD,
+        name: 'Test User',
+        idDocument: '1231231',
+      }
+      const token = generateResetPasswordToken(payload)
+
+      ;(verifyToken as jest.Mock).mockReturnValue(null)
       ;(userService.findById as jest.Mock).mockResolvedValue(null)
-      const result = await AuthService.resetPassword(user.email, code, password)
+      const result = await AuthService.resetPassword(token, code, password)
       expect(result).toBe(false)
     })
 

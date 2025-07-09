@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import userController from '../controllers/user.controller'
 import userMiddleware from '../middlewares/user.middleware'
-import authMiddleware from '../middlewares/auth.middleware'
+import authMiddleware from '../middlewares/auth/auth.middleware'
 import globalValidatorMiddleware from '../middlewares/globalValidator.middleware'
 import paginationMiddleware from '../middlewares/pagination.middleware'
 import { RolesEnum } from '../utils/enums/roles.enum'

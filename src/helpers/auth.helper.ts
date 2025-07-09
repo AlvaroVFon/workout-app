@@ -1,0 +1,35 @@
+import { parameters } from '../config/parameters'
+import attemptService from '../services/attempt.service'
+import blockService from '../services/block.service'
+import { AttemptsEnum } from '../utils/enums/attempts.enum'
+import { BlockReasonEnum } from '../utils/enums/blocks.enum'
+import { generateUUID, hashString } from './crypto.helper'
+
+const { blockDuration } = parameters
+
+async function createSignupData(email: string, password: string) {
+  const id = generateUUID()
+  const hashedPassword = await hashString(password, 'bcrypt')
+
+  const signupCredentials = {
+    email,
+    password: hashedPassword,
+  }
+
+  return {
+    id,
+    signupCredentials,
+  }
+}
+
+async function handleMaxAttempts(id: string, maxAttempts: number, type: AttemptsEnum) {
+  const areMaxAttemptsReached = await attemptService.isMaxLoginAttemptsReached(id, maxAttempts, type)
+
+  if (areMaxAttemptsReached) {
+    await blockService.setBlock(id, type, Date.now() + blockDuration, BlockReasonEnum.MAX_ATTEMPTS)
+    return true
+  }
+  return false
+}
+
+export { createSignupData, handleMaxAttempts }

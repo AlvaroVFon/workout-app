@@ -1,9 +1,9 @@
-import { parameters } from '../config/parameters'
-import transporter from '../config/nodemailer'
-import logger from '../utils/logger'
 import type { MailOptions } from 'nodemailer/lib/sendmail-transport'
-import { TemplateEnum } from '../utils/enums/templates.enum'
+import transporter from '../config/nodemailer'
+import { parameters } from '../config/parameters'
 import { compileTemplate } from '../config/templateEngine'
+import { TemplateEnum } from '../utils/enums/templates.enum'
+import logger from '../utils/logger'
 
 class MailService {
   private readonly smtpFrom: string = parameters.smtpFrom
@@ -46,6 +46,33 @@ class MailService {
       html,
     })
     logger.debug(`Email template "${template}" compiled with context`, context)
+  }
+
+  async sendSignupEmail(to: string, code: string, uuid: string): Promise<void> {
+    this.sendMailWithTemplate({
+      to,
+      subject: 'Email Verification',
+      template: TemplateEnum.SIGNUP,
+      context: {
+        code,
+        appName: this.smtpFromName,
+        year: new Date().getFullYear(),
+        link: `${this.frontUrl}/signup-verify/${uuid}`,
+      },
+    })
+  }
+
+  async sendSingupSuccedEmail(to: string) {
+    this.sendMailWithTemplate({
+      to,
+      subject: 'Signup Successful',
+      template: TemplateEnum.SIGNUP_SUCCEED,
+      context: {
+        appName: this.smtpFromName,
+        year: new Date().getFullYear(),
+        link: this.frontUrl,
+      },
+    })
   }
 
   async sendPasswordRecoveryEmail(to: string, code: string, resetPasswordToken: string): Promise<void> {

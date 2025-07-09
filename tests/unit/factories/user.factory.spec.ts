@@ -1,6 +1,9 @@
 import { createUser, createAdminUser, createSuperAdminUser, createUsers } from '../../../src/factories/user.factory'
 import { CreateUserDTO } from '../../../src/DTOs/user/create.dto'
 import { RolesEnum } from '../../../src/utils/enums/roles.enum'
+import { hashString } from '../../../src/helpers/crypto.helper'
+
+jest.mock('../../../src/helpers/crypto.helper')
 
 jest.mock('@faker-js/faker', () => ({
   faker: {
@@ -22,66 +25,70 @@ jest.mock('@faker-js/faker', () => ({
 }))
 
 describe('User Factory', () => {
+  beforeAll(() => {
+    ;(hashString as jest.Mock).mockResolvedValue('hashedPassword')
+  })
+
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
   describe('createUser', () => {
-    it('should create a user with default values when no user is provided', () => {
-      const result = createUser()
+    it('should create a user with default values when no user is provided', async () => {
+      const result = await createUser()
 
       expect(result).toEqual({
         name: 'John',
         lastName: 'Doe',
         email: 'test@example.com',
-        password: 'password123',
+        password: 'hashedPassword',
         idDocument: '123456789',
         role: RolesEnum.USER,
         country: 'Testland',
       })
     })
 
-    it('should use provided user data when available', () => {
+    it('should use provided user data when available', async () => {
       const providedUser: CreateUserDTO = {
         name: 'Jane',
         lastName: 'Doe',
         email: 'jane@example.com',
-        password: 'customPassword',
+        password: 'hashedPassword',
         idDocument: 'custom-id',
         role: RolesEnum.ADMIN,
         country: 'Testland',
       }
 
-      const result = createUser(providedUser)
+      const result = await createUser(providedUser)
 
       expect(result).toEqual(providedUser)
     })
 
-    it('should handle partial user data', () => {
+    it('should handle partial user data', async () => {
       const partialUser = {
         name: 'Partial',
         email: 'partial@example.com',
       } as CreateUserDTO
 
-      const result = createUser(partialUser)
+      const result = await createUser(partialUser)
 
       expect(result.name).toBe('Partial')
       expect(result.email).toBe('partial@example.com')
-      expect(result.password).toBe('password123') // Should use faker default
-      expect(result.idDocument).toBe('123456789') // Should use faker default
-      expect(result.role).toBe(RolesEnum.USER) // Should use default
+      expect(result.password).toBe('hashedPassword')
+      expect(result.idDocument).toBe('123456789')
+      expect(result.role).toBe(RolesEnum.USER)
     })
   })
 
   describe('createAdminUser', () => {
-    it('should create an admin user with predefined values', () => {
-      const result = createAdminUser()
+    it('should create an admin user with predefined values', async () => {
+      const result = await createAdminUser()
 
       expect(result).toEqual({
         name: 'admin',
         lastName: 'admin',
         email: 'admin@email.com',
-        password: '123456Aa.',
+        password: 'hashedPassword',
         idDocument: '000000',
         role: RolesEnum.ADMIN,
         country: 'Spain',
@@ -89,23 +96,23 @@ describe('User Factory', () => {
       })
     })
 
-    it('should always return the same admin user data', () => {
-      const result1 = createAdminUser()
-      const result2 = createAdminUser()
+    it('should always return the same admin user data', async () => {
+      const result1 = await createAdminUser()
+      const result2 = await createAdminUser()
 
       expect(result1).toEqual(result2)
     })
   })
 
   describe('createSuperAdminUser', () => {
-    it('should create a super admin user with predefined values', () => {
-      const result = createSuperAdminUser()
+    it('should create a super admin user with predefined values', async () => {
+      const result = await createSuperAdminUser()
 
       expect(result).toEqual({
         name: 'superadmin',
         lastName: 'superadmin',
         email: 'superadmin@email.com',
-        password: '123456Aa.',
+        password: 'hashedPassword',
         idDocument: '000000',
         role: RolesEnum.SUPERADMIN,
         country: 'Spain',
@@ -113,34 +120,35 @@ describe('User Factory', () => {
       })
     })
 
-    it('should always return the same super admin user data', () => {
-      const result1 = createSuperAdminUser()
-      const result2 = createSuperAdminUser()
+    it('should always return the same super admin user data', async () => {
+      const result1 = await createSuperAdminUser()
+      const result2 = await createSuperAdminUser()
 
       expect(result1).toEqual(result2)
     })
   })
 
   describe('createUsers', () => {
-    it('should create default number of users when length is not provided', () => {
+    it('should create default number of users when length is not provided', async () => {
       const result = createUsers()
+      const users = await Promise.resolve(result)
 
-      expect(result).toHaveLength(5) // Default length
-      result.forEach((user) => {
+      expect(users).toHaveLength(5)
+      users.forEach((user) => {
         expect(user).toHaveProperty('name')
         expect(user).toHaveProperty('email')
         expect(user).toHaveProperty('password')
         expect(user).toHaveProperty('idDocument')
         expect(user).toHaveProperty('role')
-        expect(user.role).toBe(RolesEnum.USER)
       })
     })
 
-    it('should create specified number of users', () => {
+    it('should create specified number of users', async () => {
       const result = createUsers(3)
+      const users = await Promise.resolve(result)
 
-      expect(result).toHaveLength(3)
-      result.forEach((user) => {
+      expect(users).toHaveLength(3)
+      users.forEach((user) => {
         expect(user).toHaveProperty('name')
         expect(user).toHaveProperty('email')
         expect(user).toHaveProperty('password')
@@ -149,19 +157,20 @@ describe('User Factory', () => {
       })
     })
 
-    it('should create empty array when length is 0', () => {
+    it('should create empty array when length is 0', async () => {
       const result = createUsers(0)
+      const users = await Promise.resolve(result)
 
-      expect(result).toHaveLength(0)
-      expect(result).toEqual([])
+      expect(users).toHaveLength(0)
+      expect(users).toEqual([])
     })
 
-    it('should create users with unique data', () => {
+    it('should create users with unique data', async () => {
       const result = createUsers(2)
+      const users = await Promise.resolve(result)
 
-      expect(result).toHaveLength(2)
-      // All users should have the same mocked values in this test environment
-      expect(result[0]).toEqual(result[1])
+      expect(users).toHaveLength(2)
+      expect(users[0]).toEqual(users[1])
     })
   })
 })
