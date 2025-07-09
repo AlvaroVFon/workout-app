@@ -4,26 +4,24 @@
     <title>Confirma tu registro</title>
     <style>
       :root {
-        /* Catppuccin Latte (light mode) */
-        --bg: #f9f9fb;
-        --text: #4c4f69;
+        --bg: #f5f7ff;
+        --text: #3b4261;
         --card: #ffffff;
-        --accent: #dc8a78;
-        --code-bg: #f2cdcd;
-        --btn-bg: #7287fd;
+        --accent: #8caaee;
+        --code-bg: #e4eaff;
+        --btn-bg: #8caaee;
         --btn-text: #ffffff;
-        --muted: #9ca0b0;
+        --muted: #7d869c;
       }
 
       @media (prefers-color-scheme: dark) {
         :root {
-          /* Catppuccin Mocha (dark mode) */
           --bg: #1e1e2e;
-          --text: #cdd6f4;
-          --card: #313244;
-          --accent: #f38ba8;
-          --code-bg: #45475a;
-          --btn-bg: #89b4fa;
+          --text: #dce1f8;
+          --card: #2a2d40;
+          --accent: #b5c1f1;
+          --code-bg: #3c4059;
+          --btn-bg: #b5c1f1;
           --btn-text: #1e1e2e;
           --muted: #a6adc8;
         }
@@ -51,12 +49,6 @@
         margin-bottom: 16px;
       }
 
-      p {
-        font-size: 15px;
-        line-height: 1.6;
-        margin: 16px 0;
-      }
-
       .code-box {
         margin: 24px 0;
         background-color: var(--code-bg);
@@ -71,7 +63,8 @@
 
       .btn {
         display: inline-block;
-        padding: 12px 20px;
+        margin-top: 20px;
+        padding: 12px 24px;
         background-color: var(--btn-bg);
         color: var(--btn-text) !important;
         border-radius: 6px;
@@ -79,6 +72,12 @@
         font-weight: 600;
         font-size: 15px;
         transition: opacity 0.3s ease;
+      }
+
+      p {
+        font-size: 15px;
+        line-height: 1.6;
+        margin: 16px 0;
       }
 
       .btn:hover {
@@ -95,24 +94,21 @@
   </head>
   <body>
     <div class='container'>
-      <h2>¡Bienvenido a {{appName}}!</h2>
 
-      <p>Gracias por registrarte</p>
+      <h2>Confirma tu cuenta</h2>
 
-      <p>Para completar tu registro, introduce este código de verificación:</p>
+      <p>
+        Gracias por registrarte en
+        <strong>{{appName}}</strong>. Utiliza el siguiente código para confirmar tu cuenta:
+      </p>
 
       <div class='code-box'>{{code}}</div>
-
-      <p>Haz clic en el siguiente botón para confirmar tu cuenta:</p>
 
       <div style='text-align: center;'>
         <a class='btn' href='{{link}}'>Confirmar cuenta</a>
       </div>
 
-      <p style='margin-top: 24px;'>
-        Si no has creado esta cuenta, puedes ignorar este mensaje.
-      </p>
-
+      <p>Si no solicitaste esta cuenta, puedes ignorar este correo.</p>
       <p>Gracias,<br />El equipo de {{appName}}</p>
 
       <div class='footer'>© {{year}} {{appName}}. Todos los derechos reservados.</div>
