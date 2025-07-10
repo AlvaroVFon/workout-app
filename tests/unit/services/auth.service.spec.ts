@@ -76,6 +76,7 @@ describe('AuthService', () => {
         name: 'Test User',
         email: 'test@example.com',
         idDocument: '12345',
+        type: TokenTypeEnum.ACCESS,
       }
       ;(verifyToken as jest.Mock).mockResolvedValue(payload)
 
@@ -136,6 +137,7 @@ describe('AuthService', () => {
       name: 'Test User',
       email: 'test@example.com',
       idDocument: '12345',
+      type: TokenTypeEnum.ACCESS,
     }
     const mockSession = {
       _id: new Types.ObjectId(mockSessionId),
@@ -156,7 +158,7 @@ describe('AuthService', () => {
 
       const result = await AuthService.logout('validRefreshToken')
 
-      expect(verifyToken).toHaveBeenCalledWith('validRefreshToken')
+      expect(verifyToken).toHaveBeenCalledWith('validRefreshToken', TokenTypeEnum.ACCESS)
       expect(sessionService.findActiveByUserId).toHaveBeenCalledWith(mockUserId)
       expect(invalidateSession).toHaveBeenCalledWith(mockSession)
       expect(result).toBe(true)
@@ -167,7 +169,7 @@ describe('AuthService', () => {
 
       const result = await AuthService.logout('invalidToken')
 
-      expect(verifyToken).toHaveBeenCalledWith('invalidToken')
+      expect(verifyToken).toHaveBeenCalledWith('invalidToken', TokenTypeEnum.ACCESS)
       expect(sessionService.findActiveByUserId).not.toHaveBeenCalled()
       expect(invalidateSession).not.toHaveBeenCalled()
       expect(result).toBe(false)
@@ -179,7 +181,7 @@ describe('AuthService', () => {
 
       const result = await AuthService.logout('validRefreshToken')
 
-      expect(verifyToken).toHaveBeenCalledWith('validRefreshToken')
+      expect(verifyToken).toHaveBeenCalledWith('validRefreshToken', TokenTypeEnum.ACCESS)
       expect(sessionService.findActiveByUserId).toHaveBeenCalledWith(mockUserId)
       expect(invalidateSession).not.toHaveBeenCalled()
       expect(result).toBe(false)
@@ -192,7 +194,7 @@ describe('AuthService', () => {
 
       await expect(AuthService.logout('validRefreshToken')).rejects.toThrow('Database error')
 
-      expect(verifyToken).toHaveBeenCalledWith('validRefreshToken')
+      expect(verifyToken).toHaveBeenCalledWith('validRefreshToken', TokenTypeEnum.ACCESS)
       expect(sessionService.findActiveByUserId).toHaveBeenCalledWith(mockUserId)
       expect(invalidateSession).toHaveBeenCalledWith(mockSession)
     })
@@ -204,7 +206,7 @@ describe('AuthService', () => {
 
       await expect(AuthService.logout('malformedToken')).rejects.toThrow('Token verification failed')
 
-      expect(verifyToken).toHaveBeenCalledWith('malformedToken')
+      expect(verifyToken).toHaveBeenCalledWith('malformedToken', TokenTypeEnum.ACCESS)
       expect(sessionService.findActiveByUserId).not.toHaveBeenCalled()
       expect(invalidateSession).not.toHaveBeenCalled()
     })

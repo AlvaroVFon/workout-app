@@ -39,9 +39,11 @@ function generateAccessTokens(payload: Payload): { token: string; refreshToken: 
   }
 }
 
-function verifyToken(token: string): Payload | null {
+function verifyToken(token: string, type: TokenTypeEnum): Payload | null {
   try {
     const decoded = jwt.verify(token, jwtSecret) as Payload
+    if (decoded.type !== type) return null
+
     return decoded
   } catch (error) {
     logger.warn('Token verification failed:', error)
@@ -63,16 +65,7 @@ async function refreshTokens(refreshToken: string): Promise<{ token: string; ref
 }
 
 function verifyRefreshToken(token: string): Payload | null {
-  try {
-    const decoded = jwt.verify(token, jwtSecret) as Payload
-    if (decoded.type !== 'refresh') {
-      throw new Error('Invalid refresh token type')
-    }
-    return decoded
-  } catch (error) {
-    logger.warn('Refresh token verification failed:', error)
-    return null
-  }
+  return verifyToken(token, TokenTypeEnum.REFRESH)
 }
 
 function buildPayload(user: UserDTO, type?: TokenTypeEnum): Payload {
