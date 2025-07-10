@@ -6,6 +6,7 @@ import {
   loginSchema,
   stringParamSchema,
   resetPasswordSchema,
+  headerTokenSchema,
 } from '../../../../src/schemas/auth/auth.schema'
 
 jest.mock('../../../../src/schemas/auth/auth.schema')
@@ -20,6 +21,62 @@ describe('AuthValidatorMiddleware', () => {
     req = { body: {}, user: {}, query: {}, params: {} }
     res = {}
     next = jest.fn()
+  })
+
+  describe('validateSignupSchema', () => {
+    it('should call next with BadRequestException if validation fails', async () => {
+      ;(loginSchema.validate as jest.Mock).mockReturnValueOnce({
+        error: { details: [{ message: 'Invalid data' }] },
+      })
+
+      await AuthValidatorMiddleware.validateSignupSchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(new BadRequestException('Invalid data'))
+    })
+
+    it('should call next with no arguments if validation passes', async () => {
+      ;(loginSchema.validate as jest.Mock).mockReturnValueOnce({ error: null })
+
+      await AuthValidatorMiddleware.validateSignupSchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith()
+    })
+
+    it('should handle unexpected errors', async () => {
+      ;(loginSchema.validate as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('Unexpected error')
+      })
+
+      await AuthValidatorMiddleware.validateSignupSchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(expect.any(Error))
+    })
+  })
+
+  describe('validateSignupVerifySchema', () => {
+    it('should call next with BadRequestException if validation fails', () => {
+      req.params!.uuid = 'invalidUuid'
+      ;(stringParamSchema.validate as jest.Mock).mockReturnValueOnce({
+        error: { details: [{ message: 'Invalid UUID' }] },
+      })
+      ;(loginSchema.validate as jest.Mock).mockReturnValueOnce({
+        error: { details: [{ message: 'Invalid data' }] },
+      })
+
+      AuthValidatorMiddleware.validateSignupVerifySchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(new BadRequestException('Invalid UUID'))
+    })
+
+    it('should call next with no arguments if validation passes', () => {
+      req.params!.uuid = 'validUuid'
+      ;(stringParamSchema.validate as jest.Mock).mockReturnValueOnce({ error: null })
+      ;(loginSchema.validate as jest.Mock).mockReturnValueOnce({ error: null })
+
+      AuthValidatorMiddleware.validateSignupVerifySchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith()
+    })
   })
 
   describe('validateLoginSchema', () => {
@@ -81,6 +138,49 @@ describe('AuthValidatorMiddleware', () => {
       ;(resetPasswordSchema.validate as jest.Mock).mockReturnValueOnce({ error: null })
 
       await AuthValidatorMiddleware.validateResetPasswordSchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith()
+    })
+  })
+
+  describe('validateRefreshSchema ', () => {
+    it('should call next with BadRequestException if validation fails', () => {
+      ;(stringParamSchema.validate as jest.Mock).mockReturnValueOnce({
+        error: { details: [{ message: 'Invalid data' }] },
+      })
+
+      AuthValidatorMiddleware.validateRefreshSchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(new BadRequestException('Invalid data'))
+    })
+
+    it('should call next with no arguments if validation passes', () => {
+      ;(stringParamSchema.validate as jest.Mock).mockReturnValueOnce({ error: null })
+
+      AuthValidatorMiddleware.validateRefreshSchema(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith()
+    })
+  })
+
+  describe('validateHeaderRefreshToken', () => {
+    it('should call next with BadRequestException if header is missing', () => {
+      ;(headerTokenSchema.validate as jest.Mock).mockReturnValueOnce({
+        error: { details: [{ message: 'Refresh token is required' }] },
+      })
+
+      req.headers = {}
+
+      AuthValidatorMiddleware.validateHeaderRefreshToken(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(new BadRequestException('Refresh token is required'))
+    })
+
+    it('should call next with no arguments if header is present', () => {
+      ;(headerTokenSchema.validate as jest.Mock).mockReturnValueOnce({ error: null })
+      req.headers = { 'x-refresh-token': 'validToken' }
+
+      AuthValidatorMiddleware.validateHeaderRefreshToken(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith()
     })

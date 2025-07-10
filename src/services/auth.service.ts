@@ -10,6 +10,7 @@ import type { AuthServiceLoginResponse, SignupCredentials } from '../types/index
 import { AttemptsEnum } from '../utils/enums/attempts.enum'
 import { CodeType } from '../utils/enums/code.enum'
 import { RolesEnum } from '../utils/enums/roles.enum'
+import { TokenTypeEnum } from '../utils/enums/token.enum'
 import { buildPayload, generateResetPasswordToken, refreshTokens, verifyToken } from '../utils/jwt.utils'
 import attemptService from './attempt.service'
 import blockService from './block.service'
@@ -65,7 +66,7 @@ class AuthService {
       role: RolesEnum.USER,
     })
 
-    mailService.sendSingupSuccedEmail(cachedData.email)
+    mailService.sendSignupSucceedEmail(cachedData.email)
 
     return true
   }
@@ -100,7 +101,7 @@ class AuthService {
   }
 
   async info(token: string): Promise<Payload | null> {
-    return verifyToken(token)
+    return verifyToken(token, TokenTypeEnum.ACCESS)
   }
 
   async forgotPassword(email: string): Promise<boolean> {
@@ -134,7 +135,7 @@ class AuthService {
   }
 
   async resetPassword(token: string, code: string, password: string): Promise<boolean> {
-    const payload = verifyToken(token)
+    const payload = verifyToken(token, TokenTypeEnum.RESET_PASSWORD)
     if (!payload) return false
 
     const isMaxAttemptsReached = await handleMaxAttempts(payload.id, maxLoginAttempts, AttemptsEnum.PASSWORD_CHANGE)
@@ -171,7 +172,7 @@ class AuthService {
   }
 
   async logout(token: string): Promise<boolean> {
-    const payload = verifyToken(token)
+    const payload = verifyToken(token, TokenTypeEnum.ACCESS)
     if (!payload) return false
 
     const session = await sessionService.findActiveByUserId(payload.id)

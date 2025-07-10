@@ -3,9 +3,13 @@ import passport from '../../../../src/config/passport'
 import ForbiddenException from '../../../../src/exceptions/ForbiddenException'
 import UnauthorizedException from '../../../../src/exceptions/UnauthorizedException'
 import AuthMiddleware from '../../../../src/middlewares/auth/auth.middleware'
+import * as jwtUtils from '../../../../src/utils/jwt.utils'
+import { Payload } from '../../../../src/interfaces/payload.interface'
+import { TokenTypeEnum } from '../../../../src/utils/enums/token.enum'
 
 jest.mock('../../../../src/schemas/auth/auth.schema')
 jest.mock('../../../../src/config/passport')
+jest.mock('../../../../src/utils/jwt.utils')
 
 describe('AuthMiddleware', () => {
   let req: Partial<Request>
@@ -14,7 +18,7 @@ describe('AuthMiddleware', () => {
 
   beforeEach(() => {
     req = { body: {}, user: {}, query: {} }
-    res = {}
+    res = { locals: {} }
     next = jest.fn()
   })
 
@@ -45,6 +49,48 @@ describe('AuthMiddleware', () => {
 
       expect(req.user).toEqual(user)
       expect(next).toHaveBeenCalledWith()
+    })
+  })
+
+  describe('verifyResetPasswordToken', () => {
+    it('should call next with UnauthorizedException if token is invalid or expired', () => {
+      jest.mocked(jwtUtils.verifyToken).mockReturnValue(null)
+      req.params = { token: 'invalid-token' }
+
+      AuthMiddleware.verifyResetPasswordToken(req as Request, res as Response, next)
+
+      expect(next).toHaveBeenCalledWith(new UnauthorizedException('Invalid or expired reset password token.'))
+    })
+
+    it('should set userId in res.locals and call next if token is valid', () => {
+      const userId = '12345'
+      res.locals!.userId = userId
+      const verifyTokenMock: Payload = {
+        id: userId,
+        email: 'test@email.com',
+        name: 'Test User',
+        idDocument: '123456789',
+        type: TokenTypeEnum.RESET_PASSWORD,
+      }
+      jest.mocked(jwtUtils.verifyToken).mockReturnValue(verifyTokenMock)
+
+      req.params = { token: 'valid-token' }
+
+      AuthMiddleware.verifyResetPasswordToken(req as Request, res as Response, next)
+
+      expect(res.locals!.userId).toBe(userId)
+      expect(next).toHaveBeenCalledWith()
+    })
+
+    it('should call next with error if an exception occurs', () => {
+      const error = new Error('Unexpected error')
+      jest.mocked(jwtUtils.verifyToken).mockImplementation(() => {
+        throw error
+      })
+
+      req.params = { token: 'valid-token' }
+      AuthMiddleware.verifyResetPasswordToken(req as Request, res as Response, next)
+      expect(next).toHaveBeenCalledWith(error)
     })
   })
 

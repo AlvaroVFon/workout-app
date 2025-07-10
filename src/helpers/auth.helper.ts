@@ -8,6 +8,10 @@ import { generateUUID, hashString } from './crypto.helper'
 const { blockDuration } = parameters
 
 async function createSignupData(email: string, password: string) {
+  if (!email || !password) {
+    throw new Error('Email and password are required for signup.')
+  }
+
   const id = generateUUID()
   const hashedPassword = await hashString(password, 'bcrypt')
 

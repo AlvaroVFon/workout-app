@@ -76,7 +76,7 @@ describe('JWT Utils', () => {
     it('should return the decoded payload if the token is valid', () => {
       ;(jwt.verify as jest.Mock).mockReturnValue(mockPayload)
 
-      const decoded = verifyToken(mockToken)
+      const decoded = verifyToken(mockToken, TokenTypeEnum.ACCESS)
 
       expect(jwt.verify).toHaveBeenCalledWith(mockToken, parameters.jwtSecret)
       expect(decoded).toEqual(mockPayload)
@@ -87,7 +87,7 @@ describe('JWT Utils', () => {
         throw new Error('Invalid token')
       })
 
-      const decoded = verifyToken(mockToken)
+      const decoded = verifyToken(mockToken, TokenTypeEnum.ACCESS)
 
       expect(decoded).toBeNull()
     })
@@ -147,9 +147,9 @@ describe('JWT Utils', () => {
     it('should reject refresh token when used with verifyToken if it has type validation', () => {
       ;(jwt.verify as jest.Mock).mockReturnValue(mockRefreshPayload)
 
-      const decoded = verifyToken('refreshTokenUsedAsAccess')
+      const decoded = verifyToken('refreshTokenUsedAsAccess', TokenTypeEnum.ACCESS)
 
-      expect(decoded).toEqual(mockRefreshPayload)
+      expect(decoded).toEqual(null)
     })
 
     it('should handle malformed token gracefully', () => {
@@ -157,7 +157,7 @@ describe('JWT Utils', () => {
         throw new jwt.JsonWebTokenError('Malformed token')
       })
 
-      const accessDecoded = verifyToken('malformedToken')
+      const accessDecoded = verifyToken('malformedToken', TokenTypeEnum.ACCESS)
       const refreshDecoded = verifyRefreshToken('malformedToken')
 
       expect(accessDecoded).toBeNull()
@@ -169,7 +169,7 @@ describe('JWT Utils', () => {
         throw new jwt.TokenExpiredError('Token expired', new Date())
       })
 
-      const accessDecoded = verifyToken('expiredToken')
+      const accessDecoded = verifyToken('expiredToken', TokenTypeEnum.ACCESS)
       const refreshDecoded = verifyRefreshToken('expiredToken')
 
       expect(accessDecoded).toBeNull()

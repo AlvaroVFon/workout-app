@@ -7,6 +7,7 @@ import blockService from '../../services/block.service'
 import userService from '../../services/user.service'
 import { AttemptsEnum } from '../../utils/enums/attempts.enum'
 import { verifyToken } from '../../utils/jwt.utils'
+import { TokenTypeEnum } from '../../utils/enums/token.enum'
 
 class AuthMiddleware {
   verifyJWT(req: Request, res: Response, next: NextFunction) {
@@ -22,7 +23,7 @@ class AuthMiddleware {
   verifyResetPasswordToken(req: Request, res: Response, next: NextFunction) {
     try {
       const token = req.params.token
-      const verifiedToken = verifyToken(String(token))
+      const verifiedToken = verifyToken(String(token), TokenTypeEnum.RESET_PASSWORD)
 
       if (!verifiedToken) {
         return next(new UnauthorizedException('Invalid or expired reset password token.'))
