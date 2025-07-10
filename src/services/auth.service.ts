@@ -66,7 +66,7 @@ class AuthService {
       role: RolesEnum.USER,
     })
 
-    mailService.sendSingupSuccedEmail(cachedData.email)
+    mailService.sendSignupSucceedEmail(cachedData.email)
 
     return true
   }

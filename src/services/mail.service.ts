@@ -62,7 +62,7 @@ class MailService {
     })
   }
 
-  async sendSingupSuccedEmail(to: string) {
+  async sendSignupSucceedEmail(to: string) {
     this.sendMailWithTemplate({
       to,
       subject: 'Signup Successful',
