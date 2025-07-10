@@ -1,15 +1,21 @@
-import { createClient } from 'redis'
-import { parameters } from './parameters'
+import { createClient, RedisClientType } from 'redis'
 import logger from '../utils/logger'
+import { parameters } from './parameters'
+
+let cacheClient: RedisClientType
 
 async function connectCache(): Promise<void> {
-  const client = createClient({ url: parameters.cacheUrl })
+  cacheClient = createClient({ url: parameters.cacheUrl })
   try {
-    await client.connect()
+    await cacheClient.connect()
     logger.info('Connected to the cache', parameters.cacheUrl)
   } catch (error) {
     logger.error('Error connecting to the cache', error)
   }
 }
 
-export { connectCache }
+function getCacheClient(): RedisClientType {
+  return cacheClient
+}
+
+export { connectCache, getCacheClient }

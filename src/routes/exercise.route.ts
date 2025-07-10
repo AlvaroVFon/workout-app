@@ -3,7 +3,7 @@ import exerciseController from '../controllers/exercise.controller'
 import globalValidatorMiddleware from '../middlewares/globalValidator.middleware'
 import exerciseMiddleware from '../middlewares/exercise.middleware'
 import paginationMiddleware from '../middlewares/pagination.middleware'
-import authMiddleware from '../middlewares/auth.middleware'
+import authMiddleware from '../middlewares/auth/auth.middleware'
 import { RolesEnum } from '../utils/enums/roles.enum'
 
 const router = Router()

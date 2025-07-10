@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import athleteController from '../controllers/athlete.controller'
 import athleteMiddleware from '../middlewares/athlete.middleware'
-import authMiddleware from '../middlewares/auth.middleware'
+import authMiddleware from '../middlewares/auth/auth.middleware'
 import { RolesEnum } from '../utils/enums/roles.enum'
 import paginationMiddleware from '../middlewares/pagination.middleware'
 import globalValidatorMiddleware from '../middlewares/globalValidator.middleware'

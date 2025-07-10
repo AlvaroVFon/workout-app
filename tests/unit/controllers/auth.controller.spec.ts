@@ -3,9 +3,8 @@ import AuthController from '../../../src/controllers/auth.controller'
 import { UserDTO } from '../../../src/DTOs/user/user.dto'
 import BadRequestException from '../../../src/exceptions/BadRequestException'
 import UnauthorizedException from '../../../src/exceptions/UnauthorizedException'
-import { responseHandler } from '../../../src/handlers/responseHandler'
+import * as responseHandler from '../../../src/handlers/responseHandler'
 import authService from '../../../src/services/auth.service'
-import userService from '../../../src/services/user.service'
 import { StatusCode, StatusMessage } from '../../../src/utils/enums/httpResponses.enum'
 
 jest.mock('../../../src/services/auth.service')
@@ -18,7 +17,7 @@ describe('AuthController', () => {
   let next: NextFunction
 
   beforeEach(() => {
-    req = { body: {}, user: {}, query: {} }
+    req = { body: {}, user: {}, query: {}, params: {} }
     res = { status: jest.fn().mockReturnThis(), json: jest.fn() }
     next = jest.fn()
     jest.clearAllMocks()
@@ -67,7 +66,7 @@ describe('AuthController', () => {
       await AuthController.login(req as Request, res as Response, next)
 
       expect(authService.login).toHaveBeenCalledWith('test@example.com', 'password')
-      expect(responseHandler).toHaveBeenCalledWith(
+      expect(responseHandler.responseHandler).toHaveBeenCalledWith(
         res,
         StatusCode.OK,
         StatusMessage.OK,
@@ -90,28 +89,26 @@ describe('AuthController', () => {
   })
 
   describe('signUp', () => {
-    it('should return created user on successful sign-up', async () => {
-      req.body = { email: 'test@example.com', password: 'password' }
-      const user = { id: '1', email: 'test@example.com' }
-      const publicUser = {
-        id: '1',
-        email: 'test@example.com',
-        idDocument: '123456789',
-        name: 'John Doe',
-        role: 'admin',
-      }
-      ;(userService.create as jest.Mock).mockResolvedValue(user)
-      jest.spyOn(UserDTO.prototype, 'toPublicUser').mockReturnValue(publicUser)
+    it('should call authService.signup and return NO_CONTENT', async () => {
+      req.body = { email: 'test@example.com', password: 'password123' }
+      ;(authService.signup as jest.Mock).mockResolvedValue(undefined)
+      jest.spyOn(responseHandler, 'responseHandler').mockImplementation((res, code, message) => {
+        res.status(code)
+        res.json({ message })
+        return res as Response
+      })
 
       await AuthController.signUp(req as Request, res as Response, next)
 
-      expect(userService.create).toHaveBeenCalledWith(req.body)
-      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.CREATED, StatusMessage.CREATED, publicUser)
+      expect(authService.signup).toHaveBeenCalledWith('test@example.com', 'password123')
+      expect(responseHandler.responseHandler).toHaveBeenCalledWith(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
+      expect(res.status).toHaveBeenCalledWith(StatusCode.NO_CONTENT)
+      expect(res.json).toHaveBeenCalledWith({ message: StatusMessage.NO_CONTENT })
     })
 
-    it('should call next with error if sign-up fails', async () => {
-      const error = new Error('Sign-up failed')
-      ;(userService.create as jest.Mock).mockRejectedValue(error)
+    it('should call next with error if signup throws', async () => {
+      const error = new Error('Signup failed')
+      jest.spyOn(authService, 'signup').mockRejectedValue(error)
 
       await AuthController.signUp(req as Request, res as Response, next)
 
@@ -125,7 +122,7 @@ describe('AuthController', () => {
 
       await AuthController.info(req as Request, res as Response)
 
-      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, req.user)
+      expect(responseHandler.responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, req.user)
     })
   })
 
@@ -139,7 +136,7 @@ describe('AuthController', () => {
       await AuthController.refreshTokens(req as Request, res as Response, next)
 
       expect(authService.refreshTokens).toHaveBeenCalledWith('validRefreshToken')
-      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, newTokens)
+      expect(responseHandler.responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, newTokens)
     })
 
     it('should call next with UnauthorizedException when refresh token is invalid', async () => {
@@ -171,7 +168,7 @@ describe('AuthController', () => {
       await AuthController.forgotPassword(req as Request, res as Response, next)
 
       expect(authService.forgotPassword).toHaveBeenCalledWith('test@example.com')
-      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
+      expect(responseHandler.responseHandler).toHaveBeenCalledWith(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
     })
 
     it('should call next with error if service throws error', async () => {
@@ -188,13 +185,13 @@ describe('AuthController', () => {
   describe('resetPassword', () => {
     it('should return 204 on successful password reset', async () => {
       req.body = { code: '123456', password: 'newPassword' }
-      req.query = { token: 'validToken' }
+      req.params = { token: 'validToken' }
       ;(authService.resetPassword as jest.Mock).mockResolvedValue(true)
 
       await AuthController.resetPassword(req as Request, res as Response, next)
 
       expect(authService.resetPassword).toHaveBeenCalledWith('validToken', '123456', 'newPassword')
-      expect(responseHandler).toHaveBeenCalledWith(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
+      expect(responseHandler.responseHandler).toHaveBeenCalledWith(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
     })
 
     it('should throw BadRequestException if password reset fails', async () => {

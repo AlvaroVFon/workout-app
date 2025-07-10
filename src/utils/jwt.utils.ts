@@ -6,21 +6,30 @@ import logger from './logger'
 import { rotateUserSessionAndTokens } from '../helpers/session.helper'
 import { TokenTypeEnum } from './enums/token.enum'
 
-const { jwtSecret, jwtExpiration, jwtRefreshExpiration, jwtResetPasswordExpiration } = parameters
+const { jwtSecret, jwtExpiration, jwtRefreshExpiration, jwtResetPasswordExpiration, jwtSignupExpiration } = parameters
 
 function generateToken(payload: Payload): string {
-  const tokenPayload = { ...payload, type: 'access' }
-  return jwt.sign(tokenPayload, jwtSecret, { expiresIn: jwtExpiration })
+  const tokenPayload = { ...payload, type: TokenTypeEnum.ACCESS }
+  return signToken(tokenPayload)
 }
 
 function generateRefreshToken(payload: Payload): string {
-  const refreshPayload = { ...payload, type: 'refresh' }
-  return jwt.sign(refreshPayload, jwtSecret, { expiresIn: jwtRefreshExpiration })
+  const refreshPayload = { ...payload, type: TokenTypeEnum.REFRESH }
+  return signToken(refreshPayload, jwtRefreshExpiration)
 }
 
 function generateResetPasswordToken(payload: Payload): string {
-  const resetPayload = { id: payload.id, type: 'resetPassword' }
-  return jwt.sign(resetPayload, jwtSecret, { expiresIn: jwtResetPasswordExpiration })
+  const resetPayload = { id: payload.id, type: TokenTypeEnum.RESET_PASSWORD }
+  return signToken(resetPayload, jwtResetPasswordExpiration)
+}
+
+function generateSingupToken(payload: Payload | Partial<Payload>): string {
+  const signedPayload = { ...payload, type: TokenTypeEnum.SIGNUP }
+  return signToken(signedPayload, jwtSignupExpiration)
+}
+
+function signToken(payload: Payload | Partial<Payload>, expiration: number = jwtExpiration): string {
+  return jwt.sign(payload, jwtSecret, { expiresIn: expiration })
 }
 
 function generateAccessTokens(payload: Payload): { token: string; refreshToken: string } {
@@ -30,9 +39,11 @@ function generateAccessTokens(payload: Payload): { token: string; refreshToken: 
   }
 }
 
-function verifyToken(token: string): Payload | null {
+function verifyToken(token: string, type: TokenTypeEnum): Payload | null {
   try {
     const decoded = jwt.verify(token, jwtSecret) as Payload
+    if (decoded.type !== type) return null
+
     return decoded
   } catch (error) {
     logger.warn('Token verification failed:', error)
@@ -54,19 +65,20 @@ async function refreshTokens(refreshToken: string): Promise<{ token: string; ref
 }
 
 function verifyRefreshToken(token: string): Payload | null {
-  try {
-    const decoded = jwt.verify(token, jwtSecret) as Payload
-    if (decoded.type !== 'refresh') {
-      throw new Error('Invalid refresh token type')
-    }
-    return decoded
-  } catch (error) {
-    logger.warn('Refresh token verification failed:', error)
-    return null
-  }
+  return verifyToken(token, TokenTypeEnum.REFRESH)
 }
 
 function buildPayload(user: UserDTO, type?: TokenTypeEnum): Payload {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    idDocument: user.idDocument,
+    type,
+  }
+}
+
+function buildPartialPayload(user: Partial<UserDTO>, type?: TokenTypeEnum): Partial<Payload> {
   return {
     id: user.id,
     email: user.email,
@@ -81,8 +93,10 @@ export {
   generateRefreshToken,
   generateToken,
   generateResetPasswordToken,
+  generateSingupToken,
   refreshTokens,
   verifyRefreshToken,
   verifyToken,
   buildPayload,
+  buildPartialPayload,
 }

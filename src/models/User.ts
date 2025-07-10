@@ -1,6 +1,6 @@
 import { Schema, Types, model } from 'mongoose'
-import { UserDTO } from '../DTOs/user/user.dto'
 import type { BlockInfo } from '../DTOs/user/user.dto'
+import { UserDTO } from '../DTOs/user/user.dto'
 
 const BlockInfoSchema = new Schema<BlockInfo>(
   {
@@ -14,7 +14,6 @@ const BlockInfoSchema = new Schema<BlockInfo>(
 const userSchema = new Schema<UserDTO>({
   name: {
     type: String,
-    required: true,
   },
   lastName: {
     type: String,
@@ -45,7 +44,6 @@ const userSchema = new Schema<UserDTO>({
   },
   idDocument: {
     type: String,
-    required: true,
   },
   createdAt: {
     type: Number,

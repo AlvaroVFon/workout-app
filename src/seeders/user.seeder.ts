@@ -2,7 +2,6 @@ import { Connection } from 'mongoose'
 import { createAdminUser, createSuperAdminUser, createUsers } from '../factories/user.factory'
 import userService from '../services/user.service'
 import logger from '../utils/logger'
-import { CreateUserDTO } from '../DTOs/user/create.dto'
 import { checkCollectionExistence } from '../utils/database.utils'
 
 const USER_COUNT = 20
@@ -10,10 +9,10 @@ const USER_COUNT = 20
 async function seedUsers(db: Connection) {
   try {
     await deleteUsers(db)
-    await Promise.all([userService.create(createSuperAdminUser()), userService.create(createAdminUser())])
+    await userService.create(await createAdminUser())
+    await userService.create(await createSuperAdminUser())
 
-    const users: CreateUserDTO[] = createUsers(USER_COUNT)
-    await Promise.all(users.map((user) => userService.create(user)))
+    await createUsers(USER_COUNT)
 
     logger.info('Users created successfully')
   } catch (error) {

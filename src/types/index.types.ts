@@ -25,3 +25,9 @@ export type AuthServiceLoginResponse = {
   refreshToken: string
   user: UserDTO
 }
+
+export type SignupCredentials = {
+  id: string
+  email: string
+  password: string
+}

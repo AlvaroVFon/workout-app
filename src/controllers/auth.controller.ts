@@ -4,12 +4,44 @@ import { UserDTO } from '../DTOs/user/user.dto'
 import UnauthorizedException from '../exceptions/UnauthorizedException'
 import { responseHandler } from '../handlers/responseHandler'
 import authService from '../services/auth.service'
-import userService from '../services/user.service'
 import { StatusCode, StatusMessage } from '../utils/enums/httpResponses.enum'
 
 import BadRequestException from '../exceptions/BadRequestException'
 
 class AuthController {
+  async signUp(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
+    const { email, password } = req.body
+
+    try {
+      await authService.signup(email, password)
+
+      return responseHandler(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async signupVerification(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response<ApiResponse> | undefined> {
+    const { code } = req.body
+    const { uuid } = req.params
+
+    try {
+      const isVerified = await authService.signupVerification(uuid, code)
+
+      if (!isVerified) {
+        throw new BadRequestException('Invalid code')
+      }
+
+      return responseHandler(res, StatusCode.CREATED, StatusMessage.CREATED)
+    } catch (error) {
+      next(error)
+    }
+  }
+
   async login(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
     try {
       const { email, password } = req.body
@@ -32,19 +64,6 @@ class AuthController {
     }
   }
 
-  async signUp(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
-    const data = req.body
-
-    try {
-      const user = await userService.create(data)
-      const publicUser = new UserDTO(user).toPublicUser()
-
-      return responseHandler(res, StatusCode.CREATED, StatusMessage.CREATED, publicUser)
-    } catch (error) {
-      next(error)
-    }
-  }
-
   async forgotPassword(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
     const { email } = req.body
 
@@ -59,7 +78,7 @@ class AuthController {
   async resetPassword(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
     try {
       const { code, password } = req.body
-      const { token } = req.query
+      const { token } = req.params
 
       const isPasswordReset = await authService.resetPassword(String(token), code, password)
       if (!isPasswordReset) {

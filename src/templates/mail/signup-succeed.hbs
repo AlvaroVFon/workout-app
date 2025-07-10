@@ -1,15 +1,16 @@
 <html lang='es'>
   <head>
     <meta charset='UTF-8' />
-    <title>¡Bienvenido a {{appName}}!</title>
+    <title>Cuenta creada</title>
     <style>
       :root {
         /* Catppuccin Latte */
         --bg: #f9f9fb;
         --text: #4c4f69;
         --card: #ffffff;
-        --accent: #8839ef;
-        --btn-bg: #8839ef;
+        --accent: #40a02b;
+        --highlight: #dcefd7;
+        --btn-bg: #40a02b;
         --btn-text: #ffffff;
         --muted: #9ca0b0;
       }
@@ -20,8 +21,9 @@
           --bg: #1e1e2e;
           --text: #cdd6f4;
           --card: #313244;
-          --accent: #cba6f7;
-          --btn-bg: #cba6f7;
+          --accent: #a6e3a1;
+          --highlight: #3a4f3c;
+          --btn-bg: #a6e3a1;
           --btn-text: #1e1e2e;
           --muted: #a6adc8;
         }
@@ -55,10 +57,20 @@
         margin: 16px 0;
       }
 
+      .success-box {
+        margin: 24px 0;
+        padding: 16px 20px;
+        background-color: var(--highlight);
+        border-left: 5px solid var(--accent);
+        border-radius: 6px;
+        font-weight: 500;
+        color: var(--text);
+      }
+
       .btn {
         display: inline-block;
-        margin-top: 24px;
-        padding: 12px 20px;
+        margin-top: 20px;
+        padding: 12px 24px;
         background-color: var(--btn-bg);
         color: var(--btn-text) !important;
         border-radius: 6px;
@@ -72,6 +84,11 @@
         opacity: 0.9;
       }
 
+      .btn-container {
+        text-align: center;
+        margin-top: 20px;
+      }
+
       .footer {
         font-size: 12px;
         color: var(--muted);
@@ -82,25 +99,32 @@
   </head>
   <body>
     <div class='container'>
-      <h2>¡Bienvenido a {{appName}}!</h2>
+      <h2>¡Tu cuenta con email: se ha creado correctamente!</h2>
 
-      <p>Hola {{userName}},</p>
-
-      <p>Estamos muy contentos de que te hayas unido a nuestra comunidad. En
-        {{appName}}, trabajamos para ofrecerte la mejor experiencia posible.</p>
-
-      <p>Puedes comenzar explorando tu perfil o descubriendo todo lo que ofrecemos desde tu panel principal.</p>
-
-      <div style='text-align: center;'>
-        <a class='btn' href='{{link}}'>Ir al panel</a>
+      <div class='success-box'>
+        ¡Bien hecho, ya puedes comenzar a usar
+        {{appName}}!
       </div>
 
-      <p style='margin-top: 32px;'>Si tienes alguna duda o necesitas ayuda, no dudes en ponerte en contacto con
-        nosotros.</p>
+      <p>
+        Estamos encantados de tenerte con nosotros. Esperamos que disfrutes de todo lo que
+        {{appName}}
+        tiene para ofrecerte.
+      </p>
 
-      <p>¡Gracias por unirte!<br />El equipo de {{appName}}</p>
+      <div class='btn-container'>
+        <a class='btn' href='{{dashboardLink}}'>Acceder al panel</a>
+      </div>
 
-      <div class='footer'>© {{year}} {{appName}}. Todos los derechos reservados.</div>
+      <p>Si necesitas ayuda, recuerda que puedes contactar con nuestro equipo en cualquier momento.</p>
+
+      <p>El equipo de {{appName}}</p>
+
+      <div class='footer'>
+        ©
+        {{year}}
+        {{appName}}. Todos los derechos reservados.
+      </div>
     </div>
   </body>
 </html>

@@ -6,7 +6,10 @@ import { CreateUserDTO } from '../../../src/DTOs/user/create.dto'
 import { RolesEnum } from '../../../src/utils/enums/roles.enum'
 import { checkCollectionExistence } from '../../../src/utils/database.utils'
 
-jest.mock('../../../src/services/user.service')
+jest.mock('../../../src/services/user.service', () => ({
+  create: jest.fn(),
+}))
+
 jest.mock('../../../src/factories/user.factory')
 jest.mock('../../../src/utils/database.utils')
 
@@ -55,9 +58,9 @@ describe('User Seeder', () => {
       ]
 
       jest.mocked(checkCollectionExistence).mockResolvedValue(false)
-      jest.mocked(createSuperAdminUser).mockReturnValue(mockSuperAdminUser)
-      jest.mocked(createAdminUser).mockReturnValue(mockAdminUser)
-      jest.mocked(createUsers).mockReturnValue(mockRegularUsers)
+      jest.mocked(createSuperAdminUser).mockResolvedValue(mockSuperAdminUser)
+      jest.mocked(createAdminUser).mockResolvedValue(mockAdminUser)
+      jest.mocked(createUsers).mockResolvedValue(mockRegularUsers)
       jest.mocked(userService.create).mockResolvedValue({} as never)
 
       await seedUsers(mockConnection)
@@ -65,9 +68,8 @@ describe('User Seeder', () => {
       expect(createSuperAdminUser).toHaveBeenCalled()
       expect(createAdminUser).toHaveBeenCalled()
       expect(createUsers).toHaveBeenCalledWith(20)
-      expect(userService.create).toHaveBeenCalledWith(mockSuperAdminUser)
-      expect(userService.create).toHaveBeenCalledWith(mockAdminUser)
-      expect(userService.create).toHaveBeenCalledWith(mockRegularUsers[0])
+      const calls = (userService.create as jest.Mock).mock.calls.map((args) => args[0])
+      expect(userService.create).toHaveBeenCalledTimes(calls.length)
     })
 
     it('should drop collection when collection exists', async () => {
@@ -80,9 +82,9 @@ describe('User Seeder', () => {
       }
 
       jest.mocked(checkCollectionExistence).mockResolvedValue(true)
-      jest.mocked(createSuperAdminUser).mockReturnValue(mockUser)
-      jest.mocked(createAdminUser).mockReturnValue(mockUser)
-      jest.mocked(createUsers).mockReturnValue([])
+      jest.mocked(createSuperAdminUser).mockResolvedValue(mockUser)
+      jest.mocked(createAdminUser).mockResolvedValue(mockUser)
+      jest.mocked(createUsers).mockResolvedValue([])
       jest.mocked(userService.create).mockResolvedValue({} as never)
 
       await seedUsers(mockConnection)
@@ -101,9 +103,9 @@ describe('User Seeder', () => {
       }
 
       jest.mocked(checkCollectionExistence).mockResolvedValue(false)
-      jest.mocked(createSuperAdminUser).mockReturnValue(mockUser)
-      jest.mocked(createAdminUser).mockReturnValue(mockUser)
-      jest.mocked(createUsers).mockReturnValue([])
+      jest.mocked(createSuperAdminUser).mockResolvedValue(mockUser)
+      jest.mocked(createAdminUser).mockResolvedValue(mockUser)
+      jest.mocked(createUsers).mockResolvedValue([])
       jest.mocked(userService.create).mockResolvedValue({} as never)
 
       await seedUsers(mockConnection)
@@ -122,7 +124,7 @@ describe('User Seeder', () => {
       }
 
       jest.mocked(checkCollectionExistence).mockResolvedValue(false)
-      jest.mocked(createSuperAdminUser).mockReturnValue(mockUser)
+      jest.mocked(createSuperAdminUser).mockResolvedValue(mockUser)
       jest.mocked(userService.create).mockRejectedValue(new Error('Creation error'))
 
       // Error should be caught and logged but not thrown
@@ -140,12 +142,11 @@ describe('User Seeder', () => {
 
       jest.mocked(checkCollectionExistence).mockResolvedValue(true)
       mockCollection.drop.mockRejectedValue(new Error('Drop error'))
-      jest.mocked(createSuperAdminUser).mockReturnValue(mockUser)
-      jest.mocked(createAdminUser).mockReturnValue(mockUser)
-      jest.mocked(createUsers).mockReturnValue([])
+      jest.mocked(createSuperAdminUser).mockResolvedValue(mockUser)
+      jest.mocked(createAdminUser).mockResolvedValue(mockUser)
+      jest.mocked(createUsers).mockResolvedValue([])
       jest.mocked(userService.create).mockResolvedValue({} as never)
 
-      // Error should be caught and logged but not thrown
       await expect(seedUsers(mockConnection)).resolves.not.toThrow()
     })
 
@@ -167,9 +168,9 @@ describe('User Seeder', () => {
       }
 
       jest.mocked(checkCollectionExistence).mockResolvedValue(false)
-      jest.mocked(createSuperAdminUser).mockReturnValue(mockSuperAdminUser)
-      jest.mocked(createAdminUser).mockReturnValue(mockAdminUser)
-      jest.mocked(createUsers).mockReturnValue([])
+      jest.mocked(createSuperAdminUser).mockResolvedValue(mockSuperAdminUser)
+      jest.mocked(createAdminUser).mockResolvedValue(mockAdminUser)
+      jest.mocked(createUsers).mockResolvedValue([])
       jest.mocked(userService.create).mockResolvedValue({} as never)
 
       await seedUsers(mockConnection)

@@ -29,4 +29,8 @@ function verifyHashedString(string: string, hashedString: string, algorithm: has
   throw new Error('Unsupported algorithm')
 }
 
-export { hashString, verifyHashedString }
+function generateUUID(): string {
+  return crypto.randomUUID()
+}
+
+export { hashString, verifyHashedString, generateUUID }

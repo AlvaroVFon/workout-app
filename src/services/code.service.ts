@@ -1,8 +1,8 @@
-import { generateCode } from '../utils/codeGenerator.utils'
-import codeRepository from '../repositories/code.repository'
-import { CodeDTO } from '../DTOs/code/code.dto'
-import { CodeType } from '../utils/enums/code.enum'
 import { parameters } from '../config/parameters'
+import { CodeDTO } from '../DTOs/code/code.dto'
+import codeRepository from '../repositories/code.repository'
+import { generateCode } from '../utils/codeGenerator.utils'
+import { CodeType } from '../utils/enums/code.enum'
 
 const { codeExpiration } = parameters
 
@@ -24,9 +24,9 @@ class CodeService {
     })
   }
 
-  async isCodeValid(code: string, userId: string): Promise<boolean> {
+  async isCodeValid(code: string, userId: string, type: CodeType): Promise<boolean> {
     const codeData = await codeRepository.findOne({
-      query: { code, userId, used: false },
+      query: { code, userId, used: false, type },
       projection: { expiresAt: 1 },
     })
 
@@ -37,6 +37,15 @@ class CodeService {
 
   async invalidateCode(code: string, userId: string): Promise<CodeDTO | null> {
     return codeRepository.update({ userId, code }, { used: true })
+  }
+
+  async verifyLastCodeInterval(userId: string, type: CodeType): Promise<boolean> {
+    const lastCode = await this.findLastByUserIdAndType(userId, type)
+
+    if (!lastCode) return true
+
+    const timeSinceLastCode = Date.now() - Number(lastCode.createdAt)
+    return timeSinceLastCode >= codeExpiration
   }
 }
 
