@@ -17,7 +17,8 @@
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "prepare": "husky install",
-    "seed": "ts-node src/seeders/index.seeder.ts"
+    "seed": "ts-node src/seeders/index.seeder.ts",
+    "seed:admin-athletes": "SEED_ADMIN_EMAIL=admin@email.com ts-node src/seeders/adminAthletes.seeder.ts"
   },
   "keywords": [],
   "author": "Álvaro Villamarín",
