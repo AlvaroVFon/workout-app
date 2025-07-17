@@ -21,7 +21,7 @@ router
   .get('/info', [authMiddleware.verifyJWT], authController.info)
   .post(
     '/logout',
-    [authMiddleware.verifyJWT, authValidatorMiddleware.validateHeaderRefreshToken],
+    [authMiddleware.verifyJWT, authValidatorMiddleware.validateCookieRefreshToken],
     authController.logout,
   )
   .post(

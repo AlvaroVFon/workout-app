@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { createSignupData, handleMaxAttempts } from '../../../src/helpers/auth.helper'
+import { createSignupData, handleHttpCookie, handleMaxAttempts } from '../../../src/helpers/auth.helper'
 import attemptService from '../../../src/services/attempt.service'
 import { AttemptsEnum } from '../../../src/utils/enums/attempts.enum'
 
@@ -84,6 +84,29 @@ describe('Auth Helper', () => {
 
       await expect(handleMaxAttempts(mockData.id.toString(), mockData.maxAttempts, mockData.type)).rejects.toThrow(
         'Service error',
+      )
+    })
+  })
+
+  describe('handleHttpCookie', () => {
+    it('should set the cookie with correct options', async () => {
+      const mockCookie = jest.fn()
+      const mockRes = { cookie: mockCookie } as any
+      const name = 'x-refresh-token'
+      const value = 'test-refresh-token'
+      const expiration = 10000
+
+      await handleHttpCookie(name, value, expiration, mockRes)
+
+      expect(mockCookie).toHaveBeenCalledWith(
+        name,
+        value,
+        expect.objectContaining({
+          httpOnly: true,
+          sameSite: 'strict',
+          secure: expect.any(Boolean),
+          maxAge: expiration,
+        }),
       )
     })
   })

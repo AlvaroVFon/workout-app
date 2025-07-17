@@ -1,12 +1,12 @@
-import { NextFunction, Request, Response } from 'express'
+import { Request, Response } from 'express'
 import BadRequestException from '../../../../src/exceptions/BadRequestException'
 import AuthValidatorMiddleware from '../../../../src/middlewares/auth/validator.middleware'
 import {
   forgotPasswordSchema,
   loginSchema,
-  stringParamSchema,
+  refreshTokenSchema,
   resetPasswordSchema,
-  headerTokenSchema,
+  stringParamSchema,
 } from '../../../../src/schemas/auth/auth.schema'
 
 jest.mock('../../../../src/schemas/auth/auth.schema')
@@ -18,7 +18,7 @@ describe('AuthValidatorMiddleware', () => {
   let next: jest.Mock
 
   beforeEach(() => {
-    req = { body: {}, user: {}, query: {}, params: {} }
+    req = { body: {}, user: {}, query: {}, params: {}, cookies: {} }
     res = {}
     next = jest.fn()
   })
@@ -165,22 +165,22 @@ describe('AuthValidatorMiddleware', () => {
 
   describe('validateHeaderRefreshToken', () => {
     it('should call next with BadRequestException if header is missing', () => {
-      ;(headerTokenSchema.validate as jest.Mock).mockReturnValueOnce({
+      ;(refreshTokenSchema.validate as jest.Mock).mockReturnValueOnce({
         error: { details: [{ message: 'Refresh token is required' }] },
       })
 
       req.headers = {}
 
-      AuthValidatorMiddleware.validateHeaderRefreshToken(req as Request, res as Response, next)
+      AuthValidatorMiddleware.validateCookieRefreshToken(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith(new BadRequestException('Refresh token is required'))
     })
 
     it('should call next with no arguments if header is present', () => {
-      ;(headerTokenSchema.validate as jest.Mock).mockReturnValueOnce({ error: null })
+      ;(refreshTokenSchema.validate as jest.Mock).mockReturnValueOnce({ error: null })
       req.headers = { 'x-refresh-token': 'validToken' }
 
-      AuthValidatorMiddleware.validateHeaderRefreshToken(req as Request, res as Response, next)
+      AuthValidatorMiddleware.validateCookieRefreshToken(req as Request, res as Response, next)
 
       expect(next).toHaveBeenCalledWith()
     })

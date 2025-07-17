@@ -1,15 +1,19 @@
 import { NextFunction, Request, Response } from 'express'
+import ms from 'ms'
+import { parameters } from '../../../src/config/parameters'
 import AuthController from '../../../src/controllers/auth.controller'
 import { UserDTO } from '../../../src/DTOs/user/user.dto'
 import BadRequestException from '../../../src/exceptions/BadRequestException'
 import UnauthorizedException from '../../../src/exceptions/UnauthorizedException'
 import * as responseHandler from '../../../src/handlers/responseHandler'
+import * as authHelper from '../../../src/helpers/auth.helper'
 import authService from '../../../src/services/auth.service'
 import { StatusCode, StatusMessage } from '../../../src/utils/enums/httpResponses.enum'
 
 jest.mock('../../../src/services/auth.service')
 jest.mock('../../../src/services/user.service')
 jest.mock('../../../src/handlers/responseHandler')
+jest.mock('../../../src/helpers/auth.helper')
 
 describe('AuthController', () => {
   let req: Partial<Request>
@@ -17,7 +21,7 @@ describe('AuthController', () => {
   let next: NextFunction
 
   beforeEach(() => {
-    req = { body: {}, user: {}, query: {}, params: {} }
+    req = { body: {}, user: {}, query: {}, params: {}, cookies: {} }
     res = { status: jest.fn().mockReturnThis(), json: jest.fn() }
     next = jest.fn()
     jest.clearAllMocks()
@@ -73,7 +77,6 @@ describe('AuthController', () => {
         expect.objectContaining({
           user: expect.any(Object),
           token: 'accessToken',
-          refreshToken: 'refreshToken',
         }),
       )
     })
@@ -128,7 +131,7 @@ describe('AuthController', () => {
 
   describe('refreshTokens', () => {
     it('should return new tokens when refresh token is valid', async () => {
-      req.body = { refreshToken: 'validRefreshToken' }
+      req.cookies = { 'x-refresh-token': 'validRefreshToken' }
       const newTokens = { token: 'newAccessToken', refreshToken: 'newRefreshToken' }
 
       ;(authService.refreshTokens as jest.Mock).mockResolvedValue(newTokens)
@@ -136,11 +139,19 @@ describe('AuthController', () => {
       await AuthController.refreshTokens(req as Request, res as Response, next)
 
       expect(authService.refreshTokens).toHaveBeenCalledWith('validRefreshToken')
-      expect(responseHandler.responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, newTokens)
+      expect(authHelper.handleHttpCookie).toHaveBeenCalledWith(
+        'x-refresh-token',
+        newTokens.refreshToken,
+        Number(ms(parameters.jwtRefreshExpiration)),
+        res,
+      )
+      expect(responseHandler.responseHandler).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, {
+        token: newTokens.token,
+      })
     })
 
     it('should call next with UnauthorizedException when refresh token is invalid', async () => {
-      req.body = { refreshToken: 'invalidRefreshToken' }
+      req.cookies = { 'x-refresh-token': 'invalidRefreshToken' }
       ;(authService.refreshTokens as jest.Mock).mockResolvedValue(null)
 
       await AuthController.refreshTokens(req as Request, res as Response, next)

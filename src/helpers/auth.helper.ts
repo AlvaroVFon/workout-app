@@ -1,3 +1,4 @@
+import { Response } from 'express'
 import { parameters } from '../config/parameters'
 import attemptService from '../services/attempt.service'
 import blockService from '../services/block.service'
@@ -36,4 +37,13 @@ async function handleMaxAttempts(id: string, maxAttempts: number, type: Attempts
   return false
 }
 
-export { createSignupData, handleMaxAttempts }
+async function handleHttpCookie(name: string, value: string, expiration: number, res: Response) {
+  return res.cookie(name, value, {
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: parameters.nodeEnv === 'production',
+    maxAge: expiration,
+  })
+}
+
+export { createSignupData, handleHttpCookie, handleMaxAttempts }

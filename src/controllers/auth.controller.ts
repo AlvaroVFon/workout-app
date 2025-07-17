@@ -1,12 +1,16 @@
+import ms from 'ms'
 import { NextFunction, Request, Response } from 'express'
 import { ApiResponse } from '../DTOs/api/response.dto'
 import { UserDTO } from '../DTOs/user/user.dto'
 import UnauthorizedException from '../exceptions/UnauthorizedException'
 import { responseHandler } from '../handlers/responseHandler'
+import { handleHttpCookie } from '../helpers/auth.helper'
 import authService from '../services/auth.service'
 import { StatusCode, StatusMessage } from '../utils/enums/httpResponses.enum'
-
 import BadRequestException from '../exceptions/BadRequestException'
+import { parameters } from '../config/parameters'
+
+const jwtRefreshExpiration = Number(ms(parameters.jwtRefreshExpiration))
 
 class AuthController {
   async signUp(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
@@ -55,8 +59,9 @@ class AuthController {
       const loginResponse = {
         user: publicUser,
         token: response.token,
-        refreshToken: response.refreshToken,
       }
+
+      await handleHttpCookie('x-refresh-token', response.refreshToken, jwtRefreshExpiration, res)
 
       return responseHandler(res, StatusCode.OK, StatusMessage.OK, loginResponse)
     } catch (error) {
@@ -97,25 +102,28 @@ class AuthController {
 
   async refreshTokens(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
     try {
-      const { refreshToken } = req.body
+      const refreshTokenFromCookie = req.cookies['x-refresh-token']
 
-      const tokens = await authService.refreshTokens(refreshToken)
+      const tokens = await authService.refreshTokens(refreshTokenFromCookie)
 
-      if (!tokens) {
+      if (!tokens?.token || !tokens?.refreshToken) {
         throw new UnauthorizedException('Invalid refresh token')
       }
 
-      return responseHandler(res, StatusCode.OK, StatusMessage.OK, tokens)
+      await handleHttpCookie('x-refresh-token', tokens.refreshToken, jwtRefreshExpiration, res)
+      return responseHandler(res, StatusCode.OK, StatusMessage.OK, { token: tokens.token })
     } catch (error) {
       next(error)
     }
   }
 
   async logout(req: Request, res: Response, next: NextFunction): Promise<Response<ApiResponse> | undefined> {
-    const refreshToken = req.headers['x-refresh-token'] as string
+    const refreshToken = req.cookies['x-refresh-token'] as string
     try {
       const isSessionClosed = await authService.logout(refreshToken)
       if (!isSessionClosed) throw new UnauthorizedException('Invalid session or token')
+
+      handleHttpCookie('x-refresh-token', '', 0, res)
 
       return responseHandler(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
     } catch (error) {
