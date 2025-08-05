@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from 'express'
-import { createAthleteSchema, updateAthleteSchema } from '../schemas/athlete/athlete.schema'
+import {
+  createAthleteSchema,
+  updateAthleteDisciplineSchema,
+  updateAthleteSchema,
+} from '../schemas/athlete/athlete.schema'
 import athleteService from '../services/athlete.service'
 import ConflictException from '../exceptions/ConflictException'
 import BadRequestException from '../exceptions/BadRequestException'
@@ -21,6 +25,17 @@ class AthleteMiddleware {
   validateUpdateAthleteSchema(req: Request, res: Response, next: NextFunction) {
     try {
       const { error } = updateAthleteSchema.validate(req.body)
+      if (error) return next(new BadRequestException(error.details[0].message))
+
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  validateUpdateDisciplineSchema(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { error } = updateAthleteDisciplineSchema.validate(req.body)
       if (error) return next(new BadRequestException(error.details[0].message))
 
       next()

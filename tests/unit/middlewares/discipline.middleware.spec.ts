@@ -1,8 +1,10 @@
 import BadRequestException from '../../../src/exceptions/BadRequestException'
 import disciplineMiddleware from '../../../src/middlewares/discipline.middleware'
 import { createDisciplineSchema, updateDisciplineSchema } from '../../../src/schemas/discipline/discipline.schema'
+import disciplineService from '../../../src/services/discipline.service'
 
 jest.mock('../../../src/schemas/discipline/discipline.schema')
+jest.mock('../../../src/services/discipline.service')
 
 describe('DisciplineMiddleware', () => {
   const next = jest.fn()
@@ -41,6 +43,30 @@ describe('DisciplineMiddleware', () => {
       const req = { body: { name: 'powerlifting' } } as any
       await disciplineMiddleware.validateUpdateDiscipline(req, res, next)
       expect(next).toHaveBeenCalled()
+    })
+  })
+
+  describe('validateDisciplinesExistence', () => {
+    it('should call next with no error if all disciplines exist', async () => {
+      ;(disciplineService.findById as jest.Mock).mockResolvedValue({})
+      const req = { body: { disciplines: ['id1', 'id2'] } } as any
+      await disciplineMiddleware.validateDisciplinesExistence(req, res, next)
+      expect(next).toHaveBeenCalledWith()
+    })
+
+    it('should call next with BadRequestException if any discipline does not exist', async () => {
+      ;(disciplineService.findById as jest.Mock).mockResolvedValueOnce({}).mockResolvedValueOnce(null)
+      const req = { body: { disciplines: ['id1', 'id2'] } } as any
+      await disciplineMiddleware.validateDisciplinesExistence(req, res, next)
+      expect(next.mock.calls[0][0]).toBeInstanceOf(BadRequestException)
+    })
+
+    it('should call next with error if service throws', async () => {
+      const error = new Error('fail')
+      ;(disciplineService.findById as jest.Mock).mockRejectedValue(error)
+      const req = { body: { disciplines: ['id1'] } } as any
+      await disciplineMiddleware.validateDisciplinesExistence(req, res, next)
+      expect(next).toHaveBeenCalledWith(error)
     })
   })
 })

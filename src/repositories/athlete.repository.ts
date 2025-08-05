@@ -10,19 +10,19 @@ class AthleteRepository {
   }
 
   findById(id: string, projection?: ProjectionType<AthleteDTO>) {
-    return Athlete.findOne({ _id: id }, projection)
+    return Athlete.findOne({ _id: id }, projection).populate('discipline', 'name')
   }
 
   findOne({ query = {}, projection = {}, options = {} }: ModelQuery<AthleteDTO>) {
-    return Athlete.findOne(query, projection, options)
+    return Athlete.findOne(query, projection, options).populate('disciplines', 'name')
   }
 
   findAll({ query = {}, projection = {}, options = {} }: ModelQuery<AthleteDTO>) {
-    return Athlete.find(query, projection, options)
+    return Athlete.find(query, projection, options).populate('disciplines', 'name')
   }
 
   update(id: string, data: Partial<AthleteDTO>) {
-    return Athlete.findOneAndUpdate({ _id: id }, data, { new: true })
+    return Athlete.findOneAndUpdate({ _id: id }, data, { new: true }).populate('disciplines', 'name')
   }
 
   delete(id: string) {

@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response } from 'express'
+import BadRequestException from '../../../src/exceptions/BadRequestException'
+import ConflictException from '../../../src/exceptions/ConflictException'
 import athleteMiddleware from '../../../src/middlewares/athlete.middleware'
 import athleteService from '../../../src/services/athlete.service'
-import ConflictException from '../../../src/exceptions/ConflictException'
-import BadRequestException from '../../../src/exceptions/BadRequestException'
 
 jest.mock('../../../src/services/athlete.service')
 
@@ -45,6 +45,20 @@ describe('athlete.middleware', () => {
     it('should call next with BadRequestException for invalid update', () => {
       req.body = { height: 0 }
       athleteMiddleware.validateUpdateAthleteSchema(req as Request, res as Response, next)
+      expect(next.mock.calls[0][0]).toBeInstanceOf(BadRequestException)
+    })
+  })
+
+  describe('validateUpdateDisciplineSchema', () => {
+    it('should call next with no error for valid disciplines', () => {
+      req.body = { disciplines: ['507f1f77bcf86cd799439011'] }
+      athleteMiddleware.validateUpdateDisciplineSchema(req as Request, res as Response, next)
+      expect(next).toHaveBeenCalledWith()
+    })
+
+    it('should call next with BadRequestException for invalid disciplines', () => {
+      req.body = { disciplines: ['invalid_id'] }
+      athleteMiddleware.validateUpdateDisciplineSchema(req as Request, res as Response, next)
       expect(next.mock.calls[0][0]).toBeInstanceOf(BadRequestException)
     })
   })

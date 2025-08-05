@@ -17,8 +17,9 @@ const mockResponse = () => {
 
 describe('DisciplineController', () => {
   const mockDiscipline = {
+    id: 'disciplineId',
     name: DisciplineEnum.POWERLIFTING,
-    category: [DisciplineCategoryEnum.STRENGTH],
+    categories: [DisciplineCategoryEnum.STRENGTH],
   } as DisciplineDTO
 
   const next: NextFunction = jest.fn()

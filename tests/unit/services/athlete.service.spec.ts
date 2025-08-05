@@ -1,7 +1,7 @@
-import athleteService from '../../../src/services/athlete.service'
-import athleteRepository from '../../../src/repositories/athlete.repository'
 import { ObjectId } from 'mongodb'
 import { CreateAthleteDTO } from '../../../src/DTOs/athlete/create.dto'
+import athleteRepository from '../../../src/repositories/athlete.repository'
+import athleteService from '../../../src/services/athlete.service'
 
 jest.mock('../../../src/repositories/athlete.repository')
 
@@ -92,6 +92,14 @@ describe('AthleteService', () => {
     const result = await athleteService.update('athleteId', { firstname: 'Updated' })
     expect(athleteRepository.update).toHaveBeenCalledWith('athleteId', { firstname: 'Updated' })
     expect(result).toEqual({ ...athleteMock, firstname: 'Updated' })
+  })
+
+  it('should update athlete disciplines', async () => {
+    const disciplineIds = [new ObjectId(), new ObjectId()]
+    ;(athleteRepository.update as jest.Mock).mockResolvedValue({ ...athleteMock, disciplines: disciplineIds })
+    const result = await athleteService.updateDiscipline('athleteId', disciplineIds)
+    expect(athleteRepository.update).toHaveBeenCalledWith('athleteId', { disciplines: disciplineIds })
+    expect(result).toEqual({ ...athleteMock, disciplines: disciplineIds })
   })
 
   it('should delete an athlete', async () => {

@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import athleteController from '../../../src/controllers/athlete.controller'
+import * as responseHandlerModule from '../../../src/handlers/responseHandler'
 import athleteService from '../../../src/services/athlete.service'
 import { StatusCode, StatusMessage } from '../../../src/utils/enums/httpResponses.enum'
-import * as responseHandlerModule from '../../../src/handlers/responseHandler'
 
 jest.mock('../../../src/services/athlete.service')
 
@@ -62,6 +62,20 @@ describe('AthleteController (unit)', () => {
     expect(responseHandlerSpy).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, {
       ...mockAthlete,
       firstname: 'Updated',
+    })
+  })
+
+  it('should update athlete disciplines and return 200', async () => {
+    if (!req.params) req.params = {}
+    req.params.id = 'athleteId'
+    req.body = { disciplines: ['id1', 'id2'] }
+    ;(athleteService.update as jest.Mock).mockResolvedValue({ ...mockAthlete, disciplines: ['id1', 'id2'] })
+    const responseHandlerSpy = jest.spyOn(responseHandlerModule, 'responseHandler')
+    await athleteController.update(req as Request, res as Response, next)
+    expect(athleteService.update).toHaveBeenCalledWith('athleteId', { disciplines: ['id1', 'id2'] })
+    expect(responseHandlerSpy).toHaveBeenCalledWith(res, StatusCode.OK, StatusMessage.OK, {
+      ...mockAthlete,
+      disciplines: ['id1', 'id2'],
     })
   })
 

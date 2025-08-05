@@ -1,4 +1,8 @@
-import { createAthleteSchema, updateAthleteSchema } from '../../../src/schemas/athlete/athlete.schema'
+import {
+  createAthleteSchema,
+  updateAthleteDisciplineSchema,
+  updateAthleteSchema,
+} from '../../../src/schemas/athlete/athlete.schema'
 import { GenderEnum } from '../../../src/utils/enums/gender.enum'
 
 describe('athlete.schema', () => {
@@ -49,6 +53,20 @@ describe('athlete.schema', () => {
     it('should fail if a field is invalid', () => {
       const invalid = { height: 0 }
       const { error } = updateAthleteSchema.validate(invalid)
+      expect(error).toBeDefined()
+    })
+  })
+
+  describe('updateAthleteDisciplineSchema', () => {
+    it('should validate valid disciplines array', () => {
+      const valid = { disciplines: ['507f1f77bcf86cd799439011'] }
+      const { error } = updateAthleteDisciplineSchema.validate(valid)
+      expect(error).toBeUndefined()
+    })
+
+    it('should fail if disciplines is not an array of valid ObjectIds', () => {
+      const invalid = { disciplines: ['invalid_id'] }
+      const { error } = updateAthleteDisciplineSchema.validate(invalid)
       expect(error).toBeDefined()
     })
   })

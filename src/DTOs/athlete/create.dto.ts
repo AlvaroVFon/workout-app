@@ -7,6 +7,7 @@ export interface CreateAthleteDTO {
   lastname: string
   coach: ObjectId
   idDocument: string
+  disciplines?: ObjectId[]
   gender?: Gender
   height?: number
   weight?: number
