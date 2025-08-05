@@ -32,7 +32,6 @@ class UserService {
 
   async update(id: string, data: UpdateUserDTO): Promise<UserDTO | null> {
     data.updatedAt = Date.now()
-
     if (data.password) {
       data.password = await hashString(data.password, 'bcrypt')
     }

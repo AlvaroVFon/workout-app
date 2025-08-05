@@ -2,6 +2,7 @@ import { Express } from 'express'
 import { errorHandler } from '../handlers/errorHandler'
 import { athleteRouter } from '../routes/athlete.route'
 import { authRouter } from '../routes/auth.route'
+import { disciplineRouter } from '../routes/discipline.route'
 import { exerciseRouter } from '../routes/exercise.route'
 import { indexRouter } from '../routes/index.route'
 import { muscleRouter } from '../routes/muscle.route'
@@ -18,6 +19,7 @@ function configureRoutes(app: Express): void {
   app.use('/exercises', exerciseRouter)
   app.use('/athletes', athleteRouter)
   app.use('/training-sessions', trainingSessionRouter)
+  app.use('/disciplines', disciplineRouter)
   app.use(errorHandler)
 }
 
