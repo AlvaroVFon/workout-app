@@ -23,6 +23,10 @@ class AthleteService {
     return athleteRepository.update(id, updateData)
   }
 
+  async updateDiscipline(id: string, disciplines: ObjectId[]) {
+    return athleteRepository.update(id, { disciplines })
+  }
+
   async delete(id: string) {
     return athleteRepository.delete(id)
   }

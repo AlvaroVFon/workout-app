@@ -5,6 +5,7 @@ import authMiddleware from '../middlewares/auth/auth.middleware'
 import { RolesEnum } from '../utils/enums/roles.enum'
 import paginationMiddleware from '../middlewares/pagination.middleware'
 import globalValidatorMiddleware from '../middlewares/globalValidator.middleware'
+import disciplineMiddleware from '../middlewares/discipline.middleware'
 
 const router = Router()
 
@@ -27,6 +28,16 @@ router
       globalValidatorMiddleware.validateObjectId,
       athleteMiddleware.validateAthleteOwnership,
       athleteMiddleware.validateUpdateAthleteSchema,
+    ],
+    athleteController.update,
+  )
+  .patch(
+    '/:id/disciplines',
+    [
+      globalValidatorMiddleware.validateObjectId,
+      athleteMiddleware.validateAthleteOwnership,
+      athleteMiddleware.validateUpdateDisciplineSchema,
+      disciplineMiddleware.validateDisciplinesExistence,
     ],
     athleteController.update,
   )

@@ -20,6 +20,11 @@ const athleteSchema = new Schema<AthleteDTO>({
     ref: 'User',
     required: true,
   },
+  disciplines: {
+    type: [Types.ObjectId],
+    ref: 'Discipline',
+    default: [],
+  },
   gender: {
     type: String,
   },
