@@ -161,12 +161,6 @@ tests/
 - Revisa la [configuración recomendada de editor](./docs/EDITOR_SETUP.md)
 - Pull requests y sugerencias bienvenidas
 
-## Licencia
-
-MIT
-
----
-
 ## Testing
 
 La aplicación cuenta con una suite completa de pruebas unitarias y de integración:
@@ -184,3 +178,9 @@ yarn test:unit      # Solo unitarios
 yarn test:e2e       # Solo end-to-end
 yarn test:coverage  # Con cobertura
 ```
+---
+## Licencia
+
+MIT
+
+
