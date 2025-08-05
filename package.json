@@ -59,7 +59,9 @@
     "typescript-eslint": "^8.29.0"
   },
   "dependencies": {
+    "@types/cookie-parser": "^1.4.9",
     "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "4",
     "handlebars": "^4.7.8",

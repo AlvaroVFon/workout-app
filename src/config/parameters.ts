@@ -58,7 +58,7 @@ export const parameters = {
   smtpFrom: envVars.SMTP_FROM,
   smtpFromName: envVars.SMTP_FROM_NAME,
   logLevel: envVars.LOG_LEVEL,
-  maxSignupAttempts: envVars.MAX_SIGNUP_ATTEPTS,
+  maxSignupAttempts: envVars.MAX_SIGNUP_ATTEMPTS,
   maxLoginAttempts: envVars.MAX_LOGIN_ATTEMPTS,
   maxPasswordResetAttempts: envVars.MAX_PASSWORD_RESET_ATTEMPTS,
   blockDuration: envVars.BLOCK_DURATION,

@@ -1,12 +1,11 @@
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import {
   forgotPasswordSchema,
   loginSchema,
   refreshTokenSchema,
-  headerTokenSchema,
   resetPasswordSchema,
-  stringParamSchema,
   signupVerificationSchema,
+  stringParamSchema,
 } from '../../schemas/auth/auth.schema'
 
 import BadRequestException from '../../exceptions/BadRequestException'
@@ -80,7 +79,7 @@ class AuthValidatorMiddleware {
 
   validateRefreshSchema(req: Request, res: Response, next: NextFunction): void {
     try {
-      const { error } = refreshTokenSchema.validate(req.body)
+      const { error } = refreshTokenSchema.validate(String(req.cookies['x-refresh-token']))
       if (error) return next(new BadRequestException(error.details[0].message))
 
       next()
@@ -89,10 +88,10 @@ class AuthValidatorMiddleware {
     }
   }
 
-  validateHeaderRefreshToken(req: Request, res: Response, next: NextFunction): void {
+  validateCookieRefreshToken(req: Request, res: Response, next: NextFunction): void {
     try {
-      const refreshToken = req.headers['x-refresh-token'] as string
-      const { error } = headerTokenSchema.validate(refreshToken)
+      const refreshToken = req.cookies['x-refresh-token'] as string
+      const { error } = refreshTokenSchema.validate(refreshToken)
 
       if (error) return next(new BadRequestException(error.details[0].message))
 
