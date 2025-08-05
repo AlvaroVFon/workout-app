@@ -4,7 +4,7 @@ import { DisciplineEnum } from '../../utils/enums/discipline.enum'
 export interface DisciplineDTO {
   id: string
   name: DisciplineEnum
-  category: DisciplineCategoryEnum[]
+  categories: DisciplineCategoryEnum[]
   createdAt?: Date
   updatedAt?: Date
 }

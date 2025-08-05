@@ -9,7 +9,7 @@ jest.mock('../../../src/repositories/discipline.repository')
 describe('DisciplineService', () => {
   const mockDiscipline = {
     name: 'powerlifting',
-    category: [DisciplineCategoryEnum.STRENGTH],
+    categories: [DisciplineCategoryEnum.STRENGTH],
   } as DisciplineDTO
 
   afterEach(() => {

@@ -8,7 +8,7 @@ jest.mock('../../../src/models/Discipline')
 describe('DisciplineRepository', () => {
   const mockDiscipline = {
     name: 'powerlifting',
-    category: ['strength'],
+    categories: ['strength'],
   } as DisciplineDTO
 
   afterEach(() => {
@@ -39,7 +39,7 @@ describe('DisciplineRepository', () => {
     ;(Discipline.findOneAndUpdate as jest.Mock).mockReturnValue({ exec: jest.fn().mockResolvedValue(mockDiscipline) })
     const result = await DisciplineRepository.update(
       { name: 'powerlifting' },
-      { category: [DisciplineCategoryEnum.STRENGTH] },
+      { categories: [DisciplineCategoryEnum.STRENGTH] },
     )
     expect(result).toBe(mockDiscipline)
   })

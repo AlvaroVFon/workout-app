@@ -10,7 +10,7 @@ const disciplineSchema = new Schema<DisciplineDTO>({
     unique: true,
     required: true,
   },
-  category: {
+  categories: {
     type: [String],
     enum: Object.values(DisciplineCategoryEnum),
     required: true,
