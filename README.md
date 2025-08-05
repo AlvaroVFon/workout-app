@@ -155,12 +155,6 @@ tests/
 - Mailhog para desarrollo (docker-compose)
 - Ejemplo de uso en `src/services/mail.service.ts`
 
-## Contribución
-
-- Sigue la [Guía de Estilos](./STYLE_GUIDE.md)
-- Revisa la [configuración recomendada de editor](./docs/EDITOR_SETUP.md)
-- Pull requests y sugerencias bienvenidas
-
 ## Testing
 
 La aplicación cuenta con una suite completa de pruebas unitarias y de integración:
@@ -178,6 +172,14 @@ yarn test:unit      # Solo unitarios
 yarn test:e2e       # Solo end-to-end
 yarn test:coverage  # Con cobertura
 ```
+
+## Contribución
+
+- Sigue la [Guía de Estilos](./STYLE_GUIDE.md)
+- Revisa la [configuración recomendada de editor](./docs/EDITOR_SETUP.md)
+- Pull requests y sugerencias bienvenidas
+
+
 ---
 ## Licencia
 
