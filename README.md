@@ -2,7 +2,6 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-<!-- Stack Badges -->
 <p align="left">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white&style=flat-square" />
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white&style=flat-square" />
@@ -18,785 +17,170 @@
   <img alt="Handlebars" src="https://img.shields.io/badge/Handlebars.js-f0772b?logo=handlebarsdotjs&logoColor=white&style=flat-square" />
 </p>
 
-> **API robusta para el seguimiento de atletas y entrenadores, diseñada con Node.js, TypeScript, Express y MongoDB/Mongoose.**
-
----
+API robusta para la gestión de atletas, entrenadores, ejercicios y sesiones de entrenamiento. Construida con Node.js, TypeScript, Express y MongoDB/Mongoose.
 
 ## Tabla de Contenidos
 
 - [Descripción](#descripción)
 - [Stack Tecnológico](#stack-tecnológico)
 - [Características](#características)
-- [Instalación](#instalación)
-- [Configuración](#configuración)
-- [Ejecución](#ejecución)
-- [Database Seeding](#database-seeding)
+- [Instalación y Configuración](#instalación-y-configuración)
+- [Ejecución y Seeding](#ejecución-y-seeding)
 - [Pruebas](#pruebas)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Endpoints Principales](#endpoints-principales)
-- [Consultas Avanzadas](#consultas-avanzadas)
-- [Seguridad](#seguridad)
-- [Email y notificaciones](#email-y-notificaciones)
+- [Seguridad y Autenticación](#seguridad-y-autenticación)
+- [Email y Notificaciones](#email-y-notificaciones)
 - [Contribución](#contribución)
 - [Licencia](#licencia)
-- [Documentación para Desarrolladores](#documentación-para-desarrolladores)
 
 ---
 
 ## Descripción
 
-API backend para la gestión de atletas, entrenadores, ejercicios y sesiones de entrenamiento. Permite el registro, seguimiento y análisis de progreso, con endpoints seguros, validaciones exhaustivas y consultas avanzadas (populate, select, filtros).
+Backend para el seguimiento y análisis de progreso de atletas y entrenadores, con endpoints seguros, validaciones exhaustivas y consultas avanzadas.
 
 ## Stack Tecnológico
 
-- **Node.js** 22+
-- **TypeScript**
-- **Express.js**
-- **MongoDB** + **Mongoose**
-- **Joi** (validación de datos)
-- **JWT** (autenticación)
-- **Redis** (opcional, para cache y sesiones)
-- **Jest** (tests unitarios)
-- **Docker** y **docker-compose** (desarrollo y despliegue)
+- Node.js 22+
+- TypeScript
+- Express.js
+- MongoDB + Mongoose
+- Joi (validación)
+- JWT (autenticación)
+- Redis (opcional, cache/sesiones)
+- Jest (tests)
+- Docker y docker-compose
 
 ## Características
 
-- **Autenticación robusta**: Sistema dual-token JWT con refresh automático y rotación de sesiones
-- **Gestión completa** de atletas, ejercicios y sesiones de entrenamiento
-- **Relaciones complejas** entre recursos (populate avanzado)
-- **Validaciones estrictas** con Joi y DTOs tipados
-- **Seguridad avanzada**: JWT, roles, ownership y middlewares
-- **Consultas avanzadas**: populate, select, filtros, paginación
-- **Tests comprehensivos**: 456+ tests unitarios y e2e con >97% cobertura
-- **Listo para producción**: Docker, logging, error handling
+- Autenticación robusta (JWT dual-token, refresh rotation)
+- Gestión completa de atletas, ejercicios y sesiones
+- Relaciones complejas y populate avanzado
+- Validaciones estrictas con Joi y DTOs tipados
+- Seguridad avanzada: roles, ownership, middlewares
+- Consultas avanzadas: filtros, paginación, select
+- Tests unitarios y e2e (>96% cobertura)
+- Listo para producción: Docker, logging, error handling
 
-## 🔐 Sistema de Autenticación y Refresh Tokens
-
-La aplicación implementa un sistema de autenticación robusto con **refresh token rotation** y gestión avanzada de sesiones.
-
-### Características de Seguridad
-
-- **Dual-token system**: Access tokens de corta duración (15m) + Refresh tokens de larga duración (7d)
-- **Token rotation**: Los refresh tokens se regeneran en cada uso, invalidando los anteriores
-- **Session management**: Control completo de sesiones activas con TTL automático
-- **Type validation**: Validación estricta de tipos de token (access vs refresh)
-- **Automatic cleanup**: Sesiones expiradas se eliminan automáticamente de la base de datos
-
-### Flujo de Autenticación
-
-1. **Login**: Usuario se autentica y recibe access token + refresh token
-2. **Requests**: Access token se usa para requests autenticados
-3. **Refresh**: Cuando el access token expira, se usa el refresh token para obtener nuevos tokens
-4. **Rotation**: El refresh token anterior se invalida y se genera uno nuevo
-5. **Cleanup**: Las sesiones expiradas se eliminan automáticamente
-
-### Endpoints de Autenticación
-
-```typescript
-// Login - Obtener tokens iniciales
-POST /api/auth/login
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-Response: {
-  "data": {
-    "user": { ... },
-    "token": "eyJhbGciOiJIUzI1NiIs...", // Access token
-    "refreshToken": "eyJhbGciOiJIUzI1NiIs..." // Refresh token
-  }
-}
-
-// Refresh - Obtener nuevos tokens
-POST /api/auth/refresh
-{
-  "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
-}
-Response: {
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIs...", // Nuevo access token
-    "refreshToken": "eyJhbGciOiJIUzI1NiIs..." // Nuevo refresh token
-  }
-}
-```
-
-### Recuperación y Reseteo de Contraseña
-
-La API ahora soporta recuperación y reseteo de contraseña mediante código enviado por email.
-
-#### Flujo y Plantillas de Email
-
-El sistema ahora utiliza plantillas HTML personalizadas para notificaciones de recuperación y reseteo de contraseña, mejorando la experiencia de usuario y la seguridad.
-
-1. **Solicitar código de recuperación**
-
-   ```http
-   POST /api/auth/forgot-password
-   {
-     "email": "user@example.com"
-   }
-   // Respuesta: 204 No Content (si el email existe, se envía un código)
-   // El usuario recibe un email con un código y un mensaje personalizado.
-   ```
-
-2. **Resetear contraseña**
-   ```http
-   POST /api/auth/reset-password
-   {
-     "email": "user@example.com",
-     "code": "123456",
-     "password": "nuevaPassword123"
-   }
-   // Respuesta: 204 No Content (si el código es válido y la contraseña se actualiza)
-   // El usuario recibe un email de confirmación de cambio de contraseña.
-   ```
-
-#### Seguridad y buenas prácticas
-
-- Los emails no revelan si el usuario existe o no.
-- El código de recuperación tiene expiración y solo puede usarse una vez.
-- El sistema limita la frecuencia de solicitudes de código.
-- Los emails de confirmación advierten sobre acciones no reconocidas.
-
-  ```
-
-  ```
-
-#### Validaciones
-
-- El email debe existir en la base de datos.
-- El código tiene expiración y solo puede usarse una vez.
-- El endpoint limita la frecuencia de solicitud de códigos (ver `CODE_RETRY_INTERVAL`).
-- La nueva contraseña debe cumplir requisitos de longitud y formato.
-
-#### Variables de entorno relevantes
-
-- `CODE_EXPIRATION`: Tiempo de validez del código (ms)
-- `CODE_LENGTH`: Longitud del código generado
-- `CODE_RETRY_INTERVAL`: Tiempo mínimo entre solicitudes de código (ms)
-
-#### Ejemplo de uso (cURL)
-
-```bash
-# Solicitar código de recuperación
-curl -X POST http://localhost:3000/auth/forgot-password \
-  -H 'Content-Type: application/json' \
-  -d '{ "email": "user@example.com" }'
-
-# Resetear contraseña
-curl -X POST http://localhost:3000/auth/reset-password \
-  -H 'Content-Type: application/json' \
-  -d '{ "email": "user@example.com", "code": "123456", "password": "NuevaPass123" }'
-```
-
----
-
-### Configuración de Seguridad
-
-Las duraciones de los tokens se configuran mediante variables de entorno:
-
-```env
-JWT_SECRET=your-super-secret-key-here
-JWT_EXPIRATION=15m          # Access token (recomendado: 15m-1h)
-JWT_REFRESH_EXPIRATION=7d   # Refresh token (recomendado: 7d-30d)
-```
-
-### Gestión de Sesiones
-
-- **Sesiones activas**: Solo una sesión activa por usuario
-- **Invalidación automática**: Sesiones anteriores se marcan como expiradas
-- **TTL Index**: MongoDB elimina automáticamente sesiones expiradas
-- **Seguridad mejorada**: Tokens hasheados en base de datos
-
-### Casos de Uso Avanzados
-
-```typescript
-// Verificar información del usuario autenticado
-GET / api / auth / info
-Headers: {
-  Authorization: 'Bearer access_token'
-}
-
-// Los refresh tokens NO pueden usarse para endpoints protegidos
-GET / api / users
-Headers: {
-  Authorization: 'Bearer refresh_token'
-} // ❌ Error 401
-
-// Solo access tokens son válidos para endpoints protegidos
-GET / api / users
-Headers: {
-  Authorization: 'Bearer access_token'
-} // ✅ OK
-```
-
-## Instalación
+## Instalación y Configuración
 
 ```bash
 git clone https://github.com/tu-usuario/workout-app.git
 cd workout-app
 yarn install
+cp .env.dist .env # y edita según tu entorno
 ```
 
-## Configuración
+Variables principales en `.env`:
 
-1. Copia `.env.example` a `.env` y ajusta las variables:
+- `NODE_ENV` — Entorno de ejecución (development, production)
+- `MONGO_URI` — Cadena de conexión a MongoDB
+- `REDIS_URI` — Cadena de conexión a Redis
+- `JWT_SECRET` — Secreto para firmar JWT
+- `JWT_EXPIRATION` — Duración del access token (ej: 30m)
+- `JWT_REFRESH_EXPIRATION` — Duración del refresh token (ej: 7d)
+- `SALT_ROUNDS` — Rondas de hash para contraseñas
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_FROM_NAME` — Configuración de email
+- `LOG_LEVEL` — Nivel de logs (debug, info, warn, error)
+- `MAX_LOGIN_ATTEMPTS`, `MAX_PASSWORD_RESET_ATTEMPTS`, `BLOCK_DURATION` — Seguridad de login/reset
+- `CODE_LENGTH`, `CODE_RETRY_INTERVAL`, `CODE_EXPIRATION` — Configuración de códigos de recuperación
+- `FRONTEND_URL` — URL del frontend permitido para CORS y emails
 
-```env
-# Entorno y puertos
-NODE_ENV=development
-PORT=3000
+## Ejecución y Seeding
 
-# Base de datos
-MONGO_URI=mongodb://localhost:27017/workout
-REDIS_URI=redis://localhost:6379
-
-# Seguridad y JWT
-JWT_SECRET=supersecret
-JWT_EXPIRATION=3600000            # ms (1h)
-JWT_REFRESH_EXPIRATION=2592000000 # ms (30d)
-SALT_ROUNDS=10
-
-# Email/SMTP
-SMTP_HOST=localhost
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=
-SMTP_PASS=
-SMTP_FROM=admin@email.com
-SMTP_FROM_NAME=Admin
-
-# Logging
-LOG_LEVEL=info
-
-# Seguridad avanzada
-MAX_LOGIN_ATTEMPTS=5
-MAX_PASSWORD_RESET_ATTEMPTS=3
-BLOCK_DURATION=900000           # ms (15 min)
-CODE_EXPIRATION=300000          # ms (5 min)
-CODE_LENGTH=6
-CODE_RETRY_INTERVAL=30000       # ms (30 seg)
-```
-
-### Variables de Entorno JWT
-
-- **`JWT_SECRET`**: Clave secreta para firmar tokens (usar una clave fuerte en producción)
-- **`JWT_EXPIRATION`**: Duración del access token (por defecto: 15m)
-- **`JWT_REFRESH_EXPIRATION`**: Duración del refresh token (por defecto: 7d)
-
-2. (Opcional) Usa Docker:
-
-```bash
-docker-compose up -d
-```
-
-## Ejecución
-
-- **Desarrollo:**
-  ```bash
-  yarn dev
-  ```
-- **Producción:**
-  ```bash
-  yarn start
-  ```
-
-## Database Seeding
-
-La aplicación incluye un sistema completo de seeding para poblar la base de datos con datos de prueba.
-
-### 🌱 Ejecutar Seeding Completo
-
-```bash
-# Ejecutar todos los seeders
-yarn seed
-
-# O usando ts-node directamente
-npx ts-node src/seeders/index.seeder.ts
-```
-
-### 📊 Datos Generados
-
-El seeding crea automáticamente:
-
-- **2 Usuarios Admin** (SuperAdmin + Admin)
-- **20 Usuarios regulares** (entrenadores)
-- **Todos los músculos** (basados en `MusclesEnum`)
-- **Todos los roles** (basados en `RolesEnum`)
-- **21 Ejercicios variados** con músculos asignados
-- **10 Atletas** con datos realistas
-- **10 Sesiones de entrenamiento** completas
-
-### 🏭 Factories Disponibles
-
-Los factories utilizan **Faker.js** para generar datos realistas:
-
-```typescript
-// Atletas con datos coherentes
-createAthlete(db, customData?)
-createAthletes(quantity, db)
-
-// Ejercicios con músculos aleatorios
-createExercise(customData?)
-
-// Sesiones de entrenamiento completas
-createTrainingSession(db, customData?)
-createTrainingSessions(quantity, db)
-
-// Usuarios con roles específicos
-createUsers(quantity)
-createAdminUser()
-createSuperAdminUser()
-```
-
-### ⚙️ Configuración de Seeding
-
-Puedes personalizar las cantidades en [`src/seeders/index.seeder.ts`](src/seeders/index.seeder.ts):
-
-```typescript
-await seedAthletes(db, 10) // 10 atletas
-await seedTrainingSessions(db, 10) // 10 sesiones
-```
-
-### 🗂️ Seeders Individuales
-
-También puedes ejecutar seeders específicos:
-
-```typescript
-import { seedAthletes } from './seeders/athlete.seeder'
-import { seedExercises } from './seeders/exercise.seeder'
-// ... otros seeders
-```
-
-### 🔄 Comportamiento de Seeding
-
-- **Drop & Create**: Cada seeder elimina la colección existente antes de crear nuevos datos
-- **Relaciones**: Los seeders manejan automáticamente las relaciones (atleta ↔ coach, ejercicio ↔ músculos)
-- **Datos coherentes**: Los factories generan datos que respetan las validaciones del schema
-- **Error handling**: Logging completo de errores durante el proceso
+- **Desarrollo:** `yarn dev`
+- **Producción:** `yarn start`
+- **Docker:** `docker-compose up -d`
+- **Seeding:** `yarn seed` o `npx ts-node src/seeders/index.seeder.ts`
 
 ## Pruebas
 
-La aplicación cuenta con una suite completa de pruebas unitarias y de integración con **cobertura del 96%**:
-
-### Ejecutar Todas las Pruebas
-
-```bash
-yarn test
-```
-
-### Ejecutar por Tipo
-
-```bash
-# Solo pruebas unitarias
-yarn test:unit
-
-# Solo pruebas end-to-end
-yarn test:e2e
-
-# Con cobertura
-yarn test:coverage
-```
-
-### Estado Actual de las Pruebas ✅
-
-- **✅ 456 tests totales** (443 unitarios + 13 e2e) - **TODOS PASANDO**
-- **✅ Cobertura del 96.35%** en líneas de código
-- **✅ Pruebas aisladas** con mocks y factories
-- **✅ Tests e2e** para flujos completos de autenticación y refresh tokens
-- **✅ Tests de seguridad** para validación de tipos de token
-- **✅ Tests de rotación** de refresh tokens y gestión de sesiones
-
-### Arquitectura de Testing
-
-#### Pruebas Unitarias (`tests/unit/`)
-
-- **Controllers**: Lógica de endpoints y manejo de errores
-- **Services**: Lógica de negocio y validaciones
-- **Repositories**: Acceso a datos y consultas
-- **Middlewares**: Validación y autorización
-- **Utils**: Funciones auxiliares (JWT, password hashing)
-- **Schemas**: Validación Joi
-- **Models**: Validación de esquemas Mongoose
-
-#### Pruebas E2E (`tests/e2e/`)
-
-- **Auth Flow**: Login, signup, refresh de tokens, info de usuario
-- **Token Validation**: Casos edge, tokens malformados, expirados
-- **Protected Routes**: Verificación de autorización
-- **Error Handling**: Respuestas de error consistentes
-
-#### Herramientas de Testing
-
-- **Jest**: Framework principal con mocks y spies
-- **Supertest**: Pruebas HTTP para endpoints
-- **MongoDB Memory Server**: Base de datos en memoria para tests
-- **Factories**: Generación de datos de prueba consistentes
-- **Test Isolation**: Cada test es independiente y aislado
-
-### Ejemplos de Pruebas
-
-#### Test Unitario (JWT Utils)
-
-```typescript
-describe('JWT Utils', () => {
-  it('should verify refresh token type correctly', () => {
-    const payload = { userId: '123', role: 'user', type: 'refresh' }
-    const token = generateRefreshToken(payload)
-    const decoded = verifyRefreshToken(token)
-
-    expect(decoded).toMatchObject(payload)
-  })
-})
-```
-
-#### Test E2E (Auth Flow)
-
-```typescript
-describe('POST /auth/refresh', () => {
-  it('should refresh tokens successfully', async () => {
-    const { refreshToken } = await loginUser()
-
-    const response = await request(app).post('/auth/refresh').send({ refreshToken }).expect(200)
-
-    expect(response.body.data).toHaveProperty('accessToken')
-    expect(response.body.data).toHaveProperty('refreshToken')
-  })
-})
-```
-
-Cobertura disponible en `/coverage` tras ejecutar los tests.
+- **Todas:** `yarn test`
+- **Unitarias:** `yarn test:unit`
+- **E2E:** `yarn test:e2e`
+- **Cobertura:** `yarn test:coverage`
 
 ## Estructura del Proyecto
 
-## Arquitectura y Patrones
-
-El proyecto sigue una arquitectura modular y desacoplada, inspirada en principios de Clean Architecture y DDD (Domain-Driven Design) para facilitar la escalabilidad, el testing y el mantenimiento.
-
-### Principios y Patrones Clave
-
-- **Separación de responsabilidades:** Cada capa y carpeta tiene una función clara (DTOs, modelos, servicios, repositorios, controladores, middlewares, etc.).
-- **DTOs (Data Transfer Objects):** Definen la estructura de los datos que viajan entre capas, asegurando tipado y validación.
-- **Repositorios:** Encapsulan el acceso a datos y consultas a la base de datos, desacoplando la lógica de negocio de la persistencia.
-- **Servicios:** Contienen la lógica de negocio y orquestan operaciones complejas, interactuando con repositorios y otros servicios.
-- **Controladores:** Gestionan la entrada/salida HTTP, delegando la lógica a los servicios.
-- **Middlewares:** Validación, autenticación, autorización y manejo global de errores.
-- **Validación centralizada:** Uso de Joi y middlewares para validar datos de entrada en todos los endpoints.
-- **Enums y tipado estricto:** Uso extensivo de enums y tipos TypeScript para evitar errores y mejorar la autocompletación.
-- **Factories y seeders:** Generación de datos de prueba y poblamiento de la base de datos para desarrollo y testing.
-- **Testing aislado:** Pruebas unitarias y de integración con mocks, spies y base de datos en memoria.
-
-### Flujo típico de una petición
-
-1. **Request HTTP** →
-2. **Middleware de validación/autenticación** →
-3. **Controlador** →
-4. **Servicio** →
-5. **Repositorio** →
-6. **Modelo (Mongoose)** →
-7. **Respuesta**
-
-### Ventajas
-
-- Fácil de testear y mantener
-- Escalable y extensible (agregar nuevas entidades o reglas es sencillo)
-- Bajo acoplamiento entre capas
-- Código reutilizable y DRY
-
-Esta arquitectura permite que el proyecto crezca de forma ordenada y que los cambios en una capa no afecten negativamente a las demás.
-
-```plaintext
-src/
-├── config/         # Configuración (DB, middlewares, passport, parámetros)
-├── controllers/    # Lógica de endpoints (auth, athletes, etc.)
-├── DTOs/           # Data Transfer Objects (tipado, subcarpetas por dominio)
-│   ├── attempt/
-│   ├── code/
-│   ├── muscle/
-│   ├── role/
-│   ├── session/
-│   ├── user/
-│   └── ...
-├── exceptions/     # Excepciones personalizadas
-├── factories/      # Factories para tests y seeders
-├── handlers/       # Manejadores de respuesta y error
-├── helpers/        # Helpers de utilidades (hash, sesión, etc.)
-├── interfaces/     # Interfaces TypeScript
-├── middlewares/    # Middlewares de Express (auth, validation, global, etc.)
-├── models/         # Modelos Mongoose (User, Athlete, Attempt, Code, etc.)
-├── repositories/   # Acceso a datos y consultas avanzadas (por entidad)
-├── routes/         # Definición de rutas (auth, athletes, etc.)
-├── schemas/        # Validación Joi (por dominio)
-├── seeders/        # Seeders para poblar la base de datos
-├── services/       # Lógica de negocio (auth, user, block, code, etc.)
-├── strategies/     # Estrategias de autenticación (JWT, Passport)
-├── templates/      # Plantillas de email u otros
-├── types/          # Tipos globales y utilidades TS
-├── utils/          # Utilidades generales (JWT, password helpers, generadores)
-
-tests/
-├── config/
-├── e2e/            # Tests de integración completos
-├── unit/           # Tests unitarios por módulo
-│   ├── controllers/
-│   ├── helpers/
-│   ├── middlewares/
-│   ├── models/
-│   ├── repositories/
-│   ├── schemas/
-│   ├── services/
-│   └── ...
-├── utils/          # Helpers para testing
 ```
-
-### Componentes Clave de Autenticación
-
-- **`src/utils/jwt.utils.ts`** - Generación y verificación de tokens
-- **`src/strategies/jwt.strategy.ts`** - Estrategia Passport para JWT
-- **`src/middlewares/auth.middleware.ts`** - Middleware de autenticación
-- **`src/controllers/auth.controller.ts`** - Endpoints de autenticación
-- **`src/services/auth.service.ts`** - Lógica de negocio de auth
+src/
+  config/         # Configuración
+  controllers/    # Endpoints
+  DTOs/           # Data Transfer Objects
+  exceptions/     # Excepciones personalizadas
+  factories/      # Factories para tests y seeders
+  handlers/       # Respuesta y error
+  helpers/        # Utilidades
+  interfaces/     # Interfaces TS
+  middlewares/    # Middlewares Express
+  models/         # Modelos Mongoose
+  repositories/   # Acceso a datos
+  routes/         # Definición de rutas
+  schemas/        # Validación Joi
+  seeders/        # Poblar la base de datos
+  services/       # Lógica de negocio
+  strategies/     # Estrategias de autenticación
+  templates/      # Plantillas de email
+  types/          # Tipos globales
+  utils/          # Utilidades generales
+tests/
+  config/
+  e2e/            # Tests de integración
+  unit/           # Tests unitarios
+```
 
 ## Endpoints Principales
 
-### Atletas
-
+- `POST /auth/login` — Login (access y refresh token)
+- `POST /auth/refresh` — Renovar tokens
 - `GET /athletes` — Listar atletas
-- `GET /athletes/:id` — Detalle de atleta
 - `POST /athletes` — Crear atleta
 - `PATCH /athletes/:id` — Actualizar atleta
+- `PATCH /athletes/:id/disciplines` — Actualizar disciplinas del atleta
 - `DELETE /athletes/:id` — Eliminar atleta
+- ...y más para ejercicios, sesiones, usuarios
 
-### Ejercicios
+## Seguridad y Autenticación
 
-- `GET /exercises` — Listar ejercicios
-- `POST /exercises` — Crear ejercicio
-
-### Sesiones de Entrenamiento
-
-- `GET /training-sessions/athlete/:id` — Listar sesiones por atleta (paginado)
-- `GET /training-sessions/:id` — Detalle de sesión (populate avanzado)
-- `POST /training-sessions` — Crear sesión
-
-### Autenticación
-
-- `POST /auth/login` — Login (devuelve access token y refresh token)
-- `POST /auth/signup` — Registro
-- `POST /auth/refresh` — Renovar tokens usando refresh token
-- `POST /auth/logout` — Logout (cierra la sesión y revoca el refresh token)
-- `GET /auth/info` — Información del usuario autenticado
-
-## Consultas Avanzadas
-
-- **Populate:** Puedes solicitar recursos relacionados (athlete, exercises) usando populate desde el frontend o configurando el repositorio.
-- **Select:** Limita los campos devueltos usando projection/select.
-- **Filtros:** Filtra por fecha, tipo, atleta, etc. usando query params.
-- **Paginación:** Incluida en endpoints de listado.
-
-## Seguridad
-
-- **JWT Dual-Token System**: Access tokens (corta duración) y refresh tokens (larga duración) con rotación automática
-- **Session Management**: Gestión avanzada de sesiones con invalidación automática y TTL cleanup
-- **Token Type Validation**: Los tokens incluyen un campo `type` para prevenir su mal uso
-- **Refresh Token Rotation**: Los refresh tokens se regeneran en cada uso, invalidando los anteriores
-- **Roles** (admin, superadmin, user) con autorización granular
-- **Ownership**: los usuarios solo acceden a sus propios recursos
-- **Validaciones Joi** en todos los endpoints
-- **Middleware de Autenticación**: JWT strategy con Passport.js
-
-### Arquitectura JWT Avanzada
-
-El sistema implementa un patrón de doble token con rotación para máxima seguridad:
-
-1. **Access Token**:
-
-   - Duración corta (por defecto 15 minutos)
-   - Usado para autenticación en endpoints protegidos
-   - Incluye información del usuario y rol
-   - Tipo: `"access"`
-
-2. **Refresh Token**:
-
-   - Duración larga (por defecto 7 días)
-   - Usado únicamente para renovar tokens
-   - No válido para endpoints protegidos
-   - Tipo: `"refresh"`
-   - **Rotación automática**: Se regenera en cada uso
-
-3. **Session Management**:
-
-   - Solo una sesión activa por usuario
-   - Sesiones anteriores se invalidan automáticamente
-   - TTL index elimina sesiones expiradas de MongoDB
-   - Refresh tokens hasheados en base de datos
-
-4. **Flujo de Renovación con Rotación**:
-
-   ```bash
-   POST /auth/refresh
-   Content-Type: application/json
-
-   {
-     "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-   }
-   ```
-
-   **Respuesta:**
-
-   ```json
-   {
-     "data": {
-       "token": "nuevo_access_token...",
-       "refreshToken": "nuevo_refresh_token..." // ⚠️ Token anterior invalidado
-     }
-   }
-   ```
-
-### Beneficios de Seguridad
-
-- **Mitigación de token hijacking**: Los refresh tokens robados tienen vida útil limitada
-- **Detección de ataques**: El uso de refresh tokens invalidados alerta sobre posibles ataques
-- **Cleanup automático**: Las sesiones expiradas se eliminan sin intervención manual
-- **Reducción de superficie de ataque**: Access tokens de corta duración minimizan la exposición
-
-  Respuesta:
-
-  ```json
-  {
-    "status": "success",
-    "data": {
-      "accessToken": "nuevo_access_token",
-      "refreshToken": "nuevo_refresh_token"
-    }
-  }
-  ```
-
-## Ejemplo de Uso (cURL)
-
-### Autenticación Completa
-
-```bash
-# 1. Login inicial
-curl -X POST http://localhost:3000/auth/login \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "email": "admin@workout.com",
-    "password": "admin123"
-  }'
-
-# Respuesta:
-# {
-#   "status": "success",
-#   "data": {
-#     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-#     "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-#   }
-# }
-
-# 2. Usar access token en endpoints protegidos
-curl -X GET http://localhost:3000/auth/info \
-  -H 'Authorization: Bearer <accessToken>'
-
-# 3. Renovar tokens cuando expiren
-curl -X POST http://localhost:3000/auth/refresh \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "refreshToken": "<refreshToken>"
-  }'
-
-# 4. Crear sesión de entrenamiento
-curl -X POST http://localhost:3000/training-sessions \
-  -H 'Authorization: Bearer <accessToken>' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "athlete": "<athleteId>",
-    "exercises": [{ "exercise": "<exerciseId>", "sets": [{ "reps": 10 }] }]
-  }'
-```
-
-### Casos de Error Comunes
-
-```bash
-# Token expirado (401)
-curl -X GET http://localhost:3000/auth/info \
-  -H 'Authorization: Bearer <expiredToken>'
-
-# Refresh token inválido (401)
-curl -X POST http://localhost:3000/auth/refresh \
-  -H 'Content-Type: application/json' \
-  -d '{ "refreshToken": "invalid_token" }'
-
-# Usar refresh token en endpoint protegido (401)
-curl -X GET http://localhost:3000/auth/info \
-  -H 'Authorization: Bearer <refreshToken>'
-```
-
----
+- JWT dual-token (access/refresh) con rotación y gestión avanzada de sesiones
+- El refresh token se entrega y valida mediante una cookie httpOnly segura (no accesible por JS)
+- Roles y ownership
+- Validaciones Joi en todos los endpoints
+- Middleware de autenticación y autorización
 
 ## Email y Notificaciones
 
-La aplicación integra un sistema de envío de emails para notificaciones y pruebas de funcionalidades relacionadas con correo electrónico.
+- Envío de emails con Nodemailer y plantillas Handlebars
+- Mailhog para desarrollo (docker-compose)
+- Ejemplo de uso en `src/services/mail.service.ts`
 
-### Plantillas de Email con Handlebars
+## Contribución
 
-Se utilizan plantillas HTML personalizadas con Handlebars para los correos transaccionales más importantes:
+- Sigue la [Guía de Estilos](./STYLE_GUIDE.md)
+- Revisa la [configuración recomendada de editor](./docs/EDITOR_SETUP.md)
+- Pull requests y sugerencias bienvenidas
 
-- `password-recovery.hbs`: Notificación de recuperación de contraseña, incluye código y branding de la app.
-- `reset-password-succeed.hbs`: Confirmación de reseteo exitoso, con advertencia de seguridad.
+## Licencia
 
-Las plantillas se encuentran en `src/templates/mail/` y permiten personalización dinámica de los mensajes (nombre de la app, año, código, etc.).
-
-**Ventajas:**
-
-- Correos más profesionales y consistentes.
-- Fácil mantenimiento y escalabilidad para nuevos tipos de notificaciones.
-- Separación clara entre lógica y presentación.
-
-**Ejemplo de uso:**
-
-```typescript
-import mailService from './src/services/mail.service'
-
-await mailService.sendPasswordRecoveryEmail('usuario@correo.com', '123456')
-await mailService.sendResetPasswordOkEmail('usuario@correo.com')
-```
-
-**Stack:** Se utiliza la librería [Handlebars.js](https://handlebarsjs.com/) para el renderizado de plantillas.
-
-## Nodemailer
-
-- Se utiliza [Nodemailer](https://nodemailer.com/) como librería principal para el envío de emails desde Node.js.
-- La configuración SMTP es flexible y se define por variables de entorno (`SMTP_HOST`, `SMTP_PORT`, etc.).
-- El archivo `src/services/mail.service.ts` expone un servicio reutilizable para enviar correos desde cualquier parte de la app.
-
-## Mailhog (solo desarrollo)
-
-- [Mailhog](https://github.com/mailhog/MailHog) es una herramienta para capturar y visualizar emails enviados desde entornos de desarrollo, sin enviar correos reales.
-- Se ejecuta automáticamente como servicio en `docker-compose.yml`.
-- **Puertos expuestos:**
-  - `1025`: Puerto SMTP (la app envía los correos aquí)
-  - `8025`: Interfaz web para ver los correos recibidos ([http://localhost:8025](http://localhost:8025))
-- Así puedes probar el envío de emails sin riesgo de enviar mensajes reales a usuarios.
-
-## Ejemplo de uso
-
-```typescript
-import mailService from './src/services/mail.service'
-
-await mailService.sendMail({
-  to: 'destinatario@correo.com',
-  subject: 'Bienvenido',
-  html: '<b>¡Hola!</b> Tu cuenta ha sido creada.',
-})
-```
+MIT
 
 ---
 
-## 📚 Documentación para Desarrolladores
+## Testing
 
-### Para Nuevos Desarrolladores
+La aplicación cuenta con una suite completa de pruebas unitarias y de integración:
 
-- **[📋 Guía de Estilos](./STYLE_GUIDE.md)** - Convenciones de código y mejores prácticas
-- **[⚙️ Configuración de Editor](./docs/EDITOR_SETUP.md)** - Setup para VS Code, WebStorm, etc.
+- **✅ 625 tests totales** (unitarios + e2e)
+- **✅ Cobertura superior al 96%**
+- **✅ Pruebas aisladas con mocks y factories**
+- **✅ Tests e2e para flujos completos de autenticación y seguridad**
 
----
+Para ejecutar los tests:
+
+```bash
+yarn test           # Todos los tests
+yarn test:unit      # Solo unitarios
+yarn test:e2e       # Solo end-to-end
+yarn test:coverage  # Con cobertura
+```
