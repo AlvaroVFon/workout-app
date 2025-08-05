@@ -1,11 +1,19 @@
-import express, { Express } from 'express'
-import passport from './passport'
+import cookieParser from 'cookie-parser'
 import cors from 'cors'
+import express, { Express } from 'express'
+import { parameters } from './parameters'
+import passport from './passport'
 
 function configureMiddlewares(app: Express) {
   app.use(express.json())
   app.use(passport.initialize())
-  app.use(cors())
+  app.use(
+    cors({
+      origin: parameters.frontUrl,
+      credentials: true,
+    }),
+  )
+  app.use(cookieParser())
 }
 
 export { configureMiddlewares }

@@ -172,7 +172,7 @@ class AuthService {
   }
 
   async logout(token: string): Promise<boolean> {
-    const payload = verifyToken(token, TokenTypeEnum.ACCESS)
+    const payload = verifyToken(token, TokenTypeEnum.REFRESH)
     if (!payload) return false
 
     const session = await sessionService.findActiveByUserId(payload.id)
