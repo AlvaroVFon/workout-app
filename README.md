@@ -179,10 +179,8 @@ yarn test:coverage  # Con cobertura
 - Revisa la [configuración recomendada de editor](./docs/EDITOR_SETUP.md)
 - Pull requests y sugerencias bienvenidas
 
-
 ---
+
 ## Licencia
 
 MIT
-
-
