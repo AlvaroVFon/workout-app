@@ -6,17 +6,19 @@ import { createSignupData, handleMaxAttempts } from '../helpers/auth.helper'
 import { verifyHashedString } from '../helpers/crypto.helper'
 import { invalidateSession, isActiveSession, rotateUserSessionAndTokens } from '../helpers/session.helper'
 import { Payload } from '../interfaces/payload.interface'
+import { enqueueEmailJob } from '../queueSystem/jobs/email/email.job'
 import type { AuthServiceLoginResponse, SignupCredentials } from '../types/index.types'
 import { AttemptsEnum } from '../utils/enums/attempts.enum'
 import { CodeType } from '../utils/enums/code.enum'
+import { JobEnum } from '../utils/enums/jobs/jobs.enum'
 import { RolesEnum } from '../utils/enums/roles.enum'
+import { TemplateEnum } from '../utils/enums/templates.enum'
 import { TokenTypeEnum } from '../utils/enums/token.enum'
 import { buildPayload, generateResetPasswordToken, refreshTokens, verifyToken } from '../utils/jwt.utils'
 import attemptService from './attempt.service'
 import blockService from './block.service'
 import cacheService from './cache.service'
 import codeService from './code.service'
-import mailService from './mail.service'
 import sessionService from './session.service'
 import userService from './user.service'
 
@@ -34,7 +36,12 @@ class AuthService {
     const code = await codeService.create(id, CodeType.SIGNUP)
 
     await cacheService.set(`signup: ${id}`, signupCredentials)
-    await mailService.sendSignupEmail(email, code.code, id)
+
+    await enqueueEmailJob({
+      type: JobEnum.EMAIL,
+      template: TemplateEnum.SIGNUP,
+      payload: { to: email, code: code.code, uuid: id },
+    })
   }
 
   async signupVerification(uuid: string, code: string): Promise<boolean> {
@@ -66,7 +73,7 @@ class AuthService {
       role: RolesEnum.USER,
     })
 
-    mailService.sendSignupSucceedEmail(cachedData.email)
+    enqueueEmailJob({ type: JobEnum.EMAIL, template: TemplateEnum.SIGNUP_SUCCEED, payload: { to: cachedData.email } })
 
     return true
   }
@@ -129,7 +136,12 @@ class AuthService {
     const payload: Payload = buildPayload(user)
 
     const resetPasswordToken = generateResetPasswordToken(payload)
-    await mailService.sendPasswordRecoveryEmail(user.email, code.code, resetPasswordToken)
+
+    await enqueueEmailJob({
+      type: JobEnum.EMAIL,
+      template: TemplateEnum.PASSWORD_RECOVERY,
+      payload: { to: user.email, code: code.code, resetPasswordToken },
+    })
 
     return true
   }
@@ -159,7 +171,12 @@ class AuthService {
 
     await codeService.invalidateCode(code, user.id)
     await userService.update(user.id, { password })
-    await mailService.sendResetPasswordOkEmail(user.email)
+
+    await enqueueEmailJob({
+      type: JobEnum.EMAIL,
+      template: TemplateEnum.RESET_PASSWORD_OK,
+      payload: { to: user.email },
+    })
 
     return true
   }
