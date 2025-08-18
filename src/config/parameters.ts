@@ -3,6 +3,7 @@ process.loadEnvFile()
 
 const envVarsSchema = Joi.object({
   NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
+  APP_NAME: Joi.string().default('workout-app'),
   PORT: Joi.number().default(3000),
   MONGO_URI: Joi.string().required(),
   REDIS_URI: Joi.string().required(),
@@ -29,6 +30,9 @@ const envVarsSchema = Joi.object({
   CODE_LENGTH: Joi.number().default(6),
   CODE_RETRY_INTERVAL: Joi.number().default(30000),
   FRONTEND_URL: Joi.string().uri().default('http://localhost:5173'),
+  QUEUE_MAX_ATTEMPTS: Joi.number().default(5),
+  QUEUE_BACKOFF: Joi.number().default(3000),
+  QUEUE_REDIS_URL: Joi.string().uri().default('redis://localhost:6379'),
 })
   .unknown()
   .required()
@@ -41,6 +45,7 @@ if (error) {
 
 export const parameters = {
   nodeEnv: envVars.NODE_ENV,
+  appName: envVars.APP_NAME,
   port: envVars.PORT,
   databaseUrl: envVars.MONGO_URI,
   cacheUrl: envVars.REDIS_URI,
@@ -67,4 +72,7 @@ export const parameters = {
   codeRetryInterval: envVars.CODE_RETRY_INTERVAL,
   frontUrl: envVars.FRONTEND_URL,
   cacheTtl: envVars.CACHE_TTL,
+  queueMaxAttempts: envVars.QUEUE_MAX_ATTEMPTS,
+  queueBackoff: envVars.QUEUE_BACKOFF,
+  queueRedisUrl: envVars.QUEUE_REDIS_URL,
 }

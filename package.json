@@ -18,7 +18,8 @@
     "lint:fix": "eslint . --ext .ts --fix",
     "prepare": "husky install",
     "seed": "ts-node src/seeders/index.seeder.ts",
-    "seed:admin-athletes": "SEED_ADMIN_EMAIL=admin@email.com ts-node src/seeders/adminAthletes.seeder.ts"
+    "seed:admin-athletes": "SEED_ADMIN_EMAIL=admin@email.com ts-node src/seeders/adminAthletes.seeder.ts",
+    "workers": "npx nodemon src/queueSystem/workers/bootstrap.ts"
   },
   "keywords": [],
   "author": "Álvaro Villamarín",
@@ -61,6 +62,7 @@
   "dependencies": {
     "@types/cookie-parser": "^1.4.9",
     "bcrypt": "^5.1.1",
+    "bullmq": "^5.56.9",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "4",

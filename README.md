@@ -13,6 +13,7 @@
   <img alt="Redis" src="https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white&style=flat-square" />
   <img alt="Jest" src="https://img.shields.io/badge/Jest-C21325?logo=jest&logoColor=white&style=flat-square" />
   <img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white&style=flat-square" />
+  <img alt="BullMQ" src="https://img.shields.io/badge/BullMQ-FF6B6B?logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+PHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJ6IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==&logoColor=white&style=flat-square" />
   <img alt="Nodemailer" src="https://img.shields.io/badge/Nodemailer-0B3D91?logo=mailgun&logoColor=white&style=flat-square" />
   <img alt="Handlebars" src="https://img.shields.io/badge/Handlebars.js-f0772b?logo=handlebarsdotjs&logoColor=white&style=flat-square" />
 </p>
@@ -31,6 +32,7 @@ API robusta para la gestión de atletas, entrenadores, ejercicios y sesiones de 
 - [Endpoints Principales](#endpoints-principales)
 - [Seguridad y Autenticación](#seguridad-y-autenticación)
 - [Email y Notificaciones](#email-y-notificaciones)
+- [Sistema de Colas](#sistema-de-colas)
 - [Contribución](#contribución)
 - [Licencia](#licencia)
 
@@ -155,6 +157,34 @@ tests/
 - Mailhog para desarrollo (docker-compose)
 - Ejemplo de uso en `src/services/mail.service.ts`
 
+## Sistema de Colas
+
+La aplicación incluye un **sistema de colas robusto** basado en BullMQ y Redis para el procesamiento asíncrono de tareas en segundo plano:
+
+- ✅ **Procesamiento asíncrono** de emails y notificaciones
+- ✅ **Dead Letter Queue (DLQ)** para manejo de fallos
+- ✅ **Workers especializados** con reintentos automáticos
+- ✅ **Sistema de eventos** para monitoreo del ciclo de vida
+- ✅ **Persistencia** de trabajos fallidos en MongoDB
+- ✅ **Escalabilidad** horizontal con múltiples workers
+
+**📖 [Ver documentación completa del Sistema de Colas](./docs/QUEUE_SYSTEM.md)**
+
+### Uso Básico
+
+```typescript
+import { enqueueEmailJob } from './queueSystem/jobs/email/email.job'
+import { JobEnum } from './utils/enums/jobs/jobs.enum'
+import { TemplateEnum } from './utils/enums/templates.enum'
+
+// Agregar trabajo de email
+await enqueueEmailJob({
+  type: JobEnum.EMAIL,
+  template: TemplateEnum.WELCOME,
+  payload: { to: 'user@example.com', userName: 'Juan' },
+})
+```
+
 ## Testing
 
 La aplicación cuenta con una suite completa de pruebas unitarias y de integración:
@@ -179,10 +209,8 @@ yarn test:coverage  # Con cobertura
 - Revisa la [configuración recomendada de editor](./docs/EDITOR_SETUP.md)
 - Pull requests y sugerencias bienvenidas
 
-
 ---
+
 ## Licencia
 
 MIT
-
-

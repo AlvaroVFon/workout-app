@@ -4,15 +4,16 @@ import { Types } from 'mongoose'
 import NotFoundException from '../../../src/exceptions/NotFoundException'
 import TooManyRequestException from '../../../src/exceptions/TooManyRequestException'
 import { invalidateSession, isActiveSession, rotateUserSessionAndTokens } from '../../../src/helpers/session.helper'
+import { Payload } from '../../../src/interfaces/payload.interface'
+import { enqueueEmailJob } from '../../../src/queueSystem/jobs/email/email.job'
 import AuthService from '../../../src/services/auth.service'
 import codeService from '../../../src/services/code.service'
 import mailService from '../../../src/services/mail.service'
 import sessionService from '../../../src/services/session.service'
 import userService from '../../../src/services/user.service'
 import { CodeType } from '../../../src/utils/enums/code.enum'
-import { generateResetPasswordToken, refreshTokens, verifyToken } from '../../../src/utils/jwt.utils'
-import { Payload } from '../../../src/interfaces/payload.interface'
 import { TokenTypeEnum } from '../../../src/utils/enums/token.enum'
+import { generateResetPasswordToken, refreshTokens, verifyToken } from '../../../src/utils/jwt.utils'
 
 jest.mock('../../../src/services/user.service')
 jest.mock('../../../src/services/session.service')
@@ -21,6 +22,7 @@ jest.mock('../../../src/helpers/session.helper')
 jest.mock('bcrypt')
 jest.mock('../../../src/services/code.service')
 jest.mock('../../../src/services/mail.service')
+jest.mock('../../../src/queueSystem/jobs/email/email.job')
 
 describe('AuthService', () => {
   describe('login', () => {
@@ -225,11 +227,16 @@ describe('AuthService', () => {
       ;(codeService.findLastByUserIdAndType as jest.Mock).mockResolvedValue(null)
       ;(codeService.create as jest.Mock).mockResolvedValue({ code: '123456', type: CodeType.RECOVERY })
       ;(generateResetPasswordToken as jest.Mock).mockReturnValue('resetToken')
+      ;(enqueueEmailJob as jest.Mock).mockResolvedValue(undefined)
 
       await AuthService.forgotPassword(user.email)
 
       expect(codeService.create).toHaveBeenCalledWith(user.id, CodeType.RECOVERY)
-      expect(mailService.sendPasswordRecoveryEmail).toHaveBeenCalledWith(user.email, '123456', 'resetToken')
+      expect(enqueueEmailJob).toHaveBeenCalledWith({
+        payload: { code: '123456', resetPasswordToken: 'resetToken', to: 'user@example.com' },
+        template: 'password-recovery',
+        type: 'email',
+      })
     })
 
     it('should not send email if user not found', async () => {
@@ -286,12 +293,17 @@ describe('AuthService', () => {
       ;(verifyToken as jest.Mock).mockReturnValue({ id: user.id })
       ;(userService.findById as jest.Mock).mockResolvedValue(user)
       ;(codeService.isCodeValid as jest.Mock).mockResolvedValue(true)
+      ;(enqueueEmailJob as jest.Mock).mockResolvedValue(undefined)
 
       const result = await AuthService.resetPassword(user.email, code, password)
 
       expect(codeService.invalidateCode).toHaveBeenCalledWith(code, user.id)
       expect(userService.update).toHaveBeenCalledWith(user.id, { password })
-      expect(mailService.sendResetPasswordOkEmail).toHaveBeenCalledWith(user.email)
+      expect(enqueueEmailJob).toHaveBeenCalledWith({
+        payload: { to: 'user@example.com' },
+        template: 'reset-password-succeed',
+        type: 'email',
+      })
       expect(result).toBe(true)
     })
   })
