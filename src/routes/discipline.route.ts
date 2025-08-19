@@ -3,11 +3,12 @@ import authMiddleware from '../middlewares/auth/auth.middleware'
 import disciplineController from '../controllers/discipline.controller'
 import disciplineMiddleware from '../middlewares/discipline.middleware'
 import globalValidatorMiddleware from '../middlewares/globalValidator.middleware'
+import { RolesEnum } from '../utils/enums/roles.enum'
 
 const router = Router()
 
 router
-  .use(authMiddleware.verifyJWT, authMiddleware.authorizeRoles('ADMIN', 'SUPERADMIN'))
+  .use(authMiddleware.verifyJWT, authMiddleware.authorizeRoles(RolesEnum.ADMIN, RolesEnum.SUPERADMIN))
   .post('/', [disciplineMiddleware.validateCreateDiscipline], disciplineController.create)
   .get('/', disciplineController.findAll)
   .get('/:id', [globalValidatorMiddleware.validateObjectId], disciplineController.findById)
