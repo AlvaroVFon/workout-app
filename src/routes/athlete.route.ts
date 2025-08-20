@@ -2,10 +2,10 @@ import { Router } from 'express'
 import athleteController from '../controllers/athlete.controller'
 import athleteMiddleware from '../middlewares/athlete.middleware'
 import authMiddleware from '../middlewares/auth/auth.middleware'
-import { RolesEnum } from '../utils/enums/roles.enum'
-import paginationMiddleware from '../middlewares/pagination.middleware'
-import globalValidatorMiddleware from '../middlewares/globalValidator.middleware'
 import disciplineMiddleware from '../middlewares/discipline.middleware'
+import globalValidatorMiddleware from '../middlewares/globalValidator.middleware'
+import paginationMiddleware from '../middlewares/pagination.middleware'
+import { RolesEnum } from '../utils/enums/roles.enum'
 
 const router = Router()
 
@@ -16,6 +16,11 @@ router
     '/:id',
     [globalValidatorMiddleware.validateObjectId, athleteMiddleware.validateAthleteOwnership],
     athleteController.findOneByCoach,
+  )
+  .get(
+    '/:id/stats',
+    [globalValidatorMiddleware.validateObjectId, athleteMiddleware.validateAthleteOwnership],
+    athleteController.getStats,
   )
   .post(
     '/',

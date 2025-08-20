@@ -19,6 +19,7 @@
     "prepare": "husky install",
     "seed": "ts-node src/seeders/index.seeder.ts",
     "seed:admin-athletes": "SEED_ADMIN_EMAIL=admin@email.com ts-node src/seeders/adminAthletes.seeder.ts",
+    "seed:stats": "ts-node src/seeders/runAthleteStatsSeeder.ts",
     "workers": "npx nodemon src/queueSystem/workers/bootstrap.ts"
   },
   "keywords": [],

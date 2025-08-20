@@ -1,11 +1,13 @@
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
+import { AthleteStatsQueryDTO } from '../DTOs/athleteStats/athleteStats.dto'
+import NotFoundException from '../exceptions/NotFoundException'
+import UnauthorizedException from '../exceptions/UnauthorizedException'
+import { responseHandler } from '../handlers/responseHandler'
 import { AuthenticatedUser } from '../interfaces/user.inteface'
 import athleteService from '../services/athlete.service'
-import UnauthorizedException from '../exceptions/UnauthorizedException'
-import { paginateResponse } from '../utils/pagination.utils'
+import athleteStatsService from '../services/athleteStats.service'
 import { StatusCode, StatusMessage } from '../utils/enums/httpResponses.enum'
-import { responseHandler } from '../handlers/responseHandler'
-import NotFoundException from '../exceptions/NotFoundException'
+import { paginateResponse } from '../utils/pagination.utils'
 
 class AthleteController {
   async create(req: Request, res: Response, next: NextFunction) {
@@ -72,6 +74,32 @@ class AthleteController {
       await athleteService.delete(id)
 
       responseHandler(res, StatusCode.NO_CONTENT, StatusMessage.NO_CONTENT)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async getStats(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params
+      const query: AthleteStatsQueryDTO = {}
+
+      // Extraer query parameters opcionales
+      if (req.query.startDate) {
+        query.startDate = new Date(req.query.startDate as string)
+      }
+      if (req.query.endDate) {
+        query.endDate = new Date(req.query.endDate as string)
+      }
+      if (req.query.period) {
+        query.period = req.query.period as 'week' | 'month' | 'year'
+      }
+      if (req.query.includeMuscleGroupBreakdown) {
+        query.includeMuscleGroupBreakdown = req.query.includeMuscleGroupBreakdown === 'true'
+      }
+
+      const stats = await athleteStatsService.getAthleteStats(id, query)
+      return responseHandler(res, StatusCode.OK, StatusMessage.OK, stats)
     } catch (error) {
       next(error)
     }

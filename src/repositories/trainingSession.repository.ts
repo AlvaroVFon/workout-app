@@ -1,7 +1,7 @@
-import { ModelQuery } from '../types/index.types'
-import TrainingSession from '../models/TrainingSession'
+import { AggregateOptions, PipelineStage, ProjectionType, RootFilterQuery } from 'mongoose'
 import { TrainingSessionDTO } from '../DTOs/trainingSession/trainingSession.dto'
-import { ProjectionType, RootFilterQuery } from 'mongoose'
+import TrainingSession from '../models/TrainingSession'
+import { ModelQuery } from '../types/index.types'
 
 class TrainingSessionRepository {
   create(data: TrainingSessionDTO) {
@@ -30,6 +30,10 @@ class TrainingSessionRepository {
 
   getTotal(query: RootFilterQuery<TrainingSessionDTO> = {}) {
     return TrainingSession.countDocuments(query)
+  }
+
+  aggregate<T>(pipeline: PipelineStage[], options?: AggregateOptions) {
+    return TrainingSession.aggregate<T>(pipeline, options)
   }
 }
 
