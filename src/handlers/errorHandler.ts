@@ -13,7 +13,7 @@ export const errorHandler = (
   const statusCode = err.status || 500
   const message = err.message || 'Internal Server Error'
   const requestInfo = {
-    url: req.url,
+    url: req.originalUrl,
     method: req.method,
   }
 

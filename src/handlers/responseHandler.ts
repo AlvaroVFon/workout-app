@@ -9,7 +9,7 @@ function responseHandler(
   data?: [] | object | string,
 ): Response<ApiResponse> {
   const requestInfo = {
-    url: res.req?.url,
+    url: res.req?.originalUrl,
     method: res.req?.method,
   }
 

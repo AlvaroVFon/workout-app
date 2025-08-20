@@ -10,7 +10,7 @@ class PaginationMiddleware {
     if (error) return next(new BadRequestException(error.details[0].message))
 
     res.locals.pagination = {
-      limit: value.limit < parameters.maxLimit ? Number(value.limit) : parameters.maxLimit,
+      limit: value.limit < parameters.paginationMaxLimit ? Number(value.limit) : parameters.paginationMaxLimit,
       page: Number(value.page) || 1,
       paginate: value.paginate,
     }

@@ -1,6 +1,6 @@
+import { Db } from 'mongodb'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import mongoose from 'mongoose'
-import { Db } from 'mongodb'
 
 let mongo: MongoMemoryServer
 let db: Db | undefined
