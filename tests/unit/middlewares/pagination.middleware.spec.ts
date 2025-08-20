@@ -52,7 +52,7 @@ describe('paginationMiddleware.paginate middleware', () => {
     paginationMiddleware.paginate(req as Request, res as Response, next)
 
     expect(res.locals?.pagination).toEqual({
-      limit: parameters.maxLimit,
+      limit: parameters.paginationMaxLimit,
       page: 1,
       paginate: true,
     })
