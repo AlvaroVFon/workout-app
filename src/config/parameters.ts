@@ -33,6 +33,7 @@ const envVarsSchema = Joi.object({
   QUEUE_MAX_ATTEMPTS: Joi.number().default(5),
   QUEUE_BACKOFF: Joi.number().default(3000),
   QUEUE_REDIS_URL: Joi.string().uri().default('redis://localhost:6379'),
+  MAX_LIMIT: Joi.number().default(20),
 })
   .unknown()
   .required()
@@ -75,4 +76,5 @@ export const parameters = {
   queueMaxAttempts: envVars.QUEUE_MAX_ATTEMPTS,
   queueBackoff: envVars.QUEUE_BACKOFF,
   queueRedisUrl: envVars.QUEUE_REDIS_URL,
+  maxLimit: envVars.MAX_LIMIT,
 }

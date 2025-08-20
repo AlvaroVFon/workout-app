@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import paginationMiddleware from '../../../src/middlewares/pagination.middleware'
 import BadRequestException from '../../../src/exceptions/BadRequestException'
+import { parameters } from '../../../src/config/parameters'
 
 describe('paginationMiddleware.paginate middleware', () => {
   let req: Partial<Request>
@@ -43,5 +44,17 @@ describe('paginationMiddleware.paginate middleware', () => {
     paginationMiddleware.paginate(req as Request, res as Response, next)
 
     expect(next).toHaveBeenCalledWith(expect.any(BadRequestException))
+  })
+
+  it('should set maxLimit if limit exceeds the maximum allowed', () => {
+    req.query = { limit: '1000', page: '1', paginate: 'true' }
+
+    paginationMiddleware.paginate(req as Request, res as Response, next)
+
+    expect(res.locals?.pagination).toEqual({
+      limit: parameters.maxLimit,
+      page: 1,
+      paginate: true,
+    })
   })
 })
