@@ -18,6 +18,7 @@ describe('TrainingSession Service', () => {
     it('should create a training session', async () => {
       const trainingSessionData: TrainingSessionDTO = {
         athlete: new ObjectId(),
+        name: 'Leg Day',
         date: new Date(),
         type: TrainingTypeEnum.STRENGTH,
         exercises: [
@@ -48,6 +49,7 @@ describe('TrainingSession Service', () => {
     it('should handle repository errors during creation', async () => {
       const trainingSessionData: TrainingSessionDTO = {
         athlete: new ObjectId(),
+        name: 'Cardio Session',
         date: new Date(),
         type: TrainingTypeEnum.ENDURANCE,
         exercises: [],

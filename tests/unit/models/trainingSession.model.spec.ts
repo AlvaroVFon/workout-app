@@ -1,10 +1,11 @@
-import TrainingSession from '../../../src/models/TrainingSession'
 import { Types } from 'mongoose'
+import TrainingSession from '../../../src/models/TrainingSession'
 import { TrainingTypeEnum } from '../../../src/utils/enums/trainingTypes.enum'
 
 describe('TrainingSession Model', () => {
   const validTrainingSessionData = {
     athlete: new Types.ObjectId(),
+    name: 'Morning Workout',
     date: new Date(),
     type: TrainingTypeEnum.STRENGTH,
     exercises: [
@@ -35,6 +36,7 @@ describe('TrainingSession Model', () => {
     it('should create a valid training session with minimal required fields', async () => {
       const minimalData = {
         athlete: new Types.ObjectId(),
+        name: 'Morning Workout',
         type: TrainingTypeEnum.STRENGTH,
         exercises: [
           {

@@ -1,14 +1,15 @@
-import trainingSessionRepository from '../../../src/repositories/trainingSession.repository'
-import TrainingSession from '../../../src/models/TrainingSession'
-import { TrainingSessionDTO } from '../../../src/DTOs/trainingSession/trainingSession.dto'
-import { TrainingTypeEnum } from '../../../src/utils/enums/trainingTypes.enum'
 import { ObjectId } from 'mongodb'
+import { TrainingSessionDTO } from '../../../src/DTOs/trainingSession/trainingSession.dto'
+import TrainingSession from '../../../src/models/TrainingSession'
+import trainingSessionRepository from '../../../src/repositories/trainingSession.repository'
+import { TrainingTypeEnum } from '../../../src/utils/enums/trainingTypes.enum'
 
 jest.mock('../../../src/models/TrainingSession')
 
 describe('TrainingSessionRepository', () => {
   const mockSession: TrainingSessionDTO = {
     athlete: new ObjectId(),
+    name: 'Morning Workout',
     date: new Date(),
     type: TrainingTypeEnum.STRENGTH,
     exercises: [],

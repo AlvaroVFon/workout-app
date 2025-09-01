@@ -14,6 +14,7 @@ export interface ExerciseEntryDTO {
 
 export interface TrainingSessionDTO {
   athlete: ObjectId
+  name: string
   date: Date
   type: TrainingTypeEnum
   exercises: ExerciseEntryDTO[]

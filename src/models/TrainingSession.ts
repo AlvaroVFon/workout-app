@@ -21,6 +21,7 @@ const exerciseEntrySchema = new Schema<ExerciseEntryDTO>(
 const trainingSessionSchema = new Schema<TrainingSessionDTO>(
   {
     athlete: { type: Types.ObjectId, ref: 'Athlete', required: true },
+    name: { type: String, required: true },
     date: { type: Date, required: true, default: () => Date.now() },
     type: {
       type: String,
