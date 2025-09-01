@@ -10,6 +10,10 @@ async function createAthlete(db: Connection, athlete?: CreateAthleteDTO): Promis
     ? null
     : await db.collection('users').findOne({}, { projection: { _id: 1 }, skip: randomSkip })
 
+  const disciplines = await db.collection('disciplines').find().project({ _id: 1 }).toArray()
+  const disciplineIds = Object.values(disciplines).map((discipline) => discipline._id)
+  const assignedDisciplines = faker.helpers.arrayElement(disciplineIds)
+
   return {
     email: athlete?.email ?? faker.internet.email(),
     firstname: athlete?.firstname ?? faker.person.firstName(),
@@ -23,6 +27,7 @@ async function createAthlete(db: Connection, athlete?: CreateAthleteDTO): Promis
       athlete?.goals ?? faker.helpers.arrayElements(['build muscle', 'fat loss', 'performance'], { min: 1, max: 3 }),
     notes: athlete?.notes ?? faker.lorem.sentence(),
     phone: athlete?.phone ?? faker.phone.number(),
+    disciplines: athlete?.disciplines ?? assignedDisciplines,
   }
 }
 

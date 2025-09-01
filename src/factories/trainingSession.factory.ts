@@ -42,6 +42,8 @@ async function createTrainingSession(
     month: session?.month ?? faker.number.int({ min: 1, max: 12 }),
     year: session?.year ?? faker.number.int({ min: 2000, max: 2024 }),
     tags: session?.tags ?? faker.helpers.arrayElements(['home', 'outdoor', 'gym'], { min: 1, max: 3 }),
+    sessionDuration: session?.sessionDuration ?? faker.number.int({ min: 20, max: 120 }),
+    perceivedEffort: session?.perceivedEffort ?? faker.number.int({ min: 1, max: 10 }),
   }
 }
 
