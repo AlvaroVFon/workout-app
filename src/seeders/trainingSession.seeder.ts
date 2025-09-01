@@ -4,7 +4,7 @@ import logger from '../utils/logger'
 import { checkCollectionExistence } from '../utils/database.utils'
 import trainingSessionService from '../services/trainingSession.service'
 
-const collectionName = 'trainingSessions'
+const collectionName = 'trainingsessions'
 
 async function seedTrainingSessions(db: Connection, length: number = 5): Promise<void> {
   try {
