@@ -1,7 +1,7 @@
-import { createTrainingSession, createTrainingSessions } from '../../../src/factories/trainingSession.factory'
-import { TrainingSessionDTO } from '../../../src/DTOs/trainingSession/trainingSession.dto'
-import { Connection } from 'mongoose'
 import { ObjectId } from 'mongodb'
+import { Connection } from 'mongoose'
+import { TrainingSessionDTO } from '../../../src/DTOs/trainingSession/trainingSession.dto'
+import { createTrainingSession, createTrainingSessions } from '../../../src/factories/trainingSession.factory'
 import { TrainingTypeEnum } from '../../../src/utils/enums/trainingTypes.enum'
 
 interface MockOptions {
@@ -35,6 +35,7 @@ jest.mock('@faker-js/faker', () => ({
     },
     lorem: {
       sentence: jest.fn(() => 'Test training session notes'),
+      words: jest.fn(() => 'Test Session Name'),
     },
   },
 }))
@@ -79,6 +80,7 @@ describe('TrainingSession Factory', () => {
 
       expect(result).toMatchObject({
         athlete: mockAthlete._id,
+        name: 'Test Session Name',
         date: mockDate,
         type: TrainingTypeEnum.STRENGTH,
         notes: 'Test training session notes',
@@ -110,6 +112,7 @@ describe('TrainingSession Factory', () => {
 
       const providedSession: Partial<TrainingSessionDTO> = {
         athlete: customAthlete,
+        name: 'Test Session Name',
         date: customDate,
         type: TrainingTypeEnum.ENDURANCE,
         notes: 'Custom notes',

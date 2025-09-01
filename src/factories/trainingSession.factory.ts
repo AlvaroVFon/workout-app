@@ -34,6 +34,7 @@ async function createTrainingSession(
 
   return {
     athlete: session?.athlete ?? athleteId?._id ?? new ObjectId(),
+    name: session?.name ?? faker.lorem.words({ min: 2, max: 5 }),
     date: session?.date ?? faker.date.recent(),
     type: session?.type ?? faker.helpers.arrayElement(Object.values(TrainingTypeEnum)),
     exercises: session?.exercises ?? (await Promise.all(exercisesEntries)),

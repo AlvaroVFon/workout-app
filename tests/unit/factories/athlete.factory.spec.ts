@@ -1,8 +1,8 @@
-import { createAthlete, createAthletes } from '../../../src/factories/athlete.factory'
-import { Connection } from 'mongoose'
 import { ObjectId } from 'mongodb'
-import { GenderEnum } from '../../../src/utils/enums/gender.enum'
+import { Connection } from 'mongoose'
 import { CreateAthleteDTO } from '../../../src/DTOs/athlete/create.dto'
+import { createAthlete, createAthletes } from '../../../src/factories/athlete.factory'
+import { GenderEnum } from '../../../src/utils/enums/gender.enum'
 
 interface MockOptions {
   min: number
@@ -22,7 +22,7 @@ jest.mock('@faker-js/faker', () => ({
       uuid: jest.fn(() => '123456789'),
     },
     helpers: {
-      arrayElement: jest.fn(() => GenderEnum.MALE),
+      arrayElement: jest.fn((arr: any) => (Array.isArray(arr) ? arr[0] : undefined)),
       arrayElements: jest.fn(() => ['build muscle', 'fat loss']),
     },
     number: {
@@ -44,18 +44,26 @@ jest.mock('@faker-js/faker', () => ({
 
 interface MockCollection {
   findOne: jest.Mock
+  find?: jest.Mock
 }
 
 describe('Athlete Factory', () => {
   let mockDb: jest.Mocked<Connection>
   let mockCollection: MockCollection
+  let mockDiscipline: { _id: ObjectId }
 
   beforeEach(() => {
+    mockDiscipline = { _id: new ObjectId() }
+
     mockCollection = {
       findOne: jest.fn(),
+      find: jest.fn(() => ({
+        project: jest.fn(() => ({ toArray: jest.fn().mockResolvedValue([mockDiscipline]) })),
+      })),
     }
+
     mockDb = {
-      collection: jest.fn(() => mockCollection),
+      collection: jest.fn((name: string) => mockCollection),
     } as unknown as jest.Mocked<Connection>
 
     jest.clearAllMocks()
@@ -73,6 +81,7 @@ describe('Athlete Factory', () => {
         firstname: 'John',
         lastname: 'Doe',
         coach: mockCoach._id,
+        disciplines: mockDiscipline._id,
         idDocument: '123456789',
         gender: GenderEnum.MALE,
         height: 180,
